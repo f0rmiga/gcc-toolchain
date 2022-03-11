@@ -1,0 +1,5 @@
+cc_binary(
+    name = "hello_world_cpp",
+    srcs = ["main.cpp"],
+    linkopts = ["-lstdc++"],
+)
