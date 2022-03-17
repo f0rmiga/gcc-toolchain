@@ -101,6 +101,7 @@ def _impl(ctx):
                             "-Wl,-z,relro,-z,now",
                             "-no-canonical-prefixes",
                             "-pass-exit-codes",
+                            "-lstdc++",
                         ],
                     ),
                 ],
