@@ -33,4 +33,5 @@ cc_toolchain_config(
     name = "cc_toolchain_config",
     tool_paths = %tool_paths%,
     hermetic_include_directories = %hermetic_include_directories%,
+    system_include_directories = %system_include_directories%,
 )

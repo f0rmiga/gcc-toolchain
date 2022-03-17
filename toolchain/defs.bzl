@@ -10,9 +10,14 @@ def _gcc_toolchain_impl(rctx):
     # Get list of default search paths for the includes. Since we are using nix to provide the
     # compiler, it's guaranteed to get the /nix/store prefix.
     res = rctx.execute([gcc, "-Wp,-v", "-xc++", "/dev/null", "-fsyntax-only"])
-    include_paths = [
+    hermetic_include_directories = [
         paths.normalize(line.strip())
         for line in res.stderr.split("\n") if line.strip().startswith("/nix/store")
+    ]
+
+    system_include_directories = [
+        "/usr/include/x86_64-linux-gnu",
+        "/usr/include",
     ]
 
     substitutions = {
@@ -42,7 +47,8 @@ def _gcc_toolchain_impl(rctx):
         "%strip_files%": rctx.attr.strip_files,
 
         # Includes
-        "%hermetic_include_directories%": str(include_paths),
+        "%hermetic_include_directories%": str(hermetic_include_directories),
+        "%system_include_directories%": str(system_include_directories),
 
         # Libs
         "%hermetic_library_search_directories%": str([
@@ -123,10 +129,10 @@ _gcc_toolchain = repository_rule(
                 mandatory = True,
             ),
             "_config_template": attr.label(
-                default = Label("@//toolchain:config.bzl.tpl"),
+                default = Label("//toolchain:config.bzl.tpl"),
             ),
             "_toolchain_build_template": attr.label(
-                default = Label("@//toolchain:toolchain.BUILD.bazel.tpl"),
+                default = Label("//toolchain:toolchain.BUILD.bazel.tpl"),
             ),
         },
         _TOOL_PATHS_ATTRS,

@@ -258,8 +258,35 @@ def _impl(ctx):
                 ],
                 flag_groups = [flag_group(flags = ["-std=c++0x"])],
             ),
+            flag_set(
+                actions = [
+                    _LINKSTAMP_COMPILE_ACTION_NAME,
+                    _CPP_COMPILE_ACTION_NAME,
+                    _CPP_HEADER_PARSING_ACTION_NAME,
+                    _CPP_MODULE_COMPILE_ACTION_NAME,
+                    _CPP_MODULE_CODEGEN_ACTION_NAME,
+                    _LTO_BACKEND_ACTION_NAME,
+                    _CLIF_MATCH_ACTION_NAME,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = [
+                            "-I{}".format(d)
+                            for d in ctx.attr.hermetic_include_directories
+                        ],
+                    ),
+                    flag_group(
+                        flags = [
+                            "-isystem{}".format(d)
+                            for d in ctx.attr.system_include_directories
+                        ],
+                    ),
+                ],
+            ),
         ],
     )
+
+    include_directories = ctx.attr.hermetic_include_directories + ctx.attr.system_include_directories
 
     opt_feature = feature(name = "opt")
 
@@ -351,8 +378,6 @@ def _impl(ctx):
         unfiltered_compile_flags_feature,
     ]
 
-    include_directories = ctx.attr.hermetic_include_directories
-
     return [
         cc_common.create_cc_toolchain_config_info(
             ctx = ctx,
@@ -379,6 +404,7 @@ cc_toolchain_config = rule(
     implementation = _impl,
     attrs = {
         "hermetic_include_directories": attr.string_list(),
+        "system_include_directories": attr.string_list(),
         "tool_paths": attr.string_dict(),
     },
     provides = [CcToolchainConfigInfo],
