@@ -104,6 +104,12 @@ def _impl(ctx):
                             "-lstdc++",
                         ],
                     ),
+                    flag_group(
+                        flags = [
+                            "-L{}".format(d)
+                            for d in ctx.attr.hermetic_library_directories
+                        ],
+                    ),
                 ],
             ),
             flag_set(
@@ -398,6 +404,7 @@ cc_toolchain_config = rule(
     implementation = _impl,
     attrs = {
         "hermetic_include_directories": attr.string_list(),
+        "hermetic_library_directories": attr.string_list(),
         "tool_paths": attr.string_dict(),
         "builtin_sysroot": attr.string(),
     },

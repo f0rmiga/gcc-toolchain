@@ -33,6 +33,7 @@ cc_toolchain_config(
     name = "cc_toolchain_config",
     tool_paths = %tool_paths%,
     hermetic_include_directories = %hermetic_include_directories%,
+    hermetic_library_directories = %hermetic_library_directories%,
     builtin_sysroot = "%builtin_sysroot%",
 )
 

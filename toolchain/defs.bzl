@@ -31,6 +31,19 @@ def _gcc_toolchain_impl(rctx):
         for line in res.stderr.split("\n") if line.strip().startswith(pwd)
     ]
 
+    res = rctx.execute([gcc, "-print-search-dirs"])
+    libraries = None
+    for line in res.stdout.split("\n"):
+        if line.startswith("libraries:"):
+            libraries = line.split(":")
+            break
+    if not libraries:
+        fail("failed to find libraries directories")
+    hermetic_library_directories = [
+        paths.normalize(library.strip().replace("=", ""))
+        for library in libraries
+    ]
+
     builtin_sysroot = str(rctx.path("{}-buildroot-linux-gnu/sysroot".format(arch)))
 
     substitutions = {
@@ -54,9 +67,7 @@ def _gcc_toolchain_impl(rctx):
         "%hermetic_include_directories%": str(hermetic_include_directories),
 
         # Libs
-        "%hermetic_library_search_directories%": str([
-            # TODO
-        ]),
+        "%hermetic_library_directories%": str(hermetic_library_directories),
 
         # Sysroot
         "%builtin_sysroot%": builtin_sysroot,
