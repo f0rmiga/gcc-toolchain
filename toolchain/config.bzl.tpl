@@ -77,16 +77,35 @@ all_link_actions = [
 ]
 
 def _impl(ctx):
-    tool_paths = [
-        tool_path(name = name, path = path)
-        for name, path in ctx.attr.tool_paths.items()
-    ]
+    hermetic_include_directories = %hermetic_include_directories%
+    hermetic_library_directories = %hermetic_library_directories%
+    use_builtin_sysroot = %use_builtin_sysroot%
+    builtin_sysroot = "%builtin_sysroot%"
+    tool_paths = %tool_paths%
 
-    objcopy_tool = ctx.attr.tool_paths.get("objcopy")
+    objcopy_tool = tool_paths.get("objcopy")
     objcopy_embed_data_action = action_config(
         action_name = "objcopy_embed_data",
         enabled = True,
         tools = [tool(path = objcopy_tool)],
+    )
+
+    hermetic_library_directories_feature = feature(
+        name = "hermetic_library_directories",
+        enabled = not use_builtin_sysroot,
+        flag_sets = [
+            flag_set(
+                actions = all_link_actions,
+                flag_groups = [
+                    flag_group(
+                        flags = [
+                            "-L{}".format(d)
+                            for d in hermetic_library_directories
+                        ],
+                    ),
+                ],
+            ),
+        ],
     )
 
     default_link_flags_feature = feature(
@@ -102,12 +121,6 @@ def _impl(ctx):
                             "-no-canonical-prefixes",
                             "-pass-exit-codes",
                             "-lstdc++",
-                        ],
-                    ),
-                    flag_group(
-                        flags = [
-                            "-L{}".format(d)
-                            for d in ctx.attr.hermetic_library_directories
                         ],
                     ),
                 ],
@@ -278,7 +291,7 @@ def _impl(ctx):
                     flag_group(
                         flags = [
                             "-I{}".format(d)
-                            for d in ctx.attr.hermetic_include_directories
+                            for d in hermetic_include_directories
                         ],
                     ),
                 ],
@@ -286,7 +299,7 @@ def _impl(ctx):
         ],
     )
 
-    include_directories = ctx.attr.hermetic_include_directories
+    include_directories = hermetic_include_directories
 
     opt_feature = feature(name = "opt")
 
@@ -393,20 +406,17 @@ def _impl(ctx):
             compiler = "gcc",
             abi_version = "local",
             abi_libc_version = "local",
-            tool_paths = tool_paths,
+            tool_paths = [
+                tool_path(name = name, path = path)
+                for name, path in tool_paths.items()
+            ],
             make_variables = [],
-            builtin_sysroot = ctx.attr.builtin_sysroot,
+            builtin_sysroot = builtin_sysroot if use_builtin_sysroot else None,
             cc_target_os = None,
         ),
     ]
 
 cc_toolchain_config = rule(
     implementation = _impl,
-    attrs = {
-        "hermetic_include_directories": attr.string_list(),
-        "hermetic_library_directories": attr.string_list(),
-        "tool_paths": attr.string_dict(),
-        "builtin_sysroot": attr.string(),
-    },
     provides = [CcToolchainConfigInfo],
 )

@@ -8,7 +8,7 @@ toolchain(
     name = "toolchain",
     target_compatible_with = [
         "@platforms//os:linux",
-        "@platforms//cpu:%arch%",
+        "@platforms//cpu:%target_arch%",
     ],
     toolchain = ":cc_toolchain",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
@@ -31,10 +31,6 @@ cc_toolchain(
 
 cc_toolchain_config(
     name = "cc_toolchain_config",
-    tool_paths = %tool_paths%,
-    hermetic_include_directories = %hermetic_include_directories%,
-    hermetic_library_directories = %hermetic_library_directories%,
-    builtin_sysroot = "%builtin_sysroot%",
 )
 
 filegroup(
@@ -73,7 +69,7 @@ filegroup(
     name = "include",
     srcs = glob([
         "include/**",
-        "%arch%-buildroot-linux-gnu/include/**",
+        "%target_arch%-buildroot-linux-gnu/include/**",
     ]),
 )
 
@@ -82,8 +78,8 @@ filegroup(
     srcs = glob([
         "lib/**",
         "lib64/**",
-        "%arch%-buildroot-linux-gnu/lib/**",
-        "%arch%-buildroot-linux-gnu/lib64/**",
+        "%target_arch%-buildroot-linux-gnu/lib/**",
+        "%target_arch%-buildroot-linux-gnu/lib64/**",
     ]),
 )
 
@@ -91,14 +87,14 @@ filegroup(
     name = "gcc",
     srcs = [
         ":gpp",
-        "bin/%arch%-linux-cpp",
-        "bin/%arch%-linux-gcc",
+        "bin/%target_arch%-linux-cpp",
+        "bin/%target_arch%-linux-gcc",
     ],
 )
 
 filegroup(
     name = "gpp",
-    srcs = ["bin/%arch%-linux-g++"],
+    srcs = ["bin/%target_arch%-linux-g++"],
 )
 
 # Binutils
@@ -139,47 +135,47 @@ filegroup(
 filegroup(
     name = "ld",
     srcs = [
-        "bin/%arch%-linux-ld",
-        "bin/%arch%-linux-ld.bfd",
+        "bin/%target_arch%-linux-ld",
+        "bin/%target_arch%-linux-ld.bfd",
     ],
 )
 
 filegroup(
     name = "ar",
-    srcs = ["bin/%arch%-linux-ar"],
+    srcs = ["bin/%target_arch%-linux-ar"],
 )
 
 filegroup(
     name = "as",
-    srcs = ["bin/%arch%-linux-as"],
+    srcs = ["bin/%target_arch%-linux-as"],
 )
 
 filegroup(
     name = "nm",
-    srcs = ["bin/%arch%-linux-nm"],
+    srcs = ["bin/%target_arch%-linux-nm"],
 )
 
 filegroup(
     name = "objcopy",
-    srcs = ["bin/%arch%-linux-objcopy"],
+    srcs = ["bin/%target_arch%-linux-objcopy"],
 )
 
 filegroup(
     name = "objdump",
-    srcs = ["bin/%arch%-linux-objdump"],
+    srcs = ["bin/%target_arch%-linux-objdump"],
 )
 
 filegroup(
     name = "ranlib",
-    srcs = ["bin/%arch%-linux-ranlib"],
+    srcs = ["bin/%target_arch%-linux-ranlib"],
 )
 
 filegroup(
     name = "readelf",
-    srcs = ["bin/%arch%-linux-readelf"],
+    srcs = ["bin/%target_arch%-linux-readelf"],
 )
 
 filegroup(
     name = "strip",
-    srcs = ["bin/%arch%-linux-strip"],
+    srcs = ["bin/%target_arch%-linux-strip"],
 )

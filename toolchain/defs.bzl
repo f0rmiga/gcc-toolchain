@@ -13,17 +13,17 @@ def _gcc_toolchain_impl(rctx):
         url = rctx.attr.url,
     )
 
-    arch = "x86_64"
+    target_arch = rctx.attr.target_arch
 
-    ar = str(rctx.path("bin/{}-linux-ar".format(arch)))
-    cpp = str(rctx.path("bin/{}-linux-cpp".format(arch)))
-    gcc = str(rctx.path("bin/{}-linux-gcc".format(arch)))
-    gcov = str(rctx.path("bin/{}-linux-gcov".format(arch)))
-    ld = str(rctx.path("bin/{}-linux-ld".format(arch)))
-    nm = str(rctx.path("bin/{}-linux-nm".format(arch)))
-    objcopy = str(rctx.path("bin/{}-linux-objcopy".format(arch)))
-    objdump = str(rctx.path("bin/{}-linux-objdump".format(arch)))
-    strip = str(rctx.path("bin/{}-linux-strip".format(arch)))
+    ar = str(rctx.path("bin/{}-linux-ar".format(target_arch)))
+    cpp = str(rctx.path("bin/{}-linux-cpp".format(target_arch)))
+    gcc = str(rctx.path("bin/{}-linux-gcc".format(target_arch)))
+    gcov = str(rctx.path("bin/{}-linux-gcov".format(target_arch)))
+    ld = str(rctx.path("bin/{}-linux-ld".format(target_arch)))
+    nm = str(rctx.path("bin/{}-linux-nm".format(target_arch)))
+    objcopy = str(rctx.path("bin/{}-linux-objcopy".format(target_arch)))
+    objdump = str(rctx.path("bin/{}-linux-objdump".format(target_arch)))
+    strip = str(rctx.path("bin/{}-linux-strip".format(target_arch)))
 
     res = rctx.execute([gcc, "-Wp,-v", "-xc++", "/dev/null", "-fsyntax-only"])
     hermetic_include_directories = [
@@ -44,11 +44,25 @@ def _gcc_toolchain_impl(rctx):
         for library in libraries
     ]
 
-    builtin_sysroot = str(rctx.path("{}-buildroot-linux-gnu/sysroot".format(arch)))
-
     substitutions = {
         "%workspace_name%": rctx.name,
-        "%arch%": arch,
+        "%target_arch%": target_arch,
+    }
+    rctx.template("BUILD.bazel", rctx.attr._toolchain_build_template, substitutions = substitutions)
+
+    use_builtin_sysroot = rctx.attr.use_builtin_sysroot
+    builtin_sysroot = str(rctx.path("{}-buildroot-linux-gnu/sysroot".format(target_arch))) if use_builtin_sysroot else ""
+
+    substitutions = {
+        # Sysroot
+        "%use_builtin_sysroot%": str(use_builtin_sysroot),
+        "%builtin_sysroot%": builtin_sysroot,
+
+        # Includes
+        "%hermetic_include_directories%": str(hermetic_include_directories),
+
+        # Libs
+        "%hermetic_library_directories%": str(hermetic_library_directories),
 
         # Tool paths
         "%tool_paths%": str({
@@ -62,18 +76,8 @@ def _gcc_toolchain_impl(rctx):
             "objdump": objdump,
             "strip": strip,
         }),
-
-        # Includes
-        "%hermetic_include_directories%": str(hermetic_include_directories),
-
-        # Libs
-        "%hermetic_library_directories%": str(hermetic_library_directories),
-
-        # Sysroot
-        "%builtin_sysroot%": builtin_sysroot,
     }
-    rctx.template("BUILD.bazel", rctx.attr._toolchain_build_template, substitutions = substitutions)
-    rctx.template("config.bzl", rctx.attr._config_template)
+    rctx.template("config.bzl", rctx.attr._config_template, substitutions = substitutions)
 
 _DOWNLOAD_TOOLCHAIN_ATTRS = {
     "sha256": attr.string(
@@ -90,21 +94,35 @@ _DOWNLOAD_TOOLCHAIN_ATTRS = {
     ),
 }
 
+_FEATURE_ATTRS = {
+    "target_arch": attr.string(
+        doc = "The target architecture this toolchain produces. E.g. x86_64.",
+        mandatory = True,
+    ),
+    "use_builtin_sysroot": attr.bool(
+        default = True,
+        doc = "Whether the builtin sysroot is used or not.",
+    ),
+}
+
+_PRIVATE_ATTRS = {
+    "_build_bootlin_template": attr.label(
+        default = Label("//toolchain:BUILD.bootlin.tpl"),
+    ),
+    "_config_template": attr.label(
+        default = Label("//toolchain:config.bzl.tpl"),
+    ),
+    "_toolchain_build_template": attr.label(
+        default = Label("//toolchain:toolchain.BUILD.bazel.tpl"),
+    ),
+}
+
 _gcc_toolchain = repository_rule(
     _gcc_toolchain_impl,
     attrs = dicts.add(
-        {
-            "_build_bootlin_template": attr.label(
-                default = Label("//toolchain:BUILD.bootlin.tpl"),
-            ),
-            "_config_template": attr.label(
-                default = Label("//toolchain:config.bzl.tpl"),
-            ),
-            "_toolchain_build_template": attr.label(
-                default = Label("//toolchain:toolchain.BUILD.bazel.tpl"),
-            ),
-        },
         _DOWNLOAD_TOOLCHAIN_ATTRS,
+        _FEATURE_ATTRS,
+        _PRIVATE_ATTRS,
     ),
 )
 

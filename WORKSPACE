@@ -28,4 +28,5 @@ gcc_register_toolchain(
     url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2021.11-5.tar.bz2",
     sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
     strip_prefix = "x86-64--glibc--stable-2021.11-5",
+    target_arch = "x86_64",
 )
