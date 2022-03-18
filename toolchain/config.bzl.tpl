@@ -275,18 +275,12 @@ def _impl(ctx):
                             for d in ctx.attr.hermetic_include_directories
                         ],
                     ),
-                    flag_group(
-                        flags = [
-                            "-isystem{}".format(d)
-                            for d in ctx.attr.system_include_directories
-                        ],
-                    ),
                 ],
             ),
         ],
     )
 
-    include_directories = ctx.attr.hermetic_include_directories + ctx.attr.system_include_directories
+    include_directories = ctx.attr.hermetic_include_directories
 
     opt_feature = feature(name = "opt")
 
@@ -395,7 +389,7 @@ def _impl(ctx):
             abi_libc_version = "local",
             tool_paths = tool_paths,
             make_variables = [],
-            builtin_sysroot = None,
+            builtin_sysroot = ctx.attr.builtin_sysroot,
             cc_target_os = None,
         ),
     ]
@@ -404,8 +398,8 @@ cc_toolchain_config = rule(
     implementation = _impl,
     attrs = {
         "hermetic_include_directories": attr.string_list(),
-        "system_include_directories": attr.string_list(),
         "tool_paths": attr.string_dict(),
+        "builtin_sysroot": attr.string(),
     },
     provides = [CcToolchainConfigInfo],
 )

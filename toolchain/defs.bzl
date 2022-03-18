@@ -5,128 +5,86 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
 def _gcc_toolchain_impl(rctx):
-    gcc = str(rctx.path(rctx.attr.gcc))
+    pwd = paths.dirname(str(rctx.path("WORKSPACE")))
 
-    # Get list of default search paths for the includes. Since we are using nix to provide the
-    # compiler, it's guaranteed to get the /nix/store prefix.
+    rctx.download_and_extract(
+        sha256 = rctx.attr.sha256,
+        stripPrefix = rctx.attr.strip_prefix,
+        url = rctx.attr.url,
+    )
+
+    arch = "x86_64"
+
+    ar = str(rctx.path("bin/{}-linux-ar".format(arch)))
+    cpp = str(rctx.path("bin/{}-linux-cpp".format(arch)))
+    gcc = str(rctx.path("bin/{}-linux-gcc".format(arch)))
+    gcov = str(rctx.path("bin/{}-linux-gcov".format(arch)))
+    ld = str(rctx.path("bin/{}-linux-ld".format(arch)))
+    nm = str(rctx.path("bin/{}-linux-nm".format(arch)))
+    objcopy = str(rctx.path("bin/{}-linux-objcopy".format(arch)))
+    objdump = str(rctx.path("bin/{}-linux-objdump".format(arch)))
+    strip = str(rctx.path("bin/{}-linux-strip".format(arch)))
+
     res = rctx.execute([gcc, "-Wp,-v", "-xc++", "/dev/null", "-fsyntax-only"])
     hermetic_include_directories = [
         paths.normalize(line.strip())
-        for line in res.stderr.split("\n") if line.strip().startswith("/nix/store")
+        for line in res.stderr.split("\n") if line.strip().startswith(pwd)
     ]
 
-    system_include_directories = [
-        "/usr/include/x86_64-linux-gnu",
-        "/usr/include",
-    ]
+    builtin_sysroot = str(rctx.path("{}-buildroot-linux-gnu/sysroot".format(arch)))
 
     substitutions = {
         "%workspace_name%": rctx.name,
+        "%arch%": arch,
 
         # Tool paths
         "%tool_paths%": str({
-            "ar": str(rctx.path(rctx.attr.ar)),
-            "cpp": str(rctx.path(rctx.attr.cpp)),
+            "ar": ar,
+            "cpp": cpp,
             "gcc": gcc,
-            "gcov": "/bin/false", # TODO
-            "ld": str(rctx.path(rctx.attr.ld)),
-            "nm": str(rctx.path(rctx.attr.nm)),
-            "objcopy": str(rctx.path(rctx.attr.objcopy)),
-            "objdump": str(rctx.path(rctx.attr.objdump)),
-            "strip": str(rctx.path(rctx.attr.strip)),
+            "gcov": gcov,
+            "ld": ld,
+            "nm": nm,
+            "objcopy": objcopy,
+            "objdump": objdump,
+            "strip": strip,
         }),
-
-        # File groups
-        "%all_files%": rctx.attr.all_files,
-        "%ar_files%": rctx.attr.ar_files,
-        "%as_files%": rctx.attr.as_files,
-        "%compiler_files%": rctx.attr.compiler_files,
-        "%dwp_files%": rctx.attr.dwp_files,
-        "%linker_files%": rctx.attr.linker_files,
-        "%objcopy_files%": rctx.attr.objcopy_files,
-        "%strip_files%": rctx.attr.strip_files,
 
         # Includes
         "%hermetic_include_directories%": str(hermetic_include_directories),
-        "%system_include_directories%": str(system_include_directories),
 
         # Libs
         "%hermetic_library_search_directories%": str([
             # TODO
         ]),
+
+        # Sysroot
+        "%builtin_sysroot%": builtin_sysroot,
     }
     rctx.template("BUILD.bazel", rctx.attr._toolchain_build_template, substitutions = substitutions)
+    rctx.template("config.bzl", rctx.attr._config_template)
 
-    substitutions = {"%version%": rctx.attr.version}
-    rctx.template("config.bzl", rctx.attr._config_template, substitutions = substitutions)
-
-_TOOL_PATHS_ATTRS = {
-    "ar": attr.label(
-        allow_single_file = True,
-        doc = "The 'ar' tool path label.",
+_DOWNLOAD_TOOLCHAIN_ATTRS = {
+    "sha256": attr.string(
+        doc = "The SHA256 integrity hash for the interpreter tarball.",
         mandatory = True,
     ),
-    "cpp": attr.label(
-        allow_single_file = True,
-        doc = "The 'cpp' tool path label.",
+    "strip_prefix": attr.string(
+        doc = "The prefix to strip from the extracted tarball.",
         mandatory = True,
     ),
-    "gcc": attr.label(
-        allow_single_file = True,
-        doc = "The 'gcc' tool path label.",
+    "url": attr.string(
+        doc = "The URL of the interpreter tarball.",
         mandatory = True,
     ),
-    # TODO
-    # "gcov": attr.label(
-    #     allow_single_file = True,
-    #     doc = "The 'gcov' tool path label.",
-    #     mandatory = True,
-    # ),
-    "ld": attr.label(
-        allow_single_file = True,
-        doc = "The 'ld' tool path label.",
-        mandatory = True,
-    ),
-    "nm": attr.label(
-        allow_single_file = True,
-        doc = "The 'nm' tool path label.",
-        mandatory = True,
-    ),
-    "objcopy": attr.label(
-        allow_single_file = True,
-        doc = "The 'objcopy' tool path label.",
-        mandatory = True,
-    ),
-    "objdump": attr.label(
-        allow_single_file = True,
-        doc = "The 'objdump' tool path label.",
-        mandatory = True,
-    ),
-    "strip": attr.label(
-        allow_single_file = True,
-        doc = "The 'strip' tool path label.",
-        mandatory = True,
-    ),
-}
-
-_TOOL_PATHS_GROUPS_ATTRS = {
-    "all_files": attr.string(mandatory = True),
-    "ar_files": attr.string(mandatory = True),
-    "as_files": attr.string(mandatory = True),
-    "compiler_files": attr.string(mandatory = True),
-    "dwp_files": attr.string(mandatory = True),
-    "linker_files": attr.string(mandatory = True),
-    "objcopy_files": attr.string(mandatory = True),
-    "strip_files": attr.string(mandatory = True),
 }
 
 _gcc_toolchain = repository_rule(
     _gcc_toolchain_impl,
     attrs = dicts.add(
         {
-            "version": attr.string(
-                doc = "The GCC major version number.",
-                mandatory = True,
+            "_build_bootlin_template": attr.label(
+                default = Label("//toolchain:BUILD.bootlin.tpl"),
             ),
             "_config_template": attr.label(
                 default = Label("//toolchain:config.bzl.tpl"),
@@ -135,8 +93,7 @@ _gcc_toolchain = repository_rule(
                 default = Label("//toolchain:toolchain.BUILD.bazel.tpl"),
             ),
         },
-        _TOOL_PATHS_ATTRS,
-        _TOOL_PATHS_GROUPS_ATTRS,
+        _DOWNLOAD_TOOLCHAIN_ATTRS,
     ),
 )
 

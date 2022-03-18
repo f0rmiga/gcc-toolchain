@@ -21,61 +21,11 @@ http_archive(
     sha256 = "4dccbfd22c0def164c8f47458bd50e0c7148f3d92002cdb459c2a96a68498241",
 )
 
-http_archive(
-    name = "io_tweag_rules_nixpkgs",
-    sha256 = "69bbc7aceaeab20693ae8bdc46b7d7a208ef3d3f1e5c295bef474d9b2e6aa39f",
-    strip_prefix = "rules_nixpkgs-b39b20edc4637032bc65f6a93af888463027767c",
-    urls = ["https://github.com/tweag/rules_nixpkgs/archive/b39b20edc4637032bc65f6a93af888463027767c.tar.gz"],
-)
-
-load("@io_tweag_rules_nixpkgs//nixpkgs:repositories.bzl", "rules_nixpkgs_dependencies")
-
-rules_nixpkgs_dependencies()
-
-load("@io_tweag_rules_nixpkgs//nixpkgs:nixpkgs.bzl", "nixpkgs_git_repository", "nixpkgs_package")
-
-nixpkgs_git_repository(
-    name = "nixpkgs",
-    revision = "21.11",
-    sha256 = "c77bb41cf5dd82f4718fa789d49363f512bb6fa6bc25f8d60902fe2d698ed7cc",
-)
-
-nixpkgs_package(
-    name = "bintools-unwrapped",
-    repository = "@nixpkgs//:default.nix",
-    build_file = "//third-party/gcc_toolchain:binutils.nix.BUILD",
-)
-
-nixpkgs_package(
-    name = "gcc7",
-    repository = "@nixpkgs//:default.nix",
-    build_file = "//third-party/gcc_toolchain:gcc7.nix.BUILD",
-)
-
 load("//toolchain:defs.bzl", "gcc_register_toolchain")
 
 gcc_register_toolchain(
     name = "gcc_toolchain",
-    version = "7",
-
-    # Tool paths
-    ar = "@bintools-unwrapped//:bin/ar",
-    cpp = "@gcc7//:bin/cpp",
-    gcc = "@gcc7//:bin/gcc",
-    # gcov = "TODO",
-    ld = "@gcc7//:bin/ld",
-    nm = "@bintools-unwrapped//:bin/nm",
-    objcopy = "@bintools-unwrapped//:bin/objcopy",
-    objdump = "@bintools-unwrapped//:bin/objdump",
-    strip = "@gcc7//:bin/strip",
-
-    # Tool filegroups
-    all_files = "@//third-party/gcc_toolchain:all_files",
-    ar_files = "@//third-party/gcc_toolchain:ar_files",
-    as_files = "@//third-party/gcc_toolchain:as_files",
-    compiler_files = "@//third-party/gcc_toolchain:compiler_files",
-    dwp_files = "@//third-party/gcc_toolchain:dwp_files",
-    linker_files = "@//third-party/gcc_toolchain:linker_files",
-    objcopy_files = "@//third-party/gcc_toolchain:objcopy_files",
-    strip_files = "@//third-party/gcc_toolchain:strip_files",
+    url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2021.11-5.tar.bz2",
+    sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
+    strip_prefix = "x86-64--glibc--stable-2021.11-5",
 )
