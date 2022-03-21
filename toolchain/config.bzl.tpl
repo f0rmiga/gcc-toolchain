@@ -289,10 +289,9 @@ def _impl(ctx):
                 ],
                 flag_groups = [
                     flag_group(
-                        flags = [
-                            "-I{}".format(d)
-                            for d in hermetic_include_directories
-                        ],
+                        flags = [item for sublist in [
+                            ["-isystem", d] for d in hermetic_include_directories
+                        ] for item in sublist],
                     ),
                 ],
             ),
