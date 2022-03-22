@@ -78,7 +78,6 @@ all_link_actions = [
 
 def _impl(ctx):
     hermetic_include_directories = %hermetic_include_directories%
-    hermetic_library_directories = %hermetic_library_directories%
     use_builtin_sysroot = %use_builtin_sysroot%
     builtin_sysroot = "%builtin_sysroot%"
     tool_paths = %tool_paths%
@@ -88,24 +87,6 @@ def _impl(ctx):
         action_name = "objcopy_embed_data",
         enabled = True,
         tools = [tool(path = objcopy_tool)],
-    )
-
-    hermetic_library_directories_feature = feature(
-        name = "hermetic_library_directories",
-        enabled = not use_builtin_sysroot,
-        flag_sets = [
-            flag_set(
-                actions = all_link_actions,
-                flag_groups = [
-                    flag_group(
-                        flags = [
-                            "-L{}".format(d)
-                            for d in hermetic_library_directories
-                        ],
-                    ),
-                ],
-            ),
-        ],
     )
 
     default_link_flags_feature = feature(
@@ -277,28 +258,8 @@ def _impl(ctx):
                 ],
                 flag_groups = [flag_group(flags = ["-std=c++0x"])],
             ),
-            flag_set(
-                actions = [
-                    _LINKSTAMP_COMPILE_ACTION_NAME,
-                    _CPP_COMPILE_ACTION_NAME,
-                    _CPP_HEADER_PARSING_ACTION_NAME,
-                    _CPP_MODULE_COMPILE_ACTION_NAME,
-                    _CPP_MODULE_CODEGEN_ACTION_NAME,
-                    _LTO_BACKEND_ACTION_NAME,
-                    _CLIF_MATCH_ACTION_NAME,
-                ],
-                flag_groups = [
-                    flag_group(
-                        flags = [item for sublist in [
-                            ["-isystem", d] for d in hermetic_include_directories
-                        ] for item in sublist],
-                    ),
-                ],
-            ),
         ],
     )
-
-    include_directories = hermetic_include_directories
 
     opt_feature = feature(name = "opt")
 
@@ -396,7 +357,7 @@ def _impl(ctx):
             features = features,
             action_configs = [objcopy_embed_data_action],
             artifact_name_patterns = [],
-            cxx_builtin_include_directories = include_directories,
+            cxx_builtin_include_directories = hermetic_include_directories,
             toolchain_identifier = "local_linux",
             host_system_name = "local",
             target_system_name = "local",
