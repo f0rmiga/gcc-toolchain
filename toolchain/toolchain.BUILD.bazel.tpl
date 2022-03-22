@@ -69,7 +69,7 @@ filegroup(
     name = "include",
     srcs = glob([
         "include/**",
-        "%target_arch%-buildroot-linux-gnu/include/**",
+        "%platform_directory%/include/**",
     ]),
 )
 
@@ -78,8 +78,8 @@ filegroup(
     srcs = glob([
         "lib/**",
         "lib64/**",
-        "%target_arch%-buildroot-linux-gnu/lib/**",
-        "%target_arch%-buildroot-linux-gnu/lib64/**",
+        "%platform_directory%/lib/**",
+        "%platform_directory%/lib64/**",
     ]),
 )
 
@@ -87,14 +87,14 @@ filegroup(
     name = "gcc",
     srcs = [
         ":gpp",
-        "bin/%target_arch%-linux-cpp",
-        "bin/%target_arch%-linux-gcc",
+        "bin/%binary_prefix%-linux-cpp",
+        "bin/%binary_prefix%-linux-gcc",
     ],
 )
 
 filegroup(
     name = "gpp",
-    srcs = ["bin/%target_arch%-linux-g++"],
+    srcs = ["bin/%binary_prefix%-linux-g++"],
 )
 
 # Binutils
@@ -135,47 +135,47 @@ filegroup(
 filegroup(
     name = "ld",
     srcs = [
-        "bin/%target_arch%-linux-ld",
-        "bin/%target_arch%-linux-ld.bfd",
+        "bin/%binary_prefix%-linux-ld",
+        "bin/%binary_prefix%-linux-ld.bfd",
     ],
 )
 
 filegroup(
     name = "ar",
-    srcs = ["bin/%target_arch%-linux-ar"],
+    srcs = ["bin/%binary_prefix%-linux-ar"],
 )
 
 filegroup(
     name = "as",
-    srcs = ["bin/%target_arch%-linux-as"],
+    srcs = ["bin/%binary_prefix%-linux-as"],
 )
 
 filegroup(
     name = "nm",
-    srcs = ["bin/%target_arch%-linux-nm"],
+    srcs = ["bin/%binary_prefix%-linux-nm"],
 )
 
 filegroup(
     name = "objcopy",
-    srcs = ["bin/%target_arch%-linux-objcopy"],
+    srcs = ["bin/%binary_prefix%-linux-objcopy"],
 )
 
 filegroup(
     name = "objdump",
-    srcs = ["bin/%target_arch%-linux-objdump"],
+    srcs = ["bin/%binary_prefix%-linux-objdump"],
 )
 
 filegroup(
     name = "ranlib",
-    srcs = ["bin/%target_arch%-linux-ranlib"],
+    srcs = ["bin/%binary_prefix%-linux-ranlib"],
 )
 
 filegroup(
     name = "readelf",
-    srcs = ["bin/%target_arch%-linux-readelf"],
+    srcs = ["bin/%binary_prefix%-linux-readelf"],
 )
 
 filegroup(
     name = "strip",
-    srcs = ["bin/%target_arch%-linux-strip"],
+    srcs = ["bin/%binary_prefix%-linux-strip"],
 )
