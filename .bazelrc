@@ -1,4 +1,6 @@
-build --extra_toolchains=@gcc_toolchain//:toolchain --incompatible_enable_cc_toolchain_resolution
+build --incompatible_enable_cc_toolchain_resolution
+build --extra_toolchains=@gcc_toolchain//:toolchain
+build --extra_toolchains=@gcc_toolchain_armv7//:toolchain
 
 test --sandbox_default_allow_network=false
 test --test_output=errors
