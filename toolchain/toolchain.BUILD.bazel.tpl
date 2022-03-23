@@ -46,6 +46,9 @@ filegroup(
     ],
 )
 
+# Export all binary files:
+exports_files(glob(["bin/**"]))
+
 # GCC
 
 filegroup(
