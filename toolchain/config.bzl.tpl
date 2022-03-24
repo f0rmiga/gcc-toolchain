@@ -78,8 +78,9 @@ all_link_actions = [
 
 def _impl(ctx):
     hermetic_include_directories = %hermetic_include_directories%
-    use_builtin_sysroot = %use_builtin_sysroot%
     builtin_sysroot = "%builtin_sysroot%"
+    sysroot_ld_linux = "%sysroot_ld_linux%"
+    hardcode_sysroot_rpath = "%hardcode_sysroot_rpath%"
     tool_paths = %tool_paths%
 
     objcopy_tool = tool_paths.get("objcopy")
@@ -102,7 +103,11 @@ def _impl(ctx):
                             "-no-canonical-prefixes",
                             "-pass-exit-codes",
                             "-lstdc++",
-                        ],
+                        ] + ([
+                            "-Wl,-rpath,{0}/lib:{0}/usr/lib".format(builtin_sysroot),
+                        ] if hardcode_sysroot_rpath else []) + ([
+                            "-Wl,--dynamic-linker,{}".format(sysroot_ld_linux),
+                        ] if sysroot_ld_linux else []),
                     ),
                 ],
             ),
@@ -371,7 +376,7 @@ def _impl(ctx):
                 for name, path in tool_paths.items()
             ],
             make_variables = [],
-            builtin_sysroot = builtin_sysroot if use_builtin_sysroot else None,
+            builtin_sysroot = builtin_sysroot,
             cc_target_os = None,
         ),
     ]
