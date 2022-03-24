@@ -63,12 +63,26 @@ def _gcc_toolchain_impl(rctx):
     else:
         builtin_sysroot = ""
 
+    if builtin_sysroot and rctx.attr.hardcode_sysroot_ld_linux:
+        so_filename = "ld-linux-{}.so".format(target_arch.replace("_", "-"))
+        search_pattern = "{}*".format(so_filename)
+        res = rctx.execute(["find", str(builtin_sysroot), "-type", "f", "-name", search_pattern])
+        stdout = res.stdout.strip()
+        if stdout == "":
+            fail("could not find '{}': {}".format(search_pattern, res.stderr))
+        if "\n" in stdout:
+            fail("expected a single {}, found: {}".format(so_filename, stdout))
+        sysroot_ld_linux = stdout
+    else:
+        sysroot_ld_linux = ""
+
     substitutions = {
         "%generated_header%": generated_header,
 
         # Sysroot
-        "%use_builtin_sysroot%": str(use_builtin_sysroot),
         "%builtin_sysroot%": builtin_sysroot,
+        "%sysroot_ld_linux%": sysroot_ld_linux,
+        "%hardcode_sysroot_rpath%": str(builtin_sysroot and rctx.attr.hardcode_sysroot_rpath),
 
         # Includes
         "%hermetic_include_directories%": str(hermetic_include_directories),
@@ -111,6 +125,16 @@ _FEATURE_ATTRS = {
     "builtin_sysroot_path": attr.string(
         doc = "An explicit sysroot path inside the tarball. Defaults to '<platform_directory>/sysroot'.",
         mandatory = False,
+    ),
+    "hardcode_sysroot_ld_linux": attr.bool(
+        default = True,
+        doc = "Whether the sysroot ld-linux.so should be hardcoded into the ELF binaries or not." +
+            " This is useful when running tests so that the host ld-linux.so is overridden.",
+    ),
+    "hardcode_sysroot_rpath": attr.bool(
+        default = True,
+        doc = "Whether the sysroot search paths should be hardcoded into the ELF binaries or not." +
+            " This is useful when running tests so that libraries are searched on the sysroot first.",
     ),
     "platform_directory": attr.string(
         doc = "An explicit directory containing the target platform extra directories. Defaults to '<target_arch>-buildroot-linux-gnu'.",

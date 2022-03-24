@@ -39,4 +39,6 @@ gcc_register_toolchain(
     target_arch = "armv7",
     binary_prefix = "arm",
     platform_directory = "arm-buildroot-linux-gnueabihf",
+    hardcode_sysroot_ld_linux = False,
+    hardcode_sysroot_rpath = False,
 )
