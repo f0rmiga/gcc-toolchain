@@ -1,5 +1,21 @@
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("//platforms:defs.bzl", "platform_transition_filegroup")
+
 cc_binary(
     name = "hello_world_cpp",
     srcs = ["main.cpp"],
-    linkopts = ["-lstdc++"],
+    data = ["names.txt"],
+)
+
+platform_transition_filegroup(
+    name = "hello_world_cpp_linux_armv7",
+    target_platform = "//platforms:armv7_linux",
+    srcs = [":hello_world_cpp"],
+)
+
+pkg_tar(
+    name = "hello_world_cpp_linux_armv7_tar",
+    srcs = [":hello_world_cpp_linux_armv7"],
+    include_runfiles = True,
+    strip_prefix = "/",
 )
