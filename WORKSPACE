@@ -20,6 +20,16 @@ gcc_register_toolchain(
 )
 
 gcc_register_toolchain(
+    name = "gcc_toolchain_aarch64",
+    url = "https://toolchains.bootlin.com/downloads/releases/toolchains/aarch64/tarballs/aarch64--glibc--stable-2021.11-1.tar.bz2",
+    sha256 = "dec070196608124fa14c3f192364c5b5b057d7f34651ad58ebb8fc87959c97f7",
+    strip_prefix = "aarch64--glibc--stable-2021.11-1",
+    target_arch = "aarch64",
+    hardcode_sysroot_ld_linux = False,
+    hardcode_sysroot_rpath = False,
+)
+
+gcc_register_toolchain(
     name = "gcc_toolchain_armv7",
     url = "https://toolchains.bootlin.com/downloads/releases/toolchains/armv7-eabihf/tarballs/armv7-eabihf--glibc--stable-2018.11-1.tar.bz2",
     sha256 = "c8d4d3ca70442652e0e72f57ae6e878375640508f1e08de3152f63414c43b2e4",
