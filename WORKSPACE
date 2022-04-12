@@ -17,6 +17,8 @@ gcc_register_toolchain(
     sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
     strip_prefix = "x86-64--glibc--stable-2021.11-5",
     target_arch = "x86_64",
+    hardcode_sysroot_ld_linux = True,
+    hardcode_sysroot_rpath = True,
 )
 
 gcc_register_toolchain(
@@ -25,8 +27,6 @@ gcc_register_toolchain(
     sha256 = "dec070196608124fa14c3f192364c5b5b057d7f34651ad58ebb8fc87959c97f7",
     strip_prefix = "aarch64--glibc--stable-2021.11-1",
     target_arch = "aarch64",
-    hardcode_sysroot_ld_linux = False,
-    hardcode_sysroot_rpath = False,
 )
 
 gcc_register_toolchain(
@@ -37,6 +37,4 @@ gcc_register_toolchain(
     target_arch = "armv7",
     binary_prefix = "arm",
     platform_directory = "arm-buildroot-linux-gnueabihf",
-    hardcode_sysroot_ld_linux = False,
-    hardcode_sysroot_rpath = False,
 )

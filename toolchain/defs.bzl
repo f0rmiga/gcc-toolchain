@@ -127,12 +127,12 @@ _FEATURE_ATTRS = {
         mandatory = False,
     ),
     "hardcode_sysroot_ld_linux": attr.bool(
-        default = True,
+        default = False,
         doc = "Whether the sysroot ld-linux.so should be hardcoded into the ELF binaries or not." +
             " This is useful when running tests so that the host ld-linux.so is overridden.",
     ),
     "hardcode_sysroot_rpath": attr.bool(
-        default = True,
+        default = False,
         doc = "Whether the sysroot search paths should be hardcoded into the ELF binaries or not." +
             " This is useful when running tests so that libraries are searched on the sysroot first.",
     ),
