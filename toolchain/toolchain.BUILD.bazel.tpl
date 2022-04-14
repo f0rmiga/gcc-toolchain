@@ -1,14 +1,14 @@
-"""%generated_header%
+"""__generated_header__
 """
 
 load("@rules_cc//cc:defs.bzl", "cc_toolchain")
-load("@%workspace_name%//:config.bzl", "cc_toolchain_config")
+load("@__workspace_name__//:config.bzl", "cc_toolchain_config")
 
 toolchain(
     name = "toolchain",
     target_compatible_with = [
         "@platforms//os:linux",
-        "@platforms//cpu:%target_arch%",
+        "@platforms//cpu:__target_arch__",
     ],
     toolchain = ":cc_toolchain",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
@@ -72,7 +72,7 @@ filegroup(
     name = "include",
     srcs = glob([
         "include/**",
-        "%platform_directory%/include/**",
+        "__platform_directory__/include/**",
     ]),
 )
 
@@ -81,8 +81,8 @@ filegroup(
     srcs = glob([
         "lib/**",
         "lib64/**",
-        "%platform_directory%/lib/**",
-        "%platform_directory%/lib64/**",
+        "__platform_directory__/lib/**",
+        "__platform_directory__/lib64/**",
     ]),
 )
 
@@ -90,14 +90,14 @@ filegroup(
     name = "gcc",
     srcs = [
         ":gpp",
-        "bin/%binary_prefix%-linux-cpp",
-        "bin/%binary_prefix%-linux-gcc",
+        "bin/__binary_prefix__-linux-cpp",
+        "bin/__binary_prefix__-linux-gcc",
     ],
 )
 
 filegroup(
     name = "gpp",
-    srcs = ["bin/%binary_prefix%-linux-g++"],
+    srcs = ["bin/__binary_prefix__-linux-g++"],
 )
 
 # Binutils
@@ -138,47 +138,47 @@ filegroup(
 filegroup(
     name = "ld",
     srcs = [
-        "bin/%binary_prefix%-linux-ld",
-        "bin/%binary_prefix%-linux-ld.bfd",
+        "bin/__binary_prefix__-linux-ld",
+        "bin/__binary_prefix__-linux-ld.bfd",
     ],
 )
 
 filegroup(
     name = "ar",
-    srcs = ["bin/%binary_prefix%-linux-ar"],
+    srcs = ["bin/__binary_prefix__-linux-ar"],
 )
 
 filegroup(
     name = "as",
-    srcs = ["bin/%binary_prefix%-linux-as"],
+    srcs = ["bin/__binary_prefix__-linux-as"],
 )
 
 filegroup(
     name = "nm",
-    srcs = ["bin/%binary_prefix%-linux-nm"],
+    srcs = ["bin/__binary_prefix__-linux-nm"],
 )
 
 filegroup(
     name = "objcopy",
-    srcs = ["bin/%binary_prefix%-linux-objcopy"],
+    srcs = ["bin/__binary_prefix__-linux-objcopy"],
 )
 
 filegroup(
     name = "objdump",
-    srcs = ["bin/%binary_prefix%-linux-objdump"],
+    srcs = ["bin/__binary_prefix__-linux-objdump"],
 )
 
 filegroup(
     name = "ranlib",
-    srcs = ["bin/%binary_prefix%-linux-ranlib"],
+    srcs = ["bin/__binary_prefix__-linux-ranlib"],
 )
 
 filegroup(
     name = "readelf",
-    srcs = ["bin/%binary_prefix%-linux-readelf"],
+    srcs = ["bin/__binary_prefix__-linux-readelf"],
 )
 
 filegroup(
     name = "strip",
-    srcs = ["bin/%binary_prefix%-linux-strip"],
+    srcs = ["bin/__binary_prefix__-linux-strip"],
 )
