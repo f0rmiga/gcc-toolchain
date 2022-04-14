@@ -2,7 +2,7 @@ workspace(name = "bazel_gcc_toolchain")
 
 load("//toolchain:repositories.bzl", "gcc_toolchain_dependencies")
 
-# Load the runtime dependencies that users need as well
+# Load the runtime dependencies that users need as well.
 gcc_toolchain_dependencies()
 
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
@@ -10,6 +10,13 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
 
 load("//toolchain:defs.bzl", "gcc_register_toolchain")
+
+flags = [
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-fdiagnostics-color=always",
+]
 
 gcc_register_toolchain(
     name = "gcc_toolchain",
@@ -19,6 +26,8 @@ gcc_register_toolchain(
     target_arch = "x86_64",
     hardcode_sysroot_ld_linux = True,
     hardcode_sysroot_rpath = True,
+    extra_cflags = flags,
+    extra_cxxflags = flags,
 )
 
 gcc_register_toolchain(
@@ -27,6 +36,8 @@ gcc_register_toolchain(
     sha256 = "dec070196608124fa14c3f192364c5b5b057d7f34651ad58ebb8fc87959c97f7",
     strip_prefix = "aarch64--glibc--stable-2021.11-1",
     target_arch = "aarch64",
+    extra_cflags = flags,
+    extra_cxxflags = flags,
 )
 
 gcc_register_toolchain(
@@ -37,4 +48,6 @@ gcc_register_toolchain(
     target_arch = "armv7",
     binary_prefix = "arm",
     platform_directory = "arm-buildroot-linux-gnueabihf",
+    extra_cflags = flags,
+    extra_cxxflags = flags,
 )

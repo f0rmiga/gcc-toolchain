@@ -1,4 +1,4 @@
-"""%generated_header%
+"""__generated_header__
 """
 
 load(
@@ -77,11 +77,14 @@ all_link_actions = [
 ]
 
 def _impl(ctx):
-    hermetic_include_directories = %hermetic_include_directories%
-    builtin_sysroot = "%builtin_sysroot%"
-    sysroot_ld_linux = "%sysroot_ld_linux%"
-    hardcode_sysroot_rpath = "%hardcode_sysroot_rpath%"
-    tool_paths = %tool_paths%
+    hermetic_include_directories = __hermetic_include_directories__
+    builtin_sysroot = "__builtin_sysroot__"
+    sysroot_ld_linux = "__sysroot_ld_linux__"
+    hardcode_sysroot_rpath = "__hardcode_sysroot_rpath__"
+    tool_paths = __tool_paths__
+    extra_cflags = __extra_cflags__
+    extra_cxxflags = __extra_cxxflags__
+    extra_ldflags = __extra_ldflags__
 
     objcopy_tool = tool_paths.get("objcopy")
     objcopy_embed_data_action = action_config(
@@ -98,7 +101,7 @@ def _impl(ctx):
                 actions = all_link_actions,
                 flag_groups = [
                     flag_group(
-                        flags = [\
+                        flags = [
                             "-Wl,-z,relro,-z,now",
                             "-no-canonical-prefixes",
                             "-pass-exit-codes",
@@ -314,6 +317,39 @@ def _impl(ctx):
         ],
     )
 
+    extra_cflags_feature = feature(
+        name = "extra_cflags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = [_C_COMPILE_ACTION_NAME],
+                flag_groups = [flag_group(flags = extra_cflags)],
+            ),
+        ] if len(extra_cflags) > 0 else [],
+    )
+
+    extra_cxxflags_feature = feature(
+        name = "extra_cxxflags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = [_CPP_COMPILE_ACTION_NAME],
+                flag_groups = [flag_group(flags = extra_cxxflags)],
+            ),
+        ] if len(extra_cxxflags) > 0 else [],
+    )
+
+    extra_ldflags_feature = feature(
+        name = "extra_ldflags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = all_link_actions,
+                flag_groups = [flag_group(flags = extra_ldflags)],
+            ),
+        ] if len(extra_ldflags) > 0 else [],
+    )
+
     sysroot_feature = feature(
         name = "sysroot",
         enabled = True,
@@ -354,6 +390,9 @@ def _impl(ctx):
         user_compile_flags_feature,
         sysroot_feature,
         unfiltered_compile_flags_feature,
+        extra_cflags_feature,
+        extra_cxxflags_feature,
+        extra_ldflags_feature,
     ]
 
     return [
