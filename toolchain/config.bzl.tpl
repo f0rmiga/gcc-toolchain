@@ -80,7 +80,7 @@ def _impl(ctx):
     hermetic_include_directories = __hermetic_include_directories__
     builtin_sysroot = "__builtin_sysroot__"
     sysroot_ld_linux = "__sysroot_ld_linux__"
-    hardcode_sysroot_rpath = "__hardcode_sysroot_rpath__"
+    hardcode_sysroot_rpath = __hardcode_sysroot_rpath__
     tool_paths = __tool_paths__
     extra_cflags = __extra_cflags__
     extra_cxxflags = __extra_cxxflags__
