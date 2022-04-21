@@ -105,7 +105,7 @@ def _impl(ctx):
                             "-Wl,-z,relro,-z,now",
                             "-no-canonical-prefixes",
                             "-pass-exit-codes",
-                            "-lstdc++",
+                            "-l:libstdc++.a",
                         ] + ([
                             "-Wl,-rpath,{0}/lib:{0}/usr/lib".format(builtin_sysroot),
                         ] if hardcode_sysroot_rpath else []) + ([
