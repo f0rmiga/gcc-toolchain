@@ -138,11 +138,11 @@ _DOWNLOAD_TOOLCHAIN_ATTRS = {
 
 _FEATURE_ATTRS = {
     "binary_prefix": attr.string(
-        doc = "An explicit prefix used by each binary in bin/. Defaults to '<target_arch>'.",
+        doc = "An explicit prefix used by each binary in bin/. Defaults to `<target_arch>`.",
         mandatory = False,
     ),
     "builtin_sysroot_path": attr.string(
-        doc = "An explicit sysroot path inside the tarball. Defaults to '<platform_directory>/sysroot'.",
+        doc = "An explicit sysroot path inside the tarball. Defaults to `<platform_directory>/sysroot`.",
         mandatory = False,
     ),
     "hardcode_sysroot_ld_linux": attr.bool(
@@ -165,7 +165,7 @@ _FEATURE_ATTRS = {
         doc = "Extra flags for linking. {sysroot} is rendered to the sysroot path.",
     ),
     "platform_directory": attr.string(
-        doc = "An explicit directory containing the target platform extra directories. Defaults to '<target_arch>-buildroot-linux-gnu'.",
+        doc = "An explicit directory containing the target platform extra directories. Defaults to `<target_arch>-buildroot-linux-gnu`.",
         mandatory = False,
     ),
     "target_arch": attr.string(
@@ -190,7 +190,7 @@ _PRIVATE_ATTRS = {
     ),
 }
 
-_gcc_toolchain = repository_rule(
+gcc_toolchain = repository_rule(
     _gcc_toolchain_impl,
     attrs = dicts.add(
         _DOWNLOAD_TOOLCHAIN_ATTRS,
@@ -200,7 +200,13 @@ _gcc_toolchain = repository_rule(
 )
 
 def gcc_register_toolchain(name, **kwargs):
-    _gcc_toolchain(
+    """Declares a `gcc_toolchain` and calls `register_toolchain` for it.
+
+    Args:
+        name: The name passed to `gcc_toolchain`.
+        **kwargs: The extra arguments passed to `gcc_toolchain`. See `gcc_toolchain` for more info.
+    """
+    gcc_toolchain(
         name = name,
         **kwargs
     )

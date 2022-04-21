@@ -2,12 +2,19 @@ workspace(name = "bazel_gcc_toolchain")
 
 load("//toolchain:repositories.bzl", "gcc_toolchain_dependencies")
 
-# Load the runtime dependencies that users need as well.
 gcc_toolchain_dependencies()
+
+load("//:internal.bzl", "internal_dependencies")
+
+internal_dependencies()
 
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
+
+load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies")
+
+aspect_bazel_lib_dependencies()
 
 load("//toolchain:defs.bzl", "gcc_register_toolchain")
 
