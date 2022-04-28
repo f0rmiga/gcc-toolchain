@@ -1,4 +1,4 @@
-"""__generated_header__
+"""This module provides the cc_toolchain_config rule.
 """
 
 load(
@@ -11,80 +11,69 @@ load(
     "tool_path",
     "with_feature_set",
 )
-load(
-    "@bazel_tools//tools/build_defs/cc:action_names.bzl",
-    _ASSEMBLE_ACTION_NAME = "ASSEMBLE_ACTION_NAME",
-    _CLIF_MATCH_ACTION_NAME = "CLIF_MATCH_ACTION_NAME",
-    _CPP_COMPILE_ACTION_NAME = "CPP_COMPILE_ACTION_NAME",
-    _CPP_HEADER_PARSING_ACTION_NAME = "CPP_HEADER_PARSING_ACTION_NAME",
-    _CPP_LINK_DYNAMIC_LIBRARY_ACTION_NAME = "CPP_LINK_DYNAMIC_LIBRARY_ACTION_NAME",
-    _CPP_LINK_EXECUTABLE_ACTION_NAME = "CPP_LINK_EXECUTABLE_ACTION_NAME",
-    _CPP_LINK_NODEPS_DYNAMIC_LIBRARY_ACTION_NAME = "CPP_LINK_NODEPS_DYNAMIC_LIBRARY_ACTION_NAME",
-    _CPP_MODULE_CODEGEN_ACTION_NAME = "CPP_MODULE_CODEGEN_ACTION_NAME",
-    _CPP_MODULE_COMPILE_ACTION_NAME = "CPP_MODULE_COMPILE_ACTION_NAME",
-    _C_COMPILE_ACTION_NAME = "C_COMPILE_ACTION_NAME",
-    _LINKSTAMP_COMPILE_ACTION_NAME = "LINKSTAMP_COMPILE_ACTION_NAME",
-    _LTO_BACKEND_ACTION_NAME = "LTO_BACKEND_ACTION_NAME",
-    _PREPROCESS_ASSEMBLE_ACTION_NAME = "PREPROCESS_ASSEMBLE_ACTION_NAME",
-)
+load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 
 all_compile_actions = [
-    _C_COMPILE_ACTION_NAME,
-    _CPP_COMPILE_ACTION_NAME,
-    _LINKSTAMP_COMPILE_ACTION_NAME,
-    _ASSEMBLE_ACTION_NAME,
-    _PREPROCESS_ASSEMBLE_ACTION_NAME,
-    _CPP_HEADER_PARSING_ACTION_NAME,
-    _CPP_MODULE_COMPILE_ACTION_NAME,
-    _CPP_MODULE_CODEGEN_ACTION_NAME,
-    _CLIF_MATCH_ACTION_NAME,
-    _LTO_BACKEND_ACTION_NAME,
+    ACTION_NAMES.c_compile,
+    ACTION_NAMES.cpp_compile,
+    ACTION_NAMES.linkstamp_compile,
+    ACTION_NAMES.assemble,
+    ACTION_NAMES.preprocess_assemble,
+    ACTION_NAMES.cpp_header_parsing,
+    ACTION_NAMES.cpp_module_compile,
+    ACTION_NAMES.cpp_module_codegen,
+    ACTION_NAMES.clif_match,
+    ACTION_NAMES.lto_backend,
 ]
 
 all_cpp_compile_actions = [
-    _CPP_COMPILE_ACTION_NAME,
-    _LINKSTAMP_COMPILE_ACTION_NAME,
-    _CPP_HEADER_PARSING_ACTION_NAME,
-    _CPP_MODULE_COMPILE_ACTION_NAME,
-    _CPP_MODULE_CODEGEN_ACTION_NAME,
-    _CLIF_MATCH_ACTION_NAME,
+    ACTION_NAMES.cpp_compile,
+    ACTION_NAMES.linkstamp_compile,
+    ACTION_NAMES.cpp_header_parsing,
+    ACTION_NAMES.cpp_module_compile,
+    ACTION_NAMES.cpp_module_codegen,
+    ACTION_NAMES.clif_match,
 ]
 
 preprocessor_compile_actions = [
-    _C_COMPILE_ACTION_NAME,
-    _CPP_COMPILE_ACTION_NAME,
-    _LINKSTAMP_COMPILE_ACTION_NAME,
-    _PREPROCESS_ASSEMBLE_ACTION_NAME,
-    _CPP_HEADER_PARSING_ACTION_NAME,
-    _CPP_MODULE_COMPILE_ACTION_NAME,
-    _CLIF_MATCH_ACTION_NAME,
+    ACTION_NAMES.c_compile,
+    ACTION_NAMES.cpp_compile,
+    ACTION_NAMES.linkstamp_compile,
+    ACTION_NAMES.preprocess_assemble,
+    ACTION_NAMES.cpp_header_parsing,
+    ACTION_NAMES.cpp_module_compile,
+    ACTION_NAMES.clif_match,
 ]
 
 codegen_compile_actions = [
-    _C_COMPILE_ACTION_NAME,
-    _CPP_COMPILE_ACTION_NAME,
-    _LINKSTAMP_COMPILE_ACTION_NAME,
-    _ASSEMBLE_ACTION_NAME,
-    _PREPROCESS_ASSEMBLE_ACTION_NAME,
-    _CPP_MODULE_CODEGEN_ACTION_NAME,
-    _LTO_BACKEND_ACTION_NAME,
+    ACTION_NAMES.c_compile,
+    ACTION_NAMES.cpp_compile,
+    ACTION_NAMES.linkstamp_compile,
+    ACTION_NAMES.assemble,
+    ACTION_NAMES.preprocess_assemble,
+    ACTION_NAMES.cpp_module_codegen,
+    ACTION_NAMES.lto_backend,
 ]
 
 all_link_actions = [
-    _CPP_LINK_EXECUTABLE_ACTION_NAME,
-    _CPP_LINK_DYNAMIC_LIBRARY_ACTION_NAME,
-    _CPP_LINK_NODEPS_DYNAMIC_LIBRARY_ACTION_NAME,
+    ACTION_NAMES.cpp_link_executable,
+    ACTION_NAMES.cpp_link_dynamic_library,
+    ACTION_NAMES.cpp_link_nodeps_dynamic_library,
+]
+
+lto_index_actions = [
+    ACTION_NAMES.lto_index_for_executable,
+    ACTION_NAMES.lto_index_for_dynamic_library,
+    ACTION_NAMES.lto_index_for_nodeps_dynamic_library,
 ]
 
 def _impl(ctx):
-    hermetic_include_directories = __hermetic_include_directories__
-    builtin_sysroot = "__builtin_sysroot__"
-    sysroot_ld_linux = "__sysroot_ld_linux__"
-    hardcode_sysroot_rpath = __hardcode_sysroot_rpath__
-    tool_paths = __tool_paths__
-    extra_cflags = __extra_cflags__
-    extra_cxxflags = __extra_cxxflags__
-    extra_ldflags = __extra_ldflags__
+    cxx_builtin_include_directories = ctx.attr.cxx_builtin_include_directories
+    builtin_sysroot = ctx.attr.builtin_sysroot
+    tool_paths = ctx.attr.tool_paths
+    extra_cflags = ctx.attr.extra_cflags
+    extra_cxxflags = ctx.attr.extra_cxxflags
+    extra_ldflags = ctx.attr.extra_ldflags
 
     objcopy_tool = tool_paths.get("objcopy")
     objcopy_embed_data_action = action_config(
@@ -103,8 +92,8 @@ def _impl(ctx):
                     flag_group(
                         flags = [
                             "-Wl,-z,relro,-z,now",
-                            "-no-canonical-prefixes",
                             "-pass-exit-codes",
+
                             # This is particularly useful when compiling only C code that doesn't rely
                             # on the C++ standard libraries since those symbols can be easily stripped
                             # out of the binary.
@@ -115,11 +104,7 @@ def _impl(ctx):
                             # generally doesn't incur any penalties other than the output binary size,
                             # which is less than 1Mb in overhead.
                             "-l:libstdc++.a",
-                        ] + ([
-                            "-Wl,-rpath,{0}/lib:{0}/usr/lib".format(builtin_sysroot),
-                        ] if hardcode_sysroot_rpath else []) + ([
-                            "-Wl,--dynamic-linker,{}".format(sysroot_ld_linux),
-                        ] if sysroot_ld_linux else []),
+                        ],
                     ),
                 ],
             ),
@@ -136,22 +121,10 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    _ASSEMBLE_ACTION_NAME,
-                    _PREPROCESS_ASSEMBLE_ACTION_NAME,
-                    _LINKSTAMP_COMPILE_ACTION_NAME,
-                    _C_COMPILE_ACTION_NAME,
-                    _CPP_COMPILE_ACTION_NAME,
-                    _CPP_HEADER_PARSING_ACTION_NAME,
-                    _CPP_MODULE_COMPILE_ACTION_NAME,
-                    _CPP_MODULE_CODEGEN_ACTION_NAME,
-                    _LTO_BACKEND_ACTION_NAME,
-                    _CLIF_MATCH_ACTION_NAME,
-                ],
+                actions = all_compile_actions,
                 flag_groups = [
                     flag_group(
                         flags = [
-                            "-no-canonical-prefixes",
                             "-fno-canonical-system-headers",
                             "-Wno-builtin-macro-redefined",
                             "-D__DATE__=\"redacted\"",
@@ -174,18 +147,7 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    _ASSEMBLE_ACTION_NAME,
-                    _PREPROCESS_ASSEMBLE_ACTION_NAME,
-                    _LINKSTAMP_COMPILE_ACTION_NAME,
-                    _C_COMPILE_ACTION_NAME,
-                    _CPP_COMPILE_ACTION_NAME,
-                    _CPP_HEADER_PARSING_ACTION_NAME,
-                    _CPP_MODULE_COMPILE_ACTION_NAME,
-                    _CPP_MODULE_CODEGEN_ACTION_NAME,
-                    _LTO_BACKEND_ACTION_NAME,
-                    _CLIF_MATCH_ACTION_NAME,
-                ],
+                actions = all_cpp_compile_actions,
                 flag_groups = [
                     flag_group(
                         flags = [
@@ -199,18 +161,7 @@ def _impl(ctx):
                 ],
             ),
             flag_set(
-                actions = [
-                    _ASSEMBLE_ACTION_NAME,
-                    _PREPROCESS_ASSEMBLE_ACTION_NAME,
-                    _LINKSTAMP_COMPILE_ACTION_NAME,
-                    _C_COMPILE_ACTION_NAME,
-                    _CPP_COMPILE_ACTION_NAME,
-                    _CPP_HEADER_PARSING_ACTION_NAME,
-                    _CPP_MODULE_COMPILE_ACTION_NAME,
-                    _CPP_MODULE_CODEGEN_ACTION_NAME,
-                    _LTO_BACKEND_ACTION_NAME,
-                    _CLIF_MATCH_ACTION_NAME,
-                ],
+                actions = all_cpp_compile_actions,
                 flag_groups = [
                     flag_group(
                         flags = [
@@ -222,34 +173,12 @@ def _impl(ctx):
                 with_features = [with_feature_set(features = ["opt"])],
             ),
             flag_set(
-                actions = [
-                    _ASSEMBLE_ACTION_NAME,
-                    _PREPROCESS_ASSEMBLE_ACTION_NAME,
-                    _LINKSTAMP_COMPILE_ACTION_NAME,
-                    _C_COMPILE_ACTION_NAME,
-                    _CPP_COMPILE_ACTION_NAME,
-                    _CPP_HEADER_PARSING_ACTION_NAME,
-                    _CPP_MODULE_COMPILE_ACTION_NAME,
-                    _CPP_MODULE_CODEGEN_ACTION_NAME,
-                    _LTO_BACKEND_ACTION_NAME,
-                    _CLIF_MATCH_ACTION_NAME,
-                ],
+                actions = all_cpp_compile_actions,
                 flag_groups = [flag_group(flags = ["-g"])],
                 with_features = [with_feature_set(features = ["dbg"])],
             ),
             flag_set(
-                actions = [
-                    _ASSEMBLE_ACTION_NAME,
-                    _PREPROCESS_ASSEMBLE_ACTION_NAME,
-                    _LINKSTAMP_COMPILE_ACTION_NAME,
-                    _C_COMPILE_ACTION_NAME,
-                    _CPP_COMPILE_ACTION_NAME,
-                    _CPP_HEADER_PARSING_ACTION_NAME,
-                    _CPP_MODULE_COMPILE_ACTION_NAME,
-                    _CPP_MODULE_CODEGEN_ACTION_NAME,
-                    _LTO_BACKEND_ACTION_NAME,
-                    _CLIF_MATCH_ACTION_NAME,
-                ],
+                actions = all_cpp_compile_actions,
                 flag_groups = [
                     flag_group(
                         flags = [
@@ -264,16 +193,58 @@ def _impl(ctx):
                 with_features = [with_feature_set(features = ["opt"])],
             ),
             flag_set(
-                actions = [
-                    _LINKSTAMP_COMPILE_ACTION_NAME,
-                    _CPP_COMPILE_ACTION_NAME,
-                    _CPP_HEADER_PARSING_ACTION_NAME,
-                    _CPP_MODULE_COMPILE_ACTION_NAME,
-                    _CPP_MODULE_CODEGEN_ACTION_NAME,
-                    _LTO_BACKEND_ACTION_NAME,
-                    _CLIF_MATCH_ACTION_NAME,
-                ],
+                actions = all_cpp_compile_actions + [ACTION_NAMES.lto_backend],
                 flag_groups = [flag_group(flags = ["-std=c++0x"])],
+            ),
+        ],
+    )
+
+    include_paths_feature = feature(
+        name = "include_paths",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = [
+                    ACTION_NAMES.preprocess_assemble,
+                    ACTION_NAMES.linkstamp_compile,
+                    ACTION_NAMES.c_compile,
+                    ACTION_NAMES.cpp_compile,
+                    ACTION_NAMES.cpp_header_parsing,
+                    ACTION_NAMES.cpp_module_compile,
+                    ACTION_NAMES.clif_match,
+                    ACTION_NAMES.objc_compile,
+                    ACTION_NAMES.objcpp_compile,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-iquote", "%{quote_include_paths}"],
+                        iterate_over = "quote_include_paths",
+                    ),
+                    flag_group(
+                        flags = ["-I%{include_paths}"],
+                        iterate_over = "include_paths",
+                    ),
+                    flag_group(
+                        flags = ["-isystem", "%{system_include_paths}"],
+                        iterate_over = "system_include_paths",
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    library_search_directories_feature = feature(
+        name = "library_search_directories",
+        flag_sets = [
+            flag_set(
+                actions = all_link_actions + lto_index_actions,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-L%{library_search_directories}"],
+                        iterate_over = "library_search_directories",
+                        expand_if_available = "library_search_directories",
+                    ),
+                ],
             ),
         ],
     )
@@ -303,18 +274,7 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    _ASSEMBLE_ACTION_NAME,
-                    _PREPROCESS_ASSEMBLE_ACTION_NAME,
-                    _LINKSTAMP_COMPILE_ACTION_NAME,
-                    _C_COMPILE_ACTION_NAME,
-                    _CPP_COMPILE_ACTION_NAME,
-                    _CPP_HEADER_PARSING_ACTION_NAME,
-                    _CPP_MODULE_COMPILE_ACTION_NAME,
-                    _CPP_MODULE_CODEGEN_ACTION_NAME,
-                    _LTO_BACKEND_ACTION_NAME,
-                    _CLIF_MATCH_ACTION_NAME,
-                ],
+                actions = all_cpp_compile_actions,
                 flag_groups = [
                     flag_group(
                         flags = ["%{user_compile_flags}"],
@@ -331,7 +291,7 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [_C_COMPILE_ACTION_NAME],
+                actions = [ACTION_NAMES.c_compile],
                 flag_groups = [flag_group(flags = extra_cflags)],
             ),
         ] if len(extra_cflags) > 0 else [],
@@ -342,7 +302,7 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [_CPP_COMPILE_ACTION_NAME],
+                actions = [ACTION_NAMES.cpp_compile],
                 flag_groups = [flag_group(flags = extra_cxxflags)],
             ),
         ] if len(extra_cxxflags) > 0 else [],
@@ -365,22 +325,19 @@ def _impl(ctx):
         flag_sets = [
             flag_set(
                 actions = [
-                    _PREPROCESS_ASSEMBLE_ACTION_NAME,
-                    _LINKSTAMP_COMPILE_ACTION_NAME,
-                    _C_COMPILE_ACTION_NAME,
-                    _CPP_COMPILE_ACTION_NAME,
-                    _CPP_HEADER_PARSING_ACTION_NAME,
-                    _CPP_MODULE_COMPILE_ACTION_NAME,
-                    _CPP_MODULE_CODEGEN_ACTION_NAME,
-                    _LTO_BACKEND_ACTION_NAME,
-                    _CLIF_MATCH_ACTION_NAME,
-                    _CPP_LINK_EXECUTABLE_ACTION_NAME,
-                    _CPP_LINK_DYNAMIC_LIBRARY_ACTION_NAME,
-                    _CPP_LINK_NODEPS_DYNAMIC_LIBRARY_ACTION_NAME,
-                ],
+                    ACTION_NAMES.preprocess_assemble,
+                    ACTION_NAMES.linkstamp_compile,
+                    ACTION_NAMES.c_compile,
+                    ACTION_NAMES.cpp_compile,
+                    ACTION_NAMES.cpp_header_parsing,
+                    ACTION_NAMES.cpp_module_compile,
+                    ACTION_NAMES.cpp_module_codegen,
+                    ACTION_NAMES.lto_backend,
+                    ACTION_NAMES.clif_match,
+                ] + all_link_actions + lto_index_actions,
                 flag_groups = [
                     flag_group(
-                        flags = ["--sysroot=%{sysroot}"],
+                        flags = ["--sysroot", "%{sysroot}"],
                         expand_if_available = "sysroot",
                     ),
                 ],
@@ -390,6 +347,8 @@ def _impl(ctx):
 
     features = [
         default_compile_flags_feature,
+        include_paths_feature,
+        library_search_directories_feature,
         default_link_flags_feature,
         supports_dynamic_linker_feature,
         supports_pic_feature,
@@ -410,7 +369,7 @@ def _impl(ctx):
             features = features,
             action_configs = [objcopy_embed_data_action],
             artifact_name_patterns = [],
-            cxx_builtin_include_directories = hermetic_include_directories,
+            cxx_builtin_include_directories = cxx_builtin_include_directories,
             toolchain_identifier = "local_linux",
             host_system_name = "local",
             target_system_name = "local",
@@ -431,5 +390,13 @@ def _impl(ctx):
 
 cc_toolchain_config = rule(
     implementation = _impl,
+    attrs = {
+        "cxx_builtin_include_directories": attr.string_list(mandatory = True),
+        "builtin_sysroot": attr.string(mandatory = True),
+        "tool_paths": attr.string_dict(mandatory = True),
+        "extra_cflags": attr.string_list(mandatory = True),
+        "extra_cxxflags": attr.string_list(mandatory = True),
+        "extra_ldflags": attr.string_list(mandatory = True),
+    },
     provides = [CcToolchainConfigInfo],
 )

@@ -1,0 +1,60 @@
+load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "configure_make")
+
+configure_make(
+    name = "openssl",
+    configure_command = "Configure",
+    configure_in_place = True,
+    configure_options = select({
+        "//platforms/config:aarch64_linux": ["linux-aarch64"],
+        "//platforms/config:armv7_linux": ["linux-generic32"],
+        "//platforms/config:x86_64_linux": ["linux-generic64"],
+    }) + [
+        "no-comp",
+        "no-idea",
+        "no-weak-ssl-ciphers",
+        "no-shared",
+    ],
+    env = {
+        "PERL": "$$EXT_BUILD_ROOT$$/$(PERL)",
+    },
+    lib_name = "openssl",
+    lib_source = "@openssl//:srcs",
+    out_static_libs = [
+        "libssl.a",
+        "libcrypto.a",
+    ],
+    targets = [
+        "install_sw",
+        "install_ssldirs",
+    ],
+    toolchains = ["@rules_perl//:current_toolchain"],
+    visibility = ["//visibility:public"],
+)
+
+platform_transition_filegroup(
+    name = "openssl_linux_aarch64",
+    target_platform = "//platforms:aarch64_linux",
+    srcs = [":openssl"],
+)
+
+pkg_tar(
+    name = "openssl_linux_aarch64_tar",
+    srcs = [":openssl_linux_aarch64"],
+    include_runfiles = True,
+    strip_prefix = "/",
+)
+
+platform_transition_filegroup(
+    name = "openssl_linux_armv7",
+    target_platform = "//platforms:armv7_linux",
+    srcs = [":openssl"],
+)
+
+pkg_tar(
+    name = "openssl_linux_armv7_tar",
+    srcs = [":openssl_linux_armv7"],
+    include_runfiles = True,
+    strip_prefix = "/",
+)

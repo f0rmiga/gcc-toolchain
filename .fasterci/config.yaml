@@ -6,6 +6,8 @@ workflows:
     on:
       push:
         branches: [master]
+      pull_request:
+        branches: [master]
     steps:
       - name: bazel test
         bazel:
