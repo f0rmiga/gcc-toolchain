@@ -29,10 +29,10 @@ gcc_register_toolchain(
     bazel_gcc_toolchain_workspace_name = "",
     extra_cflags = flags,
     extra_cxxflags = flags,
-    sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
-    strip_prefix = "x86-64--glibc--stable-2021.11-5",
+    sha256 = "522d773fa2a89b88126129d9c62e27df7bfb6647d885de432cdec618f68a38bc",
+    strip_prefix = "x86-64-core-i7--glibc--stable-2018.11-1",
     target_arch = "x86_64",
-    url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2021.11-5.tar.bz2",
+    url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64-core-i7/tarballs/x86-64-core-i7--glibc--stable-2018.11-1.tar.bz2",
 )
 
 gcc_register_toolchain(
