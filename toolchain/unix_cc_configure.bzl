@@ -117,7 +117,7 @@ def _cxx_inc_convert(path):
         path = path[:-_OSX_FRAMEWORK_SUFFIX_LEN].strip()
     return path
 
-def _get_cxx_include_directories(repository_ctx, cc, lang_flag, additional_flags = []):
+def get_cxx_include_directories(repository_ctx, cc, lang_flag, additional_flags = []):
     """Compute the list of C++ include directories."""
     result = repository_ctx.execute([cc, "-E", lang_flag, "-", "-v"] + additional_flags)
     index1 = result.stderr.find(_INC_DIR_MARKER_BEGIN)
@@ -225,7 +225,7 @@ def _add_linker_option_if_supported(repository_ctx, cc, option, pattern):
     """Returns `[option]` if supported, `[]` otherwise. Doesn't %-escape the option."""
     return [option] if _is_linker_option_supported(repository_ctx, cc, option, pattern) else []
 
-def _get_no_canonical_prefixes_opt(repository_ctx, cc):
+def get_no_canonical_prefixes_opt(repository_ctx, cc):
     # If the compiler sometimes rewrites paths in the .d files without symlinks
     # (ie when they're shorter), it confuses Bazel's logic for verifying all
     # #included header files are listed as inputs to the action.
@@ -436,31 +436,31 @@ def configure_unix_toolchain(repository_ctx, cpu_value, overriden_tools):
             bin_search_flags.append("-B" + str(ld_path.dirname))
     coverage_compile_flags, coverage_link_flags = _coverage_flags(repository_ctx, darwin)
     builtin_include_directories = _uniq(
-        _get_cxx_include_directories(repository_ctx, cc, "-xc") +
-        _get_cxx_include_directories(repository_ctx, cc, "-xc++", cxx_opts) +
-        _get_cxx_include_directories(
+        get_cxx_include_directories(repository_ctx, cc, "-xc") +
+        get_cxx_include_directories(repository_ctx, cc, "-xc++", cxx_opts) +
+        get_cxx_include_directories(
             repository_ctx,
             cc,
             "-xc++",
             cxx_opts + ["-stdlib=libc++"],
         ) +
-        _get_cxx_include_directories(
+        get_cxx_include_directories(
             repository_ctx,
             cc,
             "-xc",
-            _get_no_canonical_prefixes_opt(repository_ctx, cc),
+            get_no_canonical_prefixes_opt(repository_ctx, cc),
         ) +
-        _get_cxx_include_directories(
+        get_cxx_include_directories(
             repository_ctx,
             cc,
             "-xc++",
-            cxx_opts + _get_no_canonical_prefixes_opt(repository_ctx, cc),
+            cxx_opts + get_no_canonical_prefixes_opt(repository_ctx, cc),
         ) +
-        _get_cxx_include_directories(
+        get_cxx_include_directories(
             repository_ctx,
             cc,
             "-xc++",
-            cxx_opts + _get_no_canonical_prefixes_opt(repository_ctx, cc) + ["-stdlib=libc++"],
+            cxx_opts + get_no_canonical_prefixes_opt(repository_ctx, cc) + ["-stdlib=libc++"],
         ),
     )
 
@@ -615,7 +615,7 @@ def configure_unix_toolchain(repository_ctx, cpu_value, overriden_tools):
                 ),
             ),
             "%{unfiltered_compile_flags}": get_starlark_list(
-                _get_no_canonical_prefixes_opt(repository_ctx, cc) + [
+                get_no_canonical_prefixes_opt(repository_ctx, cc) + [
                     # Make C++ compilation deterministic. Use linkstamping instead of these
                     # compiler symbols.
                     "-Wno-builtin-macro-redefined",
