@@ -53,41 +53,58 @@ def _gcc_toolchain_impl(rctx):
     if not rctx.path(platform_directory):
         fail("'platform_directory' does not exist")
 
-    use_builtin_sysroot = rctx.attr.use_builtin_sysroot
-    if use_builtin_sysroot:
-        if rctx.attr.builtin_sysroot_path:
-            builtin_sysroot = str(rctx.path(rctx.attr.builtin_sysroot_path))
-        else:
-            builtin_sysroot = str(rctx.path(paths.join(platform_directory, "sysroot")))
+    user_sysroot_path = ""
+    builtin_sysroot = ""
+    if rctx.attr.sysroot:
+        sysroot_build_label = Label("@{workspace}//{package}:BUILD.bazel".format(
+            workspace = rctx.attr.sysroot.workspace_name,
+            package = rctx.attr.sysroot.package,
+        ))
+        user_sysroot_path = paths.dirname(str(rctx.path(sysroot_build_label)))
     else:
-        builtin_sysroot = ""
+        if rctx.attr.use_builtin_sysroot:
+            if rctx.attr.builtin_sysroot_path:
+                builtin_sysroot = str(rctx.path(rctx.attr.builtin_sysroot_path))
+            else:
+                builtin_sysroot = str(rctx.path(paths.join(platform_directory, "sysroot")))
+        builtin_sysroot = builtin_sysroot.rstrip("/")
 
     extra_cflags = [
-        flag.format(sysroot = builtin_sysroot.rstrip("/"))
+        flag.format(
+            sysroot = user_sysroot_path,
+            toolchain_root = pwd,
+        )
         for flag in rctx.attr.extra_cflags
     ]
     extra_cxxflags = [
-        flag.format(sysroot = builtin_sysroot.rstrip("/"))
+        flag.format(
+            sysroot = user_sysroot_path,
+            toolchain_root = pwd,
+        )
         for flag in rctx.attr.extra_cxxflags
     ]
     extra_ldflags = [
-        flag.format(sysroot = builtin_sysroot.rstrip("/"))
+        flag.format(
+            sysroot = user_sysroot_path,
+            toolchain_root = pwd,
+        )
         for flag in rctx.attr.extra_ldflags
     ]
 
+    sysroot = user_sysroot_path or builtin_sysroot
     cxx_builtin_include_directories = collections.uniq(
         get_cxx_include_directories(
             rctx,
             gcc,
             "-xc",
-            extra_cflags + (["--sysroot", builtin_sysroot] if builtin_sysroot else []),
+            extra_cflags + (["--sysroot", sysroot] if sysroot else []),
         ) +
         get_cxx_include_directories(rctx, gcc, "-xc++") +
         get_cxx_include_directories(
             rctx,
             gcc,
             "-xc++",
-            ["-stdlib=libc++"] + extra_cxxflags + (["--sysroot", builtin_sysroot] if builtin_sysroot else []),
+            ["-stdlib=libc++"] + extra_cxxflags + (["--sysroot", sysroot] if sysroot else []),
         ) +
         get_cxx_include_directories(
             rctx,
@@ -113,14 +130,22 @@ def _gcc_toolchain_impl(rctx):
         for include in cxx_builtin_include_directories
     ]
 
+    target_compatible_with = [
+        str(Label(v.format(target_arch = target_arch)))
+        for v in rctx.attr.target_compatible_with
+    ]
+
     substitutions = {
+        "__bazel_gcc_toolchain_workspace_name__": rctx.attr.bazel_gcc_toolchain_workspace_name,
         "__binary_prefix__": binary_prefix,
         "__generated_header__": generated_header,
         "__platform_directory__": platform_directory,
         "__target_arch__": target_arch,
-        "__bazel_gcc_toolchain_workspace_name__": rctx.attr.bazel_gcc_toolchain_workspace_name,
+        "__target_compatible_with__": str(target_compatible_with),
 
         # Sysroot
+        "__user_sysroot_path__": user_sysroot_path,
+        "__user_sysroot_label__": str(rctx.attr.sysroot) if rctx.attr.sysroot else "",
         "__builtin_sysroot__": builtin_sysroot,
 
         # Includes
@@ -180,9 +205,21 @@ _FEATURE_ATTRS = {
         doc = "An explicit directory containing the target platform extra directories. Defaults to `<target_arch>-buildroot-linux-gnu`.",
         mandatory = False,
     ),
+    "sysroot": attr.label(
+        doc = "A sysroot to be used instead of the builtin sysroot. If this attribute is provided, it takes precedence over the use_builtin_sysroot attribute.",
+        mandatory = False,
+    ),
     "target_arch": attr.string(
         doc = "The target architecture this toolchain produces. E.g. x86_64.",
         mandatory = True,
+    ),
+    "target_compatible_with": attr.string_list(
+        default = [
+            "@platforms//os:linux",
+            "@platforms//cpu:{target_arch}",
+        ],
+        doc = "contraint_values passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.",
+        mandatory = False,
     ),
     "use_builtin_sysroot": attr.bool(
         default = True,
