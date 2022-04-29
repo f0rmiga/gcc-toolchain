@@ -4,12 +4,12 @@
 load("@rules_cc//cc:defs.bzl", "cc_toolchain")
 load("@__bazel_gcc_toolchain_workspace_name__//toolchain:cc_toolchain_config.bzl", "cc_toolchain_config")
 
+user_sysroot_path = "__user_sysroot_path__"
+user_sysroot_label = "__user_sysroot_label__"
+
 toolchain(
     name = "toolchain",
-    target_compatible_with = [
-        "@platforms//os:linux",
-        "@platforms//cpu:__target_arch__",
-    ],
+    target_compatible_with = __target_compatible_with__,
     toolchain = ":cc_toolchain",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
@@ -31,7 +31,7 @@ cc_toolchain(
 
 cc_toolchain_config(
     name = "cc_toolchain_config",
-    builtin_sysroot = "__builtin_sysroot__",
+    builtin_sysroot = user_sysroot_path or "__builtin_sysroot__",
     cxx_builtin_include_directories = __cxx_builtin_include_directories__,
     extra_cflags = __extra_cflags__,
     extra_cxxflags = __extra_cxxflags__,
@@ -62,8 +62,7 @@ filegroup(
     srcs = [
         ":gcc",
         ":include",
-        ":sysroot",
-    ],
+    ] + ([user_sysroot_label] if user_sysroot_label else [":builtin_sysroot"]),
 )
 
 filegroup(
@@ -72,8 +71,7 @@ filegroup(
         ":gcc",
         ":lib",
         ":linker_files_binutils",
-        ":sysroot",
-    ],
+    ] + ([user_sysroot_label] if user_sysroot_label else [":builtin_sysroot"]),
 )
 
 filegroup(
@@ -119,7 +117,7 @@ filegroup(
 # Sysroot
 
 filegroup(
-    name = "sysroot",
+    name = "builtin_sysroot",
     srcs = glob(["**/sysroot/**"]),
 )
 
