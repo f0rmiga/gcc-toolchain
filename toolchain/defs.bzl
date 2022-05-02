@@ -190,15 +190,21 @@ _FEATURE_ATTRS = {
         mandatory = False,
     ),
     "extra_cflags": attr.string_list(
-        doc = "Extra flags for compiling C. {sysroot} is rendered to the sysroot path.",
+        doc = "Extra flags for compiling C." +
+            " {sysroot} is rendered to the sysroot path." +
+            " {toolchain_root} is rendered to the toolchain root path.",
         default = [],
     ),
     "extra_cxxflags": attr.string_list(
-        doc = "Extra flags for compiling C++. {sysroot} is rendered to the sysroot path.",
+        doc = "Extra flags for compiling C++." +
+            " {sysroot} is rendered to the sysroot path." +
+            " {toolchain_root} is rendered to the toolchain root path.",
         default = [],
     ),
     "extra_ldflags": attr.string_list(
-        doc = "Extra flags for linking. {sysroot} is rendered to the sysroot path.",
+        doc = "Extra flags for linking." +
+            " {sysroot} is rendered to the sysroot path." +
+            " {toolchain_root} is rendered to the toolchain root path.",
         default = [],
     ),
     "platform_directory": attr.string(
