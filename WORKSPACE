@@ -27,8 +27,21 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 """,
-    sha256 = "84656a6df544ecef62169cfe3ab6e41bb4346a62d3ba2a045dc5a0a2ecea94a3",
-    urls = ["https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/2202c161310ffde63729f29d27fe7bb24a0bc540/debian_stretch_amd64_sysroot.tar.xz"],
+    sha256 = "a5b0f5515684b16fb564b935f4b7ee28feda8ded966e26be7c67db71c6148493",
+    urls = ["https://github.com/aspect-build/gcc-toolchain/releases/download/0.1.0/sysroot-x86_64.tar.xz"],
+)
+
+http_archive(
+    name = "sysroot_aarch64",
+    build_file_content = """\
+filegroup(
+    name = "sysroot",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+""",
+    sha256 = "8ccddd7ca9cd188fbfb06bf29fc5dccc213e5b80591f44e3f84c38e5ad0bb419",
+    urls = ["https://github.com/aspect-build/gcc-toolchain/releases/download/0.1.0/sysroot-aarch64.tar.xz"],
 )
 
 http_archive(
@@ -40,67 +53,21 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 """,
-    sha256 = "e01e49bf54adebff047bf95ecad303dc7929c755fbb130fa52e6d5544c04073a",
-    urls = ["https://commondatastorage.googleapis.com/chrome-linux-sysroot/toolchain/2202c161310ffde63729f29d27fe7bb24a0bc540/debian_stretch_arm_sysroot.tar.xz"],
+    sha256 = "a3941793e74fd21b1dfc067c7e96d4e6e246914f9050eaf44abb0ebc91121227",
+    urls = ["https://github.com/aspect-build/gcc-toolchain/releases/download/0.1.0/sysroot-armv7.tar.xz"],
 )
 
 load("//toolchain:defs.bzl", "gcc_register_toolchain")
+load("//sysroot:flags.bzl", "cflags", "cxxflags", "ldflags")
 
-common_flags = [
-    "-Wall",
-    "-Wextra",
-    "-fdiagnostics-color=always",
-]
-
-ldflags_x86_64 = common_flags + [
-    "-B{sysroot}/usr/lib/x86_64-linux-gnu",
-    "-L{sysroot}/lib",
-    "-L{sysroot}/lib64",
-    "-L{sysroot}/usr/lib",
-    "-L{sysroot}/usr/lib64",
-]
-
-ldflags_armv7 = common_flags + [
-    "-B{sysroot}/usr/lib/arm-linux-gnueabihf",
-    "-L{sysroot}/lib",
-    "-L{sysroot}/lib64",
-    "-L{sysroot}/usr/lib",
-    "-L{sysroot}/usr/lib64",
-]
-
-c_include_flags = ["-nostdinc"]
-
-cxx_include_flags = [
-    "-nostdinc",
-    "-nostdinc++",
-]
-
-include_flags_x86_64 = [
-    "-I{sysroot}/usr/include/c++/6",
-    "-I{sysroot}/usr/include/x86_64-linux-gnu/c++/6",
-    "-I{sysroot}/usr/include/x86_64-linux-gnu",
-    "-I{sysroot}/usr/lib/gcc/x86_64-linux-gnu/6/include",
-    "-I{sysroot}/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed",
-    "-I{sysroot}/include",
-    "-I{sysroot}/usr/include",
-]
-
-include_flags_armv7 = [
-    "-I{sysroot}/usr/include/c++/6",
-    "-I{sysroot}/usr/include/arm-linux-gnueabihf/c++/6",
-    "-I{sysroot}/usr/include/arm-linux-gnueabihf",
-    "-I{sysroot}/usr/lib/gcc/arm-linux-gnueabihf/6/include",
-    "-I{sysroot}/usr/lib/gcc/arm-linux-gnueabihf/6/include-fixed",
-    "-I{sysroot}/include",
-    "-I{sysroot}/usr/include",
-]
+GCC_VERSION = "10.3.0"
 
 gcc_register_toolchain(
     name = "gcc_toolchain_x86_64",
     bazel_gcc_toolchain_workspace_name = "",
-    extra_cflags = common_flags + c_include_flags + include_flags_x86_64,
-    extra_cxxflags = common_flags + cxx_include_flags + include_flags_x86_64,
-    extra_ldflags = ldflags_x86_64,
+    extra_cflags = cflags("x86_64", GCC_VERSION),
+    extra_cxxflags = cxxflags("x86_64", GCC_VERSION),
+    extra_ldflags = ldflags("x86_64", GCC_VERSION),
     sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
     strip_prefix = "x86-64--glibc--stable-2021.11-5",
     sysroot = "@sysroot_x86_64//:sysroot",
@@ -111,10 +78,12 @@ gcc_register_toolchain(
 gcc_register_toolchain(
     name = "gcc_toolchain_aarch64",
     bazel_gcc_toolchain_workspace_name = "",
-    extra_cflags = common_flags,
-    extra_cxxflags = common_flags,
+    extra_cflags = cflags("aarch64", GCC_VERSION),
+    extra_cxxflags = cxxflags("aarch64", GCC_VERSION),
+    extra_ldflags = ldflags("aarch64", GCC_VERSION),
     sha256 = "dec070196608124fa14c3f192364c5b5b057d7f34651ad58ebb8fc87959c97f7",
     strip_prefix = "aarch64--glibc--stable-2021.11-1",
+    sysroot = "@sysroot_aarch64//:sysroot",
     target_arch = "aarch64",
     url = "https://toolchains.bootlin.com/downloads/releases/toolchains/aarch64/tarballs/aarch64--glibc--stable-2021.11-1.tar.bz2",
 )
@@ -123,9 +92,9 @@ gcc_register_toolchain(
     name = "gcc_toolchain_armv7",
     bazel_gcc_toolchain_workspace_name = "",
     binary_prefix = "arm",
-    extra_cflags = common_flags + c_include_flags + include_flags_armv7,
-    extra_cxxflags = common_flags + cxx_include_flags + include_flags_armv7,
-    extra_ldflags = ldflags_armv7,
+    extra_cflags = cflags("armv7", GCC_VERSION),
+    extra_cxxflags = cxxflags("armv7", GCC_VERSION),
+    extra_ldflags = ldflags("armv7", GCC_VERSION),
     platform_directory = "arm-buildroot-linux-gnueabihf",
     sha256 = "6d10f356811429f1bddc23a174932c35127ab6c6f3b738b768f0c29c3bf92f10",
     strip_prefix = "armv7-eabihf--glibc--stable-2021.11-1",
@@ -142,3 +111,7 @@ load("@rules_perl//perl:deps.bzl", "perl_register_toolchains", "perl_rules_depen
 
 perl_rules_dependencies()
 perl_register_toolchains()
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()

@@ -93,17 +93,8 @@ def _impl(ctx):
                         flags = [
                             "-Wl,-z,relro,-z,now",
                             "-pass-exit-codes",
-
-                            # This is particularly useful when compiling only C code that doesn't rely
-                            # on the C++ standard libraries since those symbols can be easily stripped
-                            # out of the binary.
-                            #
-                            # For C++ code, each binary will carry the necessary libstdc++ symbols,
-                            # but I see this as an advantage since it makes the code more portable.
-                            # Different than statically linking the libc, static linking of libstdc++
-                            # generally doesn't incur any penalties other than the output binary size,
-                            # which is less than 1Mb in overhead.
-                            "-l:libstdc++.a",
+                            "-lstdc++",
+                            "-lm",
                         ],
                     ),
                 ],
