@@ -5,22 +5,18 @@ ARCH_X86_64 = "x86_64"
 ARCH_ARMV7 = "armv7"
 ARCH_AARCH64 = "aarch64"
 
-common_flags = [
-    "-Wall",
-    "-fdiagnostics-color=always",
-]
-
 def cflags(arch, gcc_version):
     return [
-        "-Wno-implicit-function-declaration",
+        "-fdiagnostics-color=always",
         "-nostdinc",
-    ] + common_flags + _include_flags(arch, gcc_version)
+    ] + _include_flags(arch, gcc_version)
 
 def cxxflags(arch, gcc_version):
     return [
+        "-fdiagnostics-color=always",
         "-nostdinc",
         "-nostdinc++",
-    ] + common_flags + _include_flags(arch, gcc_version)
+    ] + _include_flags(arch, gcc_version)
 
 # buildifier: disable=function-docstring
 def ldflags(arch, gcc_version):
