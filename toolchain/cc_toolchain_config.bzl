@@ -93,8 +93,6 @@ def _impl(ctx):
                         flags = [
                             "-Wl,-z,relro,-z,now",
                             "-pass-exit-codes",
-                            "-lstdc++",
-                            "-lm",
                         ],
                     ),
                 ],

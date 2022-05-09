@@ -18,41 +18,31 @@ aspect_bazel_lib_dependencies()
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-http_archive(
-    name = "sysroot_x86_64",
-    build_file_content = """\
+SYSROOT_BUILD_FILE_CONTENT = """\
 filegroup(
     name = "sysroot",
     srcs = glob(["**"]),
     visibility = ["//visibility:public"],
 )
-""",
+"""
+
+http_archive(
+    name = "sysroot_x86_64",
+    build_file_content = SYSROOT_BUILD_FILE_CONTENT,
     sha256 = "a5b0f5515684b16fb564b935f4b7ee28feda8ded966e26be7c67db71c6148493",
     urls = ["https://github.com/aspect-build/gcc-toolchain/releases/download/0.1.0/sysroot-x86_64.tar.xz"],
 )
 
 http_archive(
     name = "sysroot_aarch64",
-    build_file_content = """\
-filegroup(
-    name = "sysroot",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)
-""",
+    build_file_content = SYSROOT_BUILD_FILE_CONTENT,
     sha256 = "8ccddd7ca9cd188fbfb06bf29fc5dccc213e5b80591f44e3f84c38e5ad0bb419",
     urls = ["https://github.com/aspect-build/gcc-toolchain/releases/download/0.1.0/sysroot-aarch64.tar.xz"],
 )
 
 http_archive(
     name = "sysroot_armv7",
-    build_file_content = """\
-filegroup(
-    name = "sysroot",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)
-""",
+    build_file_content = SYSROOT_BUILD_FILE_CONTENT,
     sha256 = "a3941793e74fd21b1dfc067c7e96d4e6e246914f9050eaf44abb0ebc91121227",
     urls = ["https://github.com/aspect-build/gcc-toolchain/releases/download/0.1.0/sysroot-armv7.tar.xz"],
 )
@@ -62,12 +52,17 @@ load("//sysroot:flags.bzl", "cflags", "cxxflags", "ldflags")
 
 GCC_VERSION = "10.3.0"
 
+extra_ld_flags = [
+    "-l:libstdc++.a",
+    "-lm",
+]
+
 gcc_register_toolchain(
     name = "gcc_toolchain_x86_64",
     bazel_gcc_toolchain_workspace_name = "",
     extra_cflags = cflags("x86_64", GCC_VERSION),
     extra_cxxflags = cxxflags("x86_64", GCC_VERSION),
-    extra_ldflags = ldflags("x86_64", GCC_VERSION),
+    extra_ldflags = ldflags("x86_64", GCC_VERSION) + extra_ld_flags,
     sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
     strip_prefix = "x86-64--glibc--stable-2021.11-5",
     sysroot = "@sysroot_x86_64//:sysroot",
@@ -80,7 +75,7 @@ gcc_register_toolchain(
     bazel_gcc_toolchain_workspace_name = "",
     extra_cflags = cflags("aarch64", GCC_VERSION),
     extra_cxxflags = cxxflags("aarch64", GCC_VERSION),
-    extra_ldflags = ldflags("aarch64", GCC_VERSION),
+    extra_ldflags = ldflags("aarch64", GCC_VERSION) + extra_ld_flags,
     sha256 = "dec070196608124fa14c3f192364c5b5b057d7f34651ad58ebb8fc87959c97f7",
     strip_prefix = "aarch64--glibc--stable-2021.11-1",
     sysroot = "@sysroot_aarch64//:sysroot",
@@ -94,7 +89,7 @@ gcc_register_toolchain(
     binary_prefix = "arm",
     extra_cflags = cflags("armv7", GCC_VERSION),
     extra_cxxflags = cxxflags("armv7", GCC_VERSION),
-    extra_ldflags = ldflags("armv7", GCC_VERSION),
+    extra_ldflags = ldflags("armv7", GCC_VERSION) + extra_ld_flags,
     platform_directory = "arm-buildroot-linux-gnueabihf",
     sha256 = "6d10f356811429f1bddc23a174932c35127ab6c6f3b738b768f0c29c3bf92f10",
     strip_prefix = "armv7-eabihf--glibc--stable-2021.11-1",
