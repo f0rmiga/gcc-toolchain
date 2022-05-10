@@ -7,7 +7,7 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//toolchain:unix_cc_configure.bzl", "get_cxx_include_directories", "get_no_canonical_prefixes_opt")
 
 def _gcc_toolchain_impl(rctx):
-    pwd = paths.dirname(str(rctx.path("WORKSPACE")))
+    toolchain_root = paths.dirname(str(rctx.path("WORKSPACE")))
 
     rctx.download_and_extract(
         sha256 = rctx.attr.sha256,
@@ -72,21 +72,21 @@ def _gcc_toolchain_impl(rctx):
     extra_cflags = [
         flag.format(
             sysroot = user_sysroot_path,
-            toolchain_root = pwd,
+            toolchain_root = toolchain_root,
         )
         for flag in rctx.attr.extra_cflags
     ]
     extra_cxxflags = [
         flag.format(
             sysroot = user_sysroot_path,
-            toolchain_root = pwd,
+            toolchain_root = toolchain_root,
         )
         for flag in rctx.attr.extra_cxxflags
     ]
     extra_ldflags = [
         flag.format(
             sysroot = user_sysroot_path,
-            toolchain_root = pwd,
+            toolchain_root = toolchain_root,
         )
         for flag in rctx.attr.extra_ldflags
     ]
@@ -126,7 +126,7 @@ def _gcc_toolchain_impl(rctx):
         ),
     )
     cxx_builtin_include_directories = [
-        paths.join(pwd, include)
+        paths.join(toolchain_root, include)
         for include in cxx_builtin_include_directories
     ]
 
