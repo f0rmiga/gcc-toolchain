@@ -22,7 +22,6 @@ for i in "${!args[@]}"; do
             continue
         fi
         args["${next_index}"]="${execroot}/${val}"
-        continue
     fi
 done
 
