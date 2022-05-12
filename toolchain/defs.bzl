@@ -68,7 +68,19 @@ def _gcc_toolchain_impl(rctx):
         toolchain_root,
         rctx.attr.extra_cflags,
         rctx.attr.extra_cxxflags,
+        rctx.attr.extra_includes,
     )
+
+    for include in cxx_builtin_include_directories:
+        if paths.is_absolute(include):
+            fail("include ({}) must not be absolute".format(include))
+        if not include.startswith("%sysroot%") and not include.startswith("%workspace%"):
+            fail("include ({}) must be prefixed with %sysroot% or %workspace%".format(include))
+
+    extra_includes = [
+        include.replace("%sysroot%", sysroot).replace("%workspace%", toolchain_root)
+        for include in cxx_builtin_include_directories
+    ]
 
     target_compatible_with = [
         str(Label(v.format(target_arch = target_arch)))
@@ -93,6 +105,7 @@ def _gcc_toolchain_impl(rctx):
         # Flags
         "__extra_cflags__": _format_flags(sysroot, toolchain_root, rctx.attr.extra_cflags),
         "__extra_cxxflags__": _format_flags(sysroot, toolchain_root, rctx.attr.extra_cxxflags),
+        "__extra_includes__": str(extra_includes),
         "__extra_ldflags__": _format_flags(sysroot, toolchain_root, rctx.attr.extra_ldflags),
 
         # Tool paths
@@ -143,6 +156,7 @@ def _get_cxx_builtin_include_directories(
     toolchain_root,
     extra_cflags,
     extra_cxxflags,
+    extra_includes,
 ):
     absolute_sysroot = paths.join(execroot, sysroot)
     absolute_toolchain_root = paths.join(execroot, toolchain_root)
@@ -160,31 +174,38 @@ def _get_cxx_builtin_include_directories(
         )
         for extra_cxxflag in extra_cxxflags
     ]
+    extra_includes = [
+        "-isystem" + extra_include.format(
+            sysroot = absolute_sysroot,
+            toolchain_root = absolute_toolchain_root,
+        )
+        for extra_include in extra_includes
+    ]
     cxx_builtin_include_directories = []
     if sysroot:
         cxx_builtin_include_directories.extend(get_cxx_include_directories(
             rctx,
             gcc,
             "-xc",
-            extra_cflags + ["--sysroot", absolute_sysroot],
+            extra_cflags + ["--sysroot", absolute_sysroot] + extra_includes,
         ))
         cxx_builtin_include_directories.extend(get_cxx_include_directories(
             rctx,
             gcc,
             "-xc++",
-            extra_cxxflags + ["--sysroot", absolute_sysroot],
+            extra_cxxflags + ["--sysroot", absolute_sysroot] + extra_includes,
         ))
     cxx_builtin_include_directories.extend(get_cxx_include_directories(
         rctx,
         gcc,
         "-xc",
-        extra_cflags,
+        extra_cflags + extra_includes,
     ))
     cxx_builtin_include_directories.extend(get_cxx_include_directories(
         rctx,
         gcc,
         "-xc++",
-        extra_cxxflags,
+        extra_cxxflags + extra_includes,
     ))
     cxx_builtin_include_directories.extend(get_cxx_include_directories(
         rctx,
@@ -209,9 +230,15 @@ def _get_cxx_builtin_include_directories(
         get_no_canonical_prefixes_opt(rctx, gcc),
     ))
     # If the path is not absolute, it means it is coming from the toolchain, so we make it absolute
-    # for the Bazel validation (failed: undeclared inclusion(s) in rule).
+    # so we can normalize them in the same pipeline below.
     cxx_builtin_include_directories = [
         include if paths.is_absolute(include) else paths.join(absolute_toolchain_root, include)
+        for include in cxx_builtin_include_directories
+    ]
+    # We replace the absolute paths with %sysroot% and %workspace% depending on the prefix.
+    # See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.
+    cxx_builtin_include_directories = [
+        include.replace(absolute_sysroot, "%sysroot%").replace(absolute_toolchain_root, "%workspace%")
         for include in cxx_builtin_include_directories
     ]
     return collections.uniq(cxx_builtin_include_directories)
@@ -243,6 +270,10 @@ _FEATURE_ATTRS = {
     "builtin_sysroot_path": attr.string(
         doc = "An explicit sysroot path inside the tarball. Defaults to `<platform_directory>/sysroot`.",
         mandatory = False,
+    ),
+    "extra_includes": attr.string_list(
+        doc = "Extra includes for compiling C and C++. {sysroot} is rendered to the sysroot path.",
+        default = [],
     ),
     "extra_cflags": attr.string_list(
         doc = "Extra flags for compiling C. {sysroot} is rendered to the sysroot path.",
