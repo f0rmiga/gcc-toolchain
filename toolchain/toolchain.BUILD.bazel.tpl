@@ -4,7 +4,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_toolchain")
 load("@__bazel_gcc_toolchain_workspace_name__//toolchain:cc_toolchain_config.bzl", "cc_toolchain_config")
 
-user_sysroot_path = "__user_sysroot_path__"
+sysroot = "__sysroot__"
 user_sysroot_label = "__user_sysroot_label__"
 
 toolchain(
@@ -31,7 +31,7 @@ cc_toolchain(
 
 cc_toolchain_config(
     name = "cc_toolchain_config",
-    builtin_sysroot = user_sysroot_path or "__builtin_sysroot__",
+    builtin_sysroot = sysroot,
     cxx_builtin_include_directories = __cxx_builtin_include_directories__,
     extra_cflags = __extra_cflags__,
     extra_cxxflags = __extra_cxxflags__,
@@ -100,6 +100,8 @@ filegroup(
         "bin/__binary_prefix__-linux-cpp.br_real",
         "bin/__binary_prefix__-linux-gcc",
         "bin/__binary_prefix__-linux-gcc.br_real",
+        "bin/wrapped-cpp",
+        "bin/wrapped-gcc",
     ] + glob([
         "**/cc1plus",
         "**/cc1",
@@ -161,32 +163,48 @@ filegroup(
     srcs = [
         "bin/__binary_prefix__-linux-ld",
         "bin/__binary_prefix__-linux-ld.bfd",
+        "bin/wrapped-ld",
     ],
 )
 
 filegroup(
     name = "ar",
-    srcs = ["bin/__binary_prefix__-linux-ar"],
+    srcs = [
+        "bin/__binary_prefix__-linux-ar",
+        "bin/wrapped-ar",
+    ] + glob(["bin/__binary_prefix__-buildroot-*-ar"]),
 )
 
 filegroup(
     name = "as",
-    srcs = ["bin/__binary_prefix__-linux-as"],
+    srcs = [
+        "bin/__binary_prefix__-linux-as",
+        "bin/wrapped-as",
+    ],
 )
 
 filegroup(
     name = "nm",
-    srcs = ["bin/__binary_prefix__-linux-nm"],
+    srcs = [
+        "bin/__binary_prefix__-linux-nm",
+        "bin/wrapped-nm",
+    ],
 )
 
 filegroup(
     name = "objcopy",
-    srcs = ["bin/__binary_prefix__-linux-objcopy"],
+    srcs = [
+        "bin/__binary_prefix__-linux-objcopy",
+        "bin/wrapped-objcopy",
+    ],
 )
 
 filegroup(
     name = "objdump",
-    srcs = ["bin/__binary_prefix__-linux-objdump"],
+    srcs = [
+        "bin/__binary_prefix__-linux-objdump",
+        "bin/wrapped-objdump",
+    ],
 )
 
 filegroup(
@@ -201,5 +219,8 @@ filegroup(
 
 filegroup(
     name = "strip",
-    srcs = ["bin/__binary_prefix__-linux-strip"],
+    srcs = [
+        "bin/__binary_prefix__-linux-strip",
+        "bin/wrapped-strip",
+    ],
 )
