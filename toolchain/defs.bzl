@@ -35,25 +35,15 @@ def _gcc_toolchain_impl(rctx):
     if not rctx.path(platform_directory):
         fail("'platform_directory' does not exist")
 
-    user_sysroot_path = ""
-    builtin_sysroot = ""
+    sysroot = ""
     if rctx.attr.sysroot:
         sysroot_build_label = Label("@{workspace}//{package}:BUILD.bazel".format(
             workspace = rctx.attr.sysroot.workspace_name,
             package = rctx.attr.sysroot.package,
         ))
-        user_sysroot_path = paths.dirname(str(rctx.path(sysroot_build_label)))
-        user_sysroot_path = paths.relativize(user_sysroot_path, execroot)
-    else:
-        if rctx.attr.use_builtin_sysroot:
-            if rctx.attr.builtin_sysroot_path:
-                builtin_sysroot = str(rctx.path(rctx.attr.builtin_sysroot_path))
-            else:
-                builtin_sysroot = str(rctx.path(paths.join(platform_directory, "sysroot")))
-        builtin_sysroot = builtin_sysroot.rstrip("/")
-        builtin_sysroot = paths.relativize(builtin_sysroot, execroot)
+        sysroot = paths.dirname(str(rctx.path(sysroot_build_label)))
+        sysroot = paths.relativize(sysroot, execroot)
 
-    sysroot = user_sysroot_path or builtin_sysroot or ""
     # If the sysroot is absolute, it gets passed to other scripts that can introduce non-deterministic behaviour to the
     # system. E.g. rules_foreign_cc will render templates with the absolute path, producing cache misses on the remote
     # cache.
@@ -97,7 +87,7 @@ def _gcc_toolchain_impl(rctx):
 
         # Sysroot
         "__sysroot__": sysroot,
-        "__user_sysroot_label__": str(rctx.attr.sysroot) if rctx.attr.sysroot else "",
+        "__sysroot_label__": str(rctx.attr.sysroot) if rctx.attr.sysroot else "",
 
         # Includes
         "__cxx_builtin_include_directories__": str(cxx_builtin_include_directories),
@@ -238,7 +228,11 @@ def _get_cxx_builtin_include_directories(
     # We replace the absolute paths with %sysroot% and %workspace% depending on the prefix.
     # See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.
     cxx_builtin_include_directories = [
-        include.replace(absolute_sysroot, "%sysroot%").replace(absolute_toolchain_root, "%workspace%")
+        "%sysroot%" + include.removeprefix(absolute_sysroot) if include.startswith(absolute_sysroot) else include
+        for include in cxx_builtin_include_directories
+    ]
+    cxx_builtin_include_directories = [
+        "%workspace%" + include.removeprefix(absolute_toolchain_root) if include.startswith(absolute_toolchain_root) else include
         for include in cxx_builtin_include_directories
     ]
     return collections.uniq(cxx_builtin_include_directories)
@@ -272,19 +266,27 @@ _FEATURE_ATTRS = {
         mandatory = False,
     ),
     "extra_includes": attr.string_list(
-        doc = "Extra includes for compiling C and C++. {sysroot} is rendered to the sysroot path.",
+        doc = "Extra includes for compiling C and C++." +
+            " {sysroot} is rendered to the sysroot path." +
+            " {toolchain_root} is rendered to the toolchain root path.",
         default = [],
     ),
     "extra_cflags": attr.string_list(
-        doc = "Extra flags for compiling C. {sysroot} is rendered to the sysroot path.",
+        doc = "Extra flags for compiling C." +
+            " {sysroot} is rendered to the sysroot path." +
+            " {toolchain_root} is rendered to the toolchain root path.",
         default = [],
     ),
     "extra_cxxflags": attr.string_list(
-        doc = "Extra flags for compiling C++. {sysroot} is rendered to the sysroot path.",
+        doc = "Extra flags for compiling C++." +
+            " {sysroot} is rendered to the sysroot path." +
+            " {toolchain_root} is rendered to the toolchain root path.",
         default = [],
     ),
     "extra_ldflags": attr.string_list(
-        doc = "Extra flags for linking. {sysroot} is rendered to the sysroot path.",
+        doc = "Extra flags for linking." +
+            " {sysroot} is rendered to the sysroot path." +
+            " {toolchain_root} is rendered to the toolchain root path.",
         default = [],
     ),
     "platform_directory": attr.string(
@@ -292,8 +294,8 @@ _FEATURE_ATTRS = {
         mandatory = False,
     ),
     "sysroot": attr.label(
-        doc = "A sysroot to be used instead of the builtin sysroot. If this attribute is provided, it takes precedence over the use_builtin_sysroot attribute.",
-        mandatory = False,
+        doc = "A sysroot to be used as the logical build root.",
+        mandatory = True,
     ),
     "target_arch": attr.string(
         doc = "The target architecture this toolchain produces. E.g. x86_64.",
@@ -306,10 +308,6 @@ _FEATURE_ATTRS = {
         ],
         doc = "contraint_values passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.",
         mandatory = False,
-    ),
-    "use_builtin_sysroot": attr.bool(
-        default = True,
-        doc = "Whether the builtin sysroot is used or not.",
     ),
 }
 

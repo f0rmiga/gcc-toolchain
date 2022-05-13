@@ -5,7 +5,7 @@ load("@rules_cc//cc:defs.bzl", "cc_toolchain")
 load("@__bazel_gcc_toolchain_workspace_name__//toolchain:cc_toolchain_config.bzl", "cc_toolchain_config")
 
 sysroot = "__sysroot__"
-user_sysroot_label = "__user_sysroot_label__"
+sysroot_label = "__sysroot_label__"
 
 toolchain(
     name = "toolchain",
@@ -63,7 +63,7 @@ filegroup(
     srcs = [
         ":gcc",
         ":include",
-    ] + ([user_sysroot_label] if user_sysroot_label else [":builtin_sysroot"]),
+    ] + ([sysroot_label] if sysroot_label else []),
 )
 
 filegroup(
@@ -72,13 +72,19 @@ filegroup(
         ":gcc",
         ":lib",
         ":linker_files_binutils",
-    ] + ([user_sysroot_label] if user_sysroot_label else [":builtin_sysroot"]),
+    ] + ([sysroot_label] if sysroot_label else []),
 )
 
 filegroup(
     name = "include",
     srcs = glob([
-        "**/include/**",
+        "lib/gcc/__platform_directory__/*/include/**",
+        "lib/gcc/__platform_directory__/*/include-fixed/**",
+        "__platform_directory__/include/**",
+        "__platform_directory__/sysroot/usr/include/**",
+        "__platform_directory__/include/c++/*/**",
+        "__platform_directory__/include/c++/*/__platform_directory__/**",
+        "__platform_directory__/include/c++/*/backward/**",
     ]),
 )
 
@@ -115,13 +121,6 @@ filegroup(
         "bin/__binary_prefix__-linux-g++",
         "bin/__binary_prefix__-linux-g++.br_real",
     ],
-)
-
-# Sysroot
-
-filegroup(
-    name = "builtin_sysroot",
-    srcs = glob(["**/sysroot/**"]),
 )
 
 # Binutils
