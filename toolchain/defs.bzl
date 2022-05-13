@@ -7,7 +7,7 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//toolchain:unix_cc_configure.bzl", "get_cxx_include_directories", "get_no_canonical_prefixes_opt")
 
 def _gcc_toolchain_impl(rctx):
-    absolute_toolchain_root = paths.dirname(str(rctx.path("WORKSPACE")))
+    absolute_toolchain_root = str(rctx.path("."))
     execroot = paths.normalize(paths.join(absolute_toolchain_root, "..", ".."))
     toolchain_root = paths.relativize(absolute_toolchain_root, execroot)
 
