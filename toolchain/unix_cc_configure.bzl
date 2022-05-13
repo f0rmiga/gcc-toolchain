@@ -120,6 +120,8 @@ def _cxx_inc_convert(path):
 def get_cxx_include_directories(repository_ctx, cc, lang_flag, additional_flags = []):
     """Compute the list of C++ include directories."""
     result = repository_ctx.execute([cc, "-E", lang_flag, "-", "-v"] + additional_flags)
+    if result.return_code:
+        fail(result.stderr)
     index1 = result.stderr.find(_INC_DIR_MARKER_BEGIN)
     if index1 == -1:
         return []

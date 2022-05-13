@@ -73,6 +73,7 @@ def _impl(ctx):
     tool_paths = ctx.attr.tool_paths
     extra_cflags = ctx.attr.extra_cflags
     extra_cxxflags = ctx.attr.extra_cxxflags
+    extra_includes = ctx.attr.extra_includes
     extra_ldflags = ctx.attr.extra_ldflags
 
     objcopy_tool = tool_paths.get("objcopy")
@@ -114,6 +115,7 @@ def _impl(ctx):
                 flag_groups = [
                     flag_group(
                         flags = [
+                            "-no-canonical-prefixes",
                             "-fno-canonical-system-headers",
                             "-Wno-builtin-macro-redefined",
                             "-D__DATE__=\"redacted\"",
@@ -297,6 +299,20 @@ def _impl(ctx):
         ] if len(extra_cxxflags) > 0 else [],
     )
 
+    extra_includes_feature = feature(
+        name = "extra_includes",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = all_compile_actions,
+                flag_groups = [flag_group(flags = [
+                    "-isystem{}".format(extra_include)
+                    for extra_include in extra_includes
+                ])],
+            ),
+        ] if len(extra_includes) > 0 else [],
+    )
+
     extra_ldflags_feature = feature(
         name = "extra_ldflags",
         enabled = True,
@@ -349,43 +365,45 @@ def _impl(ctx):
         unfiltered_compile_flags_feature,
         extra_cflags_feature,
         extra_cxxflags_feature,
+        extra_includes_feature,
         extra_ldflags_feature,
     ]
 
     return [
         cc_common.create_cc_toolchain_config_info(
-            ctx = ctx,
-            features = features,
+            abi_libc_version = "local",
+            abi_version = "local",
             action_configs = [objcopy_embed_data_action],
             artifact_name_patterns = [],
+            builtin_sysroot = builtin_sysroot,
+            cc_target_os = None,
+            compiler = "gcc",
+            ctx = ctx,
             cxx_builtin_include_directories = cxx_builtin_include_directories,
-            toolchain_identifier = "local_linux",
+            features = features,
             host_system_name = "local",
-            target_system_name = "local",
+            make_variables = [],
             target_cpu = "local",
             target_libc = "local",
-            compiler = "gcc",
-            abi_version = "local",
-            abi_libc_version = "local",
+            target_system_name = "local",
             tool_paths = [
                 tool_path(name = name, path = path)
                 for name, path in tool_paths.items()
             ],
-            make_variables = [],
-            builtin_sysroot = builtin_sysroot,
-            cc_target_os = None,
+            toolchain_identifier = "local_linux",
         ),
     ]
 
 cc_toolchain_config = rule(
     implementation = _impl,
     attrs = {
-        "cxx_builtin_include_directories": attr.string_list(mandatory = True),
         "builtin_sysroot": attr.string(mandatory = True),
-        "tool_paths": attr.string_dict(mandatory = True),
+        "cxx_builtin_include_directories": attr.string_list(mandatory = True),
         "extra_cflags": attr.string_list(mandatory = True),
         "extra_cxxflags": attr.string_list(mandatory = True),
+        "extra_includes": attr.string_list(mandatory = True),
         "extra_ldflags": attr.string_list(mandatory = True),
+        "tool_paths": attr.string_dict(mandatory = True),
     },
     provides = [CcToolchainConfigInfo],
 )

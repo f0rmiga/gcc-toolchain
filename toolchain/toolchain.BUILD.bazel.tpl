@@ -4,8 +4,8 @@
 load("@rules_cc//cc:defs.bzl", "cc_toolchain")
 load("@__bazel_gcc_toolchain_workspace_name__//toolchain:cc_toolchain_config.bzl", "cc_toolchain_config")
 
-user_sysroot_path = "__user_sysroot_path__"
-user_sysroot_label = "__user_sysroot_label__"
+sysroot = "__sysroot__"
+sysroot_label = "__sysroot_label__"
 
 toolchain(
     name = "toolchain",
@@ -31,10 +31,11 @@ cc_toolchain(
 
 cc_toolchain_config(
     name = "cc_toolchain_config",
-    builtin_sysroot = user_sysroot_path or "__builtin_sysroot__",
+    builtin_sysroot = sysroot,
     cxx_builtin_include_directories = __cxx_builtin_include_directories__,
     extra_cflags = __extra_cflags__,
     extra_cxxflags = __extra_cxxflags__,
+    extra_includes = __extra_includes__,
     extra_ldflags = __extra_ldflags__,
     tool_paths = __tool_paths__,
 )
@@ -62,7 +63,7 @@ filegroup(
     srcs = [
         ":gcc",
         ":include",
-    ] + ([user_sysroot_label] if user_sysroot_label else [":builtin_sysroot"]),
+    ] + ([sysroot_label] if sysroot_label else []),
 )
 
 filegroup(
@@ -71,13 +72,19 @@ filegroup(
         ":gcc",
         ":lib",
         ":linker_files_binutils",
-    ] + ([user_sysroot_label] if user_sysroot_label else [":builtin_sysroot"]),
+    ] + ([sysroot_label] if sysroot_label else []),
 )
 
 filegroup(
     name = "include",
     srcs = glob([
-        "**/include/**",
+        "lib/gcc/__platform_directory__/*/include/**",
+        "lib/gcc/__platform_directory__/*/include-fixed/**",
+        "__platform_directory__/include/**",
+        "__platform_directory__/sysroot/usr/include/**",
+        "__platform_directory__/include/c++/*/**",
+        "__platform_directory__/include/c++/*/__platform_directory__/**",
+        "__platform_directory__/include/c++/*/backward/**",
     ]),
 )
 
@@ -100,6 +107,8 @@ filegroup(
         "bin/__binary_prefix__-linux-cpp.br_real",
         "bin/__binary_prefix__-linux-gcc",
         "bin/__binary_prefix__-linux-gcc.br_real",
+        "bin/wrapped-cpp",
+        "bin/wrapped-gcc",
     ] + glob([
         "**/cc1plus",
         "**/cc1",
@@ -112,13 +121,6 @@ filegroup(
         "bin/__binary_prefix__-linux-g++",
         "bin/__binary_prefix__-linux-g++.br_real",
     ],
-)
-
-# Sysroot
-
-filegroup(
-    name = "builtin_sysroot",
-    srcs = glob(["**/sysroot/**"]),
 )
 
 # Binutils
@@ -161,32 +163,48 @@ filegroup(
     srcs = [
         "bin/__binary_prefix__-linux-ld",
         "bin/__binary_prefix__-linux-ld.bfd",
+        "bin/wrapped-ld",
     ],
 )
 
 filegroup(
     name = "ar",
-    srcs = ["bin/__binary_prefix__-linux-ar"],
+    srcs = [
+        "bin/__binary_prefix__-linux-ar",
+        "bin/wrapped-ar",
+    ] + glob(["bin/__binary_prefix__-buildroot-*-ar"]),
 )
 
 filegroup(
     name = "as",
-    srcs = ["bin/__binary_prefix__-linux-as"],
+    srcs = [
+        "bin/__binary_prefix__-linux-as",
+        "bin/wrapped-as",
+    ],
 )
 
 filegroup(
     name = "nm",
-    srcs = ["bin/__binary_prefix__-linux-nm"],
+    srcs = [
+        "bin/__binary_prefix__-linux-nm",
+        "bin/wrapped-nm",
+    ],
 )
 
 filegroup(
     name = "objcopy",
-    srcs = ["bin/__binary_prefix__-linux-objcopy"],
+    srcs = [
+        "bin/__binary_prefix__-linux-objcopy",
+        "bin/wrapped-objcopy",
+    ],
 )
 
 filegroup(
     name = "objdump",
-    srcs = ["bin/__binary_prefix__-linux-objdump"],
+    srcs = [
+        "bin/__binary_prefix__-linux-objdump",
+        "bin/wrapped-objdump",
+    ],
 )
 
 filegroup(
@@ -201,5 +219,8 @@ filegroup(
 
 filegroup(
     name = "strip",
-    srcs = ["bin/__binary_prefix__-linux-strip"],
+    srcs = [
+        "bin/__binary_prefix__-linux-strip",
+        "bin/wrapped-strip",
+    ],
 )

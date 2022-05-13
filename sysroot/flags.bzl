@@ -5,18 +5,16 @@ ARCH_X86_64 = "x86_64"
 ARCH_ARMV7 = "armv7"
 ARCH_AARCH64 = "aarch64"
 
-def cflags(arch, gcc_version):
-    return [
-        "-fdiagnostics-color=always",
-        "-nostdinc",
-    ] + _include_flags(arch, gcc_version)
+cflags = [
+    "-fdiagnostics-color=always",
+    "-nostdinc",
+]
 
-def cxxflags(arch, gcc_version):
-    return [
-        "-fdiagnostics-color=always",
-        "-nostdinc",
-        "-nostdinc++",
-    ] + _include_flags(arch, gcc_version)
+cxxflags = [
+    "-fdiagnostics-color=always",
+    "-nostdinc",
+    "-nostdinc++",
+]
 
 # buildifier: disable=function-docstring
 def ldflags(arch, gcc_version):
@@ -51,7 +49,8 @@ def ldflags(arch, gcc_version):
         ),
     ]
 
-def _include_flags(arch, gcc_version):
+# buildifier: disable=function-docstring
+def includes(arch, gcc_version):
     if arch == ARCH_X86_64:
         target_triplet = "x86_64-linux-gnu"
         include_prefix = ""
@@ -64,22 +63,22 @@ def _include_flags(arch, gcc_version):
     else:
         fail("unknown arch")
     return [
-        "-isystem{sysroot}" + "/{include_prefix}include/c++/{gcc_version}".format(
+        "{sysroot}" + "/{include_prefix}include/c++/{gcc_version}".format(
             gcc_version = gcc_version,
             include_prefix = include_prefix,
         ),
-        "-isystem{sysroot}" + "/{include_prefix}include/c++/{gcc_version}/{target_triplet}".format(
+        "{sysroot}" + "/{include_prefix}include/c++/{gcc_version}/{target_triplet}".format(
             gcc_version = gcc_version,
             include_prefix = include_prefix,
             target_triplet = target_triplet,
         ),
-        "-isystem{sysroot}" + "/lib/gcc/{target_triplet}/{gcc_version}/include-fixed".format(
+        "{sysroot}" + "/lib/gcc/{target_triplet}/{gcc_version}/include-fixed".format(
             gcc_version = gcc_version,
             target_triplet = target_triplet,
         ),
-        "-isystem{sysroot}" + "/lib/gcc/{target_triplet}/{gcc_version}/include".format(
+        "{sysroot}" + "/lib/gcc/{target_triplet}/{gcc_version}/include".format(
             gcc_version = gcc_version,
             target_triplet = target_triplet,
         ),
-        "-isystem{sysroot}/usr/include",
+        "{sysroot}/usr/include",
     ]
