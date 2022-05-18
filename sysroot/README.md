@@ -23,7 +23,7 @@ the different architectures. It's possible to setup a builder with qemu locally 
 ### Using the build script
 
 ```shell
-./sysroot/build.sh x86_64 sysroot-x86_64.tar.xz <buildx builder name>
-./sysroot/build.sh armv7 sysroot-armv7.tar.xz <buildx builder name>
-./sysroot/build.sh aarch64 sysroot-aarch64.tar.xz <buildx builder name>
+./sysroot/build_sysroot.sh x86_64 sysroot-x86_64.tar.xz <buildx builder name>
+./sysroot/build_sysroot.sh armv7 sysroot-armv7.tar.xz <buildx builder name>
+./sysroot/build_sysroot.sh aarch64 sysroot-aarch64.tar.xz <buildx builder name>
 ```
