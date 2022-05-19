@@ -119,7 +119,7 @@ def _get_tool_paths(rctx, execroot, binary_prefix):
 
     tool_paths = {}
     for name, real_path in real_tool_paths.items():
-        wrapped_tool_path = "bin/wrapped-{}".format(name)
+        wrapped_tool_path = paths.join("bin", name)
         rctx.template(
             wrapped_tool_path,
             rctx.attr._wrapper_sh_template,
