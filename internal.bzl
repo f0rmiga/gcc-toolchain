@@ -50,15 +50,6 @@ def internal_dependencies():
 
     maybe(
         http_archive,
-        name = "zlib",
-        build_file = "@//:third-party/zlib.BUILD",
-        sha256 = "7db46b8d7726232a621befaab4a1c870f00a90805511c0e0090441dac57def18",
-        strip_prefix = "zlib-1.2.12",
-        url = "https://zlib.net/zlib-1.2.12.tar.xz",
-    )
-
-    maybe(
-        http_archive,
         name = "com_google_protobuf",
         sha256 = "3bd7828aa5af4b13b99c191e8b1e884ebfa9ad371b0ce264605d347f135d2568",
         strip_prefix = "protobuf-3.19.4",

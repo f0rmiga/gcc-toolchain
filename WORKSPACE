@@ -52,6 +52,8 @@ load("//sysroot:flags.bzl", "cflags", "cxxflags", "ldflags", "includes")
 
 GCC_VERSION = "10.3.0"
 
+extra_cflags = ["-Wno-implicit-function-declaration"]
+
 extra_ld_flags = [
     "-l:libstdc++.a",
     "-lm",
@@ -60,7 +62,7 @@ extra_ld_flags = [
 gcc_register_toolchain(
     name = "gcc_toolchain_x86_64",
     bazel_gcc_toolchain_workspace_name = "",
-    extra_cflags = cflags,
+    extra_cflags = cflags + extra_cflags,
     extra_cxxflags = cxxflags,
     extra_includes = includes("x86_64", GCC_VERSION),
     extra_ldflags = ldflags("x86_64", GCC_VERSION) + extra_ld_flags,
@@ -74,7 +76,7 @@ gcc_register_toolchain(
 gcc_register_toolchain(
     name = "gcc_toolchain_aarch64",
     bazel_gcc_toolchain_workspace_name = "",
-    extra_cflags = cflags,
+    extra_cflags = cflags + extra_cflags,
     extra_cxxflags = cxxflags,
     extra_includes = includes("aarch64", GCC_VERSION),
     extra_ldflags = ldflags("aarch64", GCC_VERSION) + extra_ld_flags,
@@ -89,7 +91,7 @@ gcc_register_toolchain(
     name = "gcc_toolchain_armv7",
     bazel_gcc_toolchain_workspace_name = "",
     binary_prefix = "arm",
-    extra_cflags = cflags,
+    extra_cflags = cflags + extra_cflags,
     extra_cxxflags = cxxflags,
     extra_includes = includes("armv7", GCC_VERSION),
     extra_ldflags = ldflags("armv7", GCC_VERSION) + extra_ld_flags,
