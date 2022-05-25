@@ -25,14 +25,6 @@ def internal_dependencies():
 
     maybe(
         http_archive,
-        name = "rules_perl",
-        sha256 = "5696d108f749e300560362a3b7201f1f57b6ae451b0a0176e5f0a979ebf8e192",
-        strip_prefix = "rules_perl-3f52cee1916f6fc1c499da4a89d7f065a287ae29",
-        url = "https://github.com/bazelbuild/rules_perl/archive/3f52cee1916f6fc1c499da4a89d7f065a287ae29.tar.gz",
-    )
-
-    maybe(
-        http_archive,
         name = "rules_foreign_cc",
         sha256 = "6041f1374ff32ba711564374ad8e007aef77f71561a7ce784123b9b4b88614fc",
         strip_prefix = "rules_foreign_cc-0.8.0",
