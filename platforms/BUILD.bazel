@@ -24,3 +24,16 @@ platform(
     ],
     visibility = ["//visibility:public"],
 )
+
+platform(
+    name = "x86_64_linux_remote",
+    constraint_values = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    exec_properties = {
+        "OSFamily": "Linux",
+        "container-image": "docker://quay.io/libpod/ubuntu_podman",
+    },
+    visibility = ["//visibility:public"],
+)
