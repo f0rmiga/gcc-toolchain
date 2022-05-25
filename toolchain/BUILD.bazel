@@ -14,11 +14,8 @@ bzl_library(
     name = "defs",
     srcs = ["defs.bzl"],
     deps = [
-        "@bazel_tools//tools/cpp:lib_cc_configure.bzl",
-        "@bazel_skylib//lib:collections",
         "@bazel_skylib//lib:dicts",
         "@bazel_skylib//lib:paths",
-        "//toolchain:unix_cc_configure.bzl",
     ],
     visibility = ["//visibility:public"],
 )

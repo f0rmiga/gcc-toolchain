@@ -36,17 +36,17 @@ def ldflags(arch, gcc_version):
         fail("unknown arch")
     return [
         "-B{toolchain_root}/bin",
-        "-B{sysroot}" + "/usr/{lib}".format(lib = lib),
-        "-B{sysroot}" + "/{arch_specific_prefix}{lib}".format(
+        "-B%sysroot%/usr/{lib}".format(lib = lib),
+        "-B%sysroot%/{arch_specific_prefix}{lib}".format(
             arch_specific_prefix = arch_specific_prefix,
             lib = lib
         ),
-        "-L{sysroot}" + "/{arch_specific_prefix}{lib}".format(
+        "-L%sysroot%/{arch_specific_prefix}{lib}".format(
             arch_specific_prefix = arch_specific_prefix,
             lib = lib
         ),
-        "-L{sysroot}" + "/usr/{lib}".format(lib = lib),
-        "-L{sysroot}" + "/lib/gcc/{target_triplet}/{gcc_version}".format(
+        "-L%sysroot%/usr/{lib}".format(lib = lib),
+        "-L%sysroot%/lib/gcc/{target_triplet}/{gcc_version}".format(
             gcc_version = gcc_version,
             target_triplet = target_triplet,
         ),
@@ -66,22 +66,22 @@ def includes(arch, gcc_version):
     else:
         fail("unknown arch")
     return [
-        "{sysroot}" + "/{include_prefix}include/c++/{gcc_version}".format(
+        "%sysroot%/{include_prefix}include/c++/{gcc_version}".format(
             gcc_version = gcc_version,
             include_prefix = include_prefix,
         ),
-        "{sysroot}" + "/{include_prefix}include/c++/{gcc_version}/{target_triplet}".format(
+        "%sysroot%/{include_prefix}include/c++/{gcc_version}/{target_triplet}".format(
             gcc_version = gcc_version,
             include_prefix = include_prefix,
             target_triplet = target_triplet,
         ),
-        "{sysroot}" + "/lib/gcc/{target_triplet}/{gcc_version}/include-fixed".format(
+        "%sysroot%/lib/gcc/{target_triplet}/{gcc_version}/include-fixed".format(
             gcc_version = gcc_version,
             target_triplet = target_triplet,
         ),
-        "{sysroot}" + "/lib/gcc/{target_triplet}/{gcc_version}/include".format(
+        "%sysroot%/lib/gcc/{target_triplet}/{gcc_version}/include".format(
             gcc_version = gcc_version,
             target_triplet = target_triplet,
         ),
-        "{sysroot}/usr/include",
+        "%sysroot%/usr/include",
     ]
