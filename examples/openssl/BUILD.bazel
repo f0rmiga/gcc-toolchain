@@ -16,9 +16,6 @@ configure_make(
         "no-weak-ssl-ciphers",
         "no-shared",
     ],
-    env = {
-        "PERL": "$$EXT_BUILD_ROOT$$/$(PERL)",
-    },
     lib_name = "openssl",
     lib_source = "@openssl//:srcs",
     out_static_libs = [
@@ -29,7 +26,6 @@ configure_make(
         "install_sw",
         "install_ssldirs",
     ],
-    toolchains = ["@rules_perl//:current_toolchain"],
     visibility = ["//visibility:public"],
 )
 
