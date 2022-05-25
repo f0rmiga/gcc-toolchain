@@ -114,6 +114,9 @@ filegroup(
     ] + glob([
         "**/cc1plus",
         "**/cc1",
+        "lib/libgmp.so*",
+        "lib/libmpc.so*",
+        "lib/libmpfr.so*",
     ]),
 )
 
