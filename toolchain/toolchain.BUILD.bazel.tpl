@@ -114,6 +114,7 @@ filegroup(
     ] + glob([
         "**/cc1plus",
         "**/cc1",
+        # These shared objects are needed at runtime by GCC when linked dynamically to them.
         "lib/libgmp.so*",
         "lib/libmpc.so*",
         "lib/libmpfr.so*",
