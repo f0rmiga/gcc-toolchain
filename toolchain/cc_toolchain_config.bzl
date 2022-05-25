@@ -73,8 +73,8 @@ def _impl(ctx):
     tool_paths = ctx.attr.tool_paths
     extra_cflags = ctx.attr.extra_cflags
     extra_cxxflags = ctx.attr.extra_cxxflags
-    extra_includes = ctx.attr.extra_includes
     extra_ldflags = ctx.attr.extra_ldflags
+    includes = ctx.attr.includes
 
     objcopy_tool = tool_paths.get("objcopy")
     objcopy_embed_data_action = action_config(
@@ -299,18 +299,18 @@ def _impl(ctx):
         ] if len(extra_cxxflags) > 0 else [],
     )
 
-    extra_includes_feature = feature(
-        name = "extra_includes",
+    includes_feature = feature(
+        name = "includes",
         enabled = True,
         flag_sets = [
             flag_set(
                 actions = all_compile_actions,
                 flag_groups = [flag_group(flags = [
-                    "-isystem{}".format(extra_include)
-                    for extra_include in extra_includes
+                    "-isystem{}".format(include)
+                    for include in includes
                 ])],
             ),
-        ] if len(extra_includes) > 0 else [],
+        ] if len(includes) > 0 else [],
     )
 
     extra_ldflags_feature = feature(
@@ -365,8 +365,8 @@ def _impl(ctx):
         unfiltered_compile_flags_feature,
         extra_cflags_feature,
         extra_cxxflags_feature,
-        extra_includes_feature,
         extra_ldflags_feature,
+        includes_feature,
     ]
 
     return [
@@ -401,8 +401,8 @@ cc_toolchain_config = rule(
         "cxx_builtin_include_directories": attr.string_list(mandatory = True),
         "extra_cflags": attr.string_list(mandatory = True),
         "extra_cxxflags": attr.string_list(mandatory = True),
-        "extra_includes": attr.string_list(mandatory = True),
         "extra_ldflags": attr.string_list(mandatory = True),
+        "includes": attr.string_list(mandatory = True),
         "tool_paths": attr.string_dict(mandatory = True),
     },
     provides = [CcToolchainConfigInfo],

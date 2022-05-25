@@ -35,8 +35,8 @@ cc_toolchain_config(
     cxx_builtin_include_directories = __cxx_builtin_include_directories__,
     extra_cflags = __extra_cflags__,
     extra_cxxflags = __extra_cxxflags__,
-    extra_includes = __extra_includes__,
     extra_ldflags = __extra_ldflags__,
+    includes = __includes__,
     tool_paths = __tool_paths__,
 )
 
