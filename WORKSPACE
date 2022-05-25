@@ -95,7 +95,6 @@ gcc_register_toolchain(
     extra_cxxflags = cxxflags,
     extra_ldflags = ldflags("armv7", GCC_VERSION) + extra_ld_flags,
     includes = includes("armv7", GCC_VERSION),
-    platform_directory = "arm-buildroot-linux-gnueabihf",
     sha256 = "6d10f356811429f1bddc23a174932c35127ab6c6f3b738b768f0c29c3bf92f10",
     strip_prefix = "armv7-eabihf--glibc--stable-2021.11-1",
     sysroot = "@sysroot_armv7//:sysroot",

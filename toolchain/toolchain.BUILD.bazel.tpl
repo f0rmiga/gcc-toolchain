@@ -80,13 +80,13 @@ filegroup(
 filegroup(
     name = "include",
     srcs = glob([
-        "lib/gcc/__platform_directory__/*/include/**",
-        "lib/gcc/__platform_directory__/*/include-fixed/**",
-        "__platform_directory__/include/**",
-        "__platform_directory__/sysroot/usr/include/**",
-        "__platform_directory__/include/c++/*/**",
-        "__platform_directory__/include/c++/*/__platform_directory__/**",
-        "__platform_directory__/include/c++/*/backward/**",
+        "lib/gcc/__platform_directory_glob_pattern__/*/include/**",
+        "lib/gcc/__platform_directory_glob_pattern__/*/include-fixed/**",
+        "__platform_directory_glob_pattern__/include/**",
+        "__platform_directory_glob_pattern__/sysroot/usr/include/**",
+        "__platform_directory_glob_pattern__/include/c++/*/**",
+        "__platform_directory_glob_pattern__/include/c++/*/__platform_directory_glob_pattern__/**",
+        "__platform_directory_glob_pattern__/include/c++/*/backward/**",
     ]),
 )
 
@@ -95,8 +95,8 @@ filegroup(
     srcs = glob([
         "lib/**",
         "lib64/**",
-        "__platform_directory__/lib/**",
-        "__platform_directory__/lib64/**",
+        "__platform_directory_glob_pattern__/lib/**",
+        "__platform_directory_glob_pattern__/lib64/**",
         "**/*.so",
     ]),
 )
