@@ -6,3 +6,5 @@ test --sandbox_default_allow_network=false
 test --test_output=errors
 
 build:debug --verbose_failures --sandbox_debug --toolchain_resolution_debug
+
+try-import %workspace%/.bazelrc.user
