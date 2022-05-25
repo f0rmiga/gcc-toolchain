@@ -64,8 +64,8 @@ gcc_register_toolchain(
     bazel_gcc_toolchain_workspace_name = "",
     extra_cflags = cflags + extra_cflags,
     extra_cxxflags = cxxflags,
-    extra_includes = includes("x86_64", GCC_VERSION),
     extra_ldflags = ldflags("x86_64", GCC_VERSION) + extra_ld_flags,
+    includes = includes("x86_64", GCC_VERSION),
     sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
     strip_prefix = "x86-64--glibc--stable-2021.11-5",
     sysroot = "@sysroot_x86_64//:sysroot",
@@ -78,8 +78,8 @@ gcc_register_toolchain(
     bazel_gcc_toolchain_workspace_name = "",
     extra_cflags = cflags + extra_cflags,
     extra_cxxflags = cxxflags,
-    extra_includes = includes("aarch64", GCC_VERSION),
     extra_ldflags = ldflags("aarch64", GCC_VERSION) + extra_ld_flags,
+    includes = includes("aarch64", GCC_VERSION),
     sha256 = "dec070196608124fa14c3f192364c5b5b057d7f34651ad58ebb8fc87959c97f7",
     strip_prefix = "aarch64--glibc--stable-2021.11-1",
     sysroot = "@sysroot_aarch64//:sysroot",
@@ -93,8 +93,8 @@ gcc_register_toolchain(
     binary_prefix = "arm",
     extra_cflags = cflags + extra_cflags,
     extra_cxxflags = cxxflags,
-    extra_includes = includes("armv7", GCC_VERSION),
     extra_ldflags = ldflags("armv7", GCC_VERSION) + extra_ld_flags,
+    includes = includes("armv7", GCC_VERSION),
     platform_directory = "arm-buildroot-linux-gnueabihf",
     sha256 = "6d10f356811429f1bddc23a174932c35127ab6c6f3b738b768f0c29c3bf92f10",
     strip_prefix = "armv7-eabihf--glibc--stable-2021.11-1",
@@ -106,11 +106,6 @@ gcc_register_toolchain(
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
 
 rules_foreign_cc_dependencies()
-
-load("@rules_perl//perl:deps.bzl", "perl_register_toolchains", "perl_rules_dependencies")
-
-perl_rules_dependencies()
-perl_register_toolchains()
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
