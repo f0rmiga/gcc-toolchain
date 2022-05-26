@@ -33,7 +33,7 @@ platform(
     ],
     exec_properties = {
         "OSFamily": "Linux",
-        "container-image": "docker://quay.io/libpod/ubuntu_podman",
+        "container-image": "docker://registry-1.docker.io/library/python:3.10.4@sha256:3b8fdb75de9a3189c49279ebcdddaedba0a4f7a4a19765d38e8b819589b0927a",
     },
     visibility = ["//visibility:public"],
 )
