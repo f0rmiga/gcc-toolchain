@@ -265,7 +265,7 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = all_cpp_compile_actions,
+                actions = all_compile_actions,
                 flag_groups = [
                     flag_group(
                         flags = ["%{user_compile_flags}"],
