@@ -32,3 +32,36 @@ pkg_tar(
     include_runfiles = True,
     strip_prefix = "/",
 )
+
+cc_binary(
+    name = "hello_world_cpp_static",
+    srcs = ["main.cpp"],
+    data = ["names.txt"],
+    features = ["static_libstdcxx"],
+)
+
+platform_transition_filegroup(
+    name = "hello_world_cpp_static_linux_aarch64",
+    target_platform = "//platforms:aarch64_linux",
+    srcs = [":hello_world_cpp_static"],
+)
+
+pkg_tar(
+    name = "hello_world_cpp_static_linux_aarch64_tar",
+    srcs = [":hello_world_cpp_static_linux_aarch64"],
+    include_runfiles = True,
+    strip_prefix = "/",
+)
+
+platform_transition_filegroup(
+    name = "hello_world_cpp_static_linux_armv7",
+    target_platform = "//platforms:armv7_linux",
+    srcs = [":hello_world_cpp_static"],
+)
+
+pkg_tar(
+    name = "hello_world_cpp_static_linux_armv7_tar",
+    srcs = [":hello_world_cpp_static_linux_armv7"],
+    include_runfiles = True,
+    strip_prefix = "/",
+)

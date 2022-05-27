@@ -83,6 +83,9 @@ def _impl(ctx):
         tools = [tool(path = objcopy_tool)],
     )
 
+    pure_c_feature = feature(name = "pure_c")
+    static_libstdcxx_feature = feature(name = "static_libstdcxx")
+
     default_link_flags_feature = feature(
         name = "default_link_flags",
         enabled = True,
@@ -94,7 +97,38 @@ def _impl(ctx):
                         flags = [
                             "-Wl,-z,relro,-z,now",
                             "-pass-exit-codes",
+                            "-lm",
                         ],
+                    ),
+                ],
+            ),
+            flag_set(
+                actions = all_link_actions,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-lstdc++"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        not_features = [
+                            "pure_c",
+                            "static_libstdcxx",
+                        ],
+                    ),
+                ],
+            ),
+            flag_set(
+                actions = all_link_actions,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-l:libstdc++.a"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        not_features = ["pure_c"],
+                        features = ["static_libstdcxx"],
                     ),
                 ],
             ),
@@ -354,6 +388,8 @@ def _impl(ctx):
         default_compile_flags_feature,
         include_paths_feature,
         library_search_directories_feature,
+        pure_c_feature,
+        static_libstdcxx_feature,
         default_link_flags_feature,
         supports_dynamic_linker_feature,
         supports_pic_feature,
