@@ -8,9 +8,9 @@ This module provides the definitions for registering a GCC toolchain for C and C
 ## gcc_toolchain
 
 <pre>
-gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-bazel_gcc_toolchain_workspace_name">bazel_gcc_toolchain_workspace_name</a>, <a href="#gcc_toolchain-binary_prefix">binary_prefix</a>, <a href="#gcc_toolchain-extra_cflags">extra_cflags</a>, <a href="#gcc_toolchain-extra_cxxflags">extra_cxxflags</a>,
-              <a href="#gcc_toolchain-extra_ldflags">extra_ldflags</a>, <a href="#gcc_toolchain-includes">includes</a>, <a href="#gcc_toolchain-repo_mapping">repo_mapping</a>, <a href="#gcc_toolchain-sha256">sha256</a>, <a href="#gcc_toolchain-strip_prefix">strip_prefix</a>, <a href="#gcc_toolchain-sysroot">sysroot</a>, <a href="#gcc_toolchain-target_arch">target_arch</a>,
-              <a href="#gcc_toolchain-target_compatible_with">target_compatible_with</a>, <a href="#gcc_toolchain-url">url</a>)
+gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-binary_prefix">binary_prefix</a>, <a href="#gcc_toolchain-extra_cflags">extra_cflags</a>, <a href="#gcc_toolchain-extra_cxxflags">extra_cxxflags</a>, <a href="#gcc_toolchain-extra_ldflags">extra_ldflags</a>,
+              <a href="#gcc_toolchain-gcc_toolchain_workspace_name">gcc_toolchain_workspace_name</a>, <a href="#gcc_toolchain-includes">includes</a>, <a href="#gcc_toolchain-repo_mapping">repo_mapping</a>, <a href="#gcc_toolchain-sha256">sha256</a>, <a href="#gcc_toolchain-strip_prefix">strip_prefix</a>, <a href="#gcc_toolchain-sysroot">sysroot</a>,
+              <a href="#gcc_toolchain-target_arch">target_arch</a>, <a href="#gcc_toolchain-target_compatible_with">target_compatible_with</a>, <a href="#gcc_toolchain-url">url</a>)
 </pre>
 
 
@@ -21,11 +21,11 @@ gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-ba
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="gcc_toolchain-name"></a>name |  A unique name for this repository.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="gcc_toolchain-bazel_gcc_toolchain_workspace_name"></a>bazel_gcc_toolchain_workspace_name |  The name given to the repository when imported bazel_gcc_toolchain.   | String | optional | "aspect_bazel_gcc_toolchain" |
 | <a id="gcc_toolchain-binary_prefix"></a>binary_prefix |  An explicit prefix used by each binary in bin/. Defaults to <code>&lt;target_arch&gt;</code>.   | String | optional | "" |
 | <a id="gcc_toolchain-extra_cflags"></a>extra_cflags |  Extra flags for compiling C.   | List of strings | optional | [] |
 | <a id="gcc_toolchain-extra_cxxflags"></a>extra_cxxflags |  Extra flags for compiling C++.   | List of strings | optional | [] |
 | <a id="gcc_toolchain-extra_ldflags"></a>extra_ldflags |  Extra flags for linking. %sysroot% is rendered to the sysroot path. %workspace% is rendered to the toolchain root path. See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.   | List of strings | optional | [] |
+| <a id="gcc_toolchain-gcc_toolchain_workspace_name"></a>gcc_toolchain_workspace_name |  The name given to the gcc-toolchain repository, if the default was not used.   | String | optional | "aspect_gcc_toolchain" |
 | <a id="gcc_toolchain-includes"></a>includes |  Extra includes for compiling C and C++. %sysroot% is rendered to the sysroot path. %workspace% is rendered to the toolchain root path. See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.   | List of strings | optional | [] |
 | <a id="gcc_toolchain-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.&lt;p&gt;For example, an entry <code>"@foo": "@bar"</code> declares that, for any time this repository depends on <code>@foo</code> (such as a dependency on <code>@foo//some:target</code>, it should actually resolve that dependency within globally-declared <code>@bar</code> (<code>@bar//some:target</code>).   | <a href="https://bazel.build/docs/skylark/lib/dict.html">Dictionary: String -> String</a> | required |  |
 | <a id="gcc_toolchain-sha256"></a>sha256 |  The SHA256 integrity hash for the interpreter tarball.   | String | required |  |

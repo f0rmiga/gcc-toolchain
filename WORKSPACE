@@ -1,4 +1,4 @@
-workspace(name = "aspect_bazel_gcc_toolchain")
+workspace(name = "aspect_gcc_toolchain")
 
 load("//toolchain:repositories.bzl", "gcc_toolchain_dependencies")
 
