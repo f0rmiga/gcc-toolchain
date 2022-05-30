@@ -64,8 +64,8 @@ def _gcc_toolchain_impl(rctx):
     platform_directory_glob_pattern = "*-buildroot-linux-gnu*"
 
     substitutions = {
-        "__bazel_gcc_toolchain_workspace_name__": rctx.attr.bazel_gcc_toolchain_workspace_name,
         "__binary_prefix__": binary_prefix,
+        "__gcc_toolchain_workspace_name__": rctx.attr.gcc_toolchain_workspace_name,
         "__generated_header__": generated_header,
         "__platform_directory_glob_pattern__": platform_directory_glob_pattern,
         "__target_arch__": target_arch,
@@ -145,13 +145,13 @@ _DOWNLOAD_TOOLCHAIN_ATTRS = {
 }
 
 _FEATURE_ATTRS = {
-    "bazel_gcc_toolchain_workspace_name": attr.string(
-        doc = "The name given to the repository when imported bazel_gcc_toolchain.",
-        default = "bazel_gcc_toolchain",
-    ),
     "binary_prefix": attr.string(
         doc = "An explicit prefix used by each binary in bin/. Defaults to `<target_arch>`.",
         mandatory = False,
+    ),
+    "gcc_toolchain_workspace_name": attr.string(
+        doc = "The name given to the gcc-toolchain repository, if the default was not used.",
+        default = "aspect_gcc_toolchain",
     ),
     "extra_cflags": attr.string_list(
         doc = "Extra flags for compiling C.",

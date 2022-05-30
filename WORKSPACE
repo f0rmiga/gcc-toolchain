@@ -1,4 +1,4 @@
-workspace(name = "bazel_gcc_toolchain")
+workspace(name = "aspect_gcc_toolchain")
 
 load("//toolchain:repositories.bzl", "gcc_toolchain_dependencies")
 
@@ -54,7 +54,6 @@ GCC_VERSION = "10.3.0"
 
 gcc_register_toolchain(
     name = "gcc_toolchain_x86_64",
-    bazel_gcc_toolchain_workspace_name = "",
     extra_cflags = cflags,
     extra_cxxflags = cxxflags,
     extra_ldflags = ldflags("x86_64", GCC_VERSION),
@@ -68,7 +67,6 @@ gcc_register_toolchain(
 
 gcc_register_toolchain(
     name = "gcc_toolchain_aarch64",
-    bazel_gcc_toolchain_workspace_name = "",
     extra_cflags = cflags,
     extra_cxxflags = cxxflags,
     extra_ldflags = ldflags("aarch64", GCC_VERSION),
@@ -82,7 +80,6 @@ gcc_register_toolchain(
 
 gcc_register_toolchain(
     name = "gcc_toolchain_armv7",
-    bazel_gcc_toolchain_workspace_name = "",
     binary_prefix = "arm",
     extra_cflags = cflags,
     extra_cxxflags = cxxflags,

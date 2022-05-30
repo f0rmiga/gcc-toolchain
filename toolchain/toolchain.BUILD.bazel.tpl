@@ -2,7 +2,7 @@
 """
 
 load("@rules_cc//cc:defs.bzl", "cc_toolchain")
-load("@__bazel_gcc_toolchain_workspace_name__//toolchain:cc_toolchain_config.bzl", "cc_toolchain_config")
+load("@__gcc_toolchain_workspace_name__//toolchain:cc_toolchain_config.bzl", "cc_toolchain_config")
 
 sysroot = "__sysroot__"
 sysroot_label = "__sysroot_label__"
