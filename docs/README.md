@@ -7,8 +7,9 @@ For examples on how to use this repository, see the [examples](../examples).
 ## Pure C
 
 For targets that contain C-only code, they don't require linking against `libstdc++`. This can be
-done by adding `features = ["pure_c"]` to `cc_library` or `cc_binary`. By default, `libstdc++.so`
-will be linked to all `cc_library` and `cc_binary` targets as it's expected by the Bazel ecosystem.
+done by adding `features = ["no_libstdcxx"]` to `cc_library` or `cc_binary`. By default,
+`libstdc++.so` will be linked to all `cc_library` and `cc_binary` targets as it's expected by the
+Bazel ecosystem.
 
 ## Static libstdc++
 
