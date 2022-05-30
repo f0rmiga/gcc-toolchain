@@ -147,7 +147,7 @@ _DOWNLOAD_TOOLCHAIN_ATTRS = {
 _FEATURE_ATTRS = {
     "bazel_gcc_toolchain_workspace_name": attr.string(
         doc = "The name given to the repository when imported bazel_gcc_toolchain.",
-        default = "bazel_gcc_toolchain",
+        default = "aspect_bazel_gcc_toolchain",
     ),
     "binary_prefix": attr.string(
         doc = "An explicit prefix used by each binary in bin/. Defaults to `<target_arch>`.",
