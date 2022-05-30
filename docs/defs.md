@@ -21,7 +21,7 @@ gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-ba
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="gcc_toolchain-name"></a>name |  A unique name for this repository.   | <a href="https://bazel.build/docs/build-ref.html#name">Name</a> | required |  |
-| <a id="gcc_toolchain-bazel_gcc_toolchain_workspace_name"></a>bazel_gcc_toolchain_workspace_name |  The name give to the repository when imported bazel_gcc_toolchain.   | String | optional | "bazel_gcc_toolchain" |
+| <a id="gcc_toolchain-bazel_gcc_toolchain_workspace_name"></a>bazel_gcc_toolchain_workspace_name |  The name given to the repository when imported bazel_gcc_toolchain.   | String | optional | "bazel_gcc_toolchain" |
 | <a id="gcc_toolchain-binary_prefix"></a>binary_prefix |  An explicit prefix used by each binary in bin/. Defaults to <code>&lt;target_arch&gt;</code>.   | String | optional | "" |
 | <a id="gcc_toolchain-extra_cflags"></a>extra_cflags |  Extra flags for compiling C.   | List of strings | optional | [] |
 | <a id="gcc_toolchain-extra_cxxflags"></a>extra_cxxflags |  Extra flags for compiling C++.   | List of strings | optional | [] |
