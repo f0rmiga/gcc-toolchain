@@ -83,7 +83,7 @@ def _impl(ctx):
         tools = [tool(path = objcopy_tool)],
     )
 
-    pure_c_feature = feature(name = "pure_c")
+    no_libstdcxx_feature = feature(name = "no_libstdcxx")
     static_libstdcxx_feature = feature(name = "static_libstdcxx")
 
     default_link_flags_feature = feature(
@@ -112,7 +112,7 @@ def _impl(ctx):
                 with_features = [
                     with_feature_set(
                         not_features = [
-                            "pure_c",
+                            "no_libstdcxx",
                             "static_libstdcxx",
                         ],
                     ),
@@ -127,7 +127,7 @@ def _impl(ctx):
                 ],
                 with_features = [
                     with_feature_set(
-                        not_features = ["pure_c"],
+                        not_features = ["no_libstdcxx"],
                         features = ["static_libstdcxx"],
                     ),
                 ],
@@ -388,7 +388,7 @@ def _impl(ctx):
         default_compile_flags_feature,
         include_paths_feature,
         library_search_directories_feature,
-        pure_c_feature,
+        no_libstdcxx_feature,
         static_libstdcxx_feature,
         default_link_flags_feature,
         supports_dynamic_linker_feature,
