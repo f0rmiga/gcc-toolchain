@@ -13,3 +13,15 @@ workflows:
         bazel:
           build_targets: [//...]
           test_targets: [//...]
+      - name: bazel test asan
+        bazel:
+          test_targets: [//tests/sanitizers:asan_test]
+          test_flags: [--config, asan]
+      - name: bazel test tsan
+        bazel:
+          test_targets: [//tests/sanitizers:tsan_test]
+          test_flags: [--config, tsan]
+      - name: bazel test ubsan
+        bazel:
+          test_targets: [//tests/sanitizers:ubsan_test]
+          test_flags: [--config, ubsan]

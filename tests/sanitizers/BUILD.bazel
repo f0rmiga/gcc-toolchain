@@ -1,0 +1,50 @@
+cc_binary(
+    name = "asan",
+    srcs = ["asan.c"],
+    features = ["no_libstdcxx"],
+)
+
+sh_test(
+    name = "asan_test",
+    srcs = ["sanitizer_test.sh"],
+    data = [":asan"],
+    env = {
+        "BINARY": "$(rootpath :asan)",
+        "EXPECTED_MESSAGE": "==16==ERROR: LeakSanitizer: detected memory leaks",
+    },
+    tags = ["manual"],
+)
+
+cc_binary(
+    name = "tsan",
+    srcs = ["tsan.cc"],
+    linkopts = ["-pthread"],
+)
+
+sh_test(
+    name = "tsan_test",
+    srcs = ["sanitizer_test.sh"],
+    data = [":tsan"],
+    env = {
+        "BINARY": "$(rootpath :tsan)",
+        "EXPECTED_MESSAGE": "WARNING: ThreadSanitizer: data race",
+    },
+    tags = ["manual"],
+)
+
+cc_binary(
+    name = "ubsan",
+    srcs = ["ubsan.c"],
+    features = ["no_libstdcxx"],
+)
+
+sh_test(
+    name = "ubsan_test",
+    srcs = ["sanitizer_test.sh"],
+    data = [":ubsan"],
+    env = {
+        "BINARY": "$(rootpath :ubsan)",
+        "EXPECTED_MESSAGE": "tests/sanitizers/ubsan.c:4:7: runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'",
+    },
+    tags = ["manual"],
+)

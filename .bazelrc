@@ -7,4 +7,20 @@ test --test_output=errors
 
 build:debug --verbose_failures --sandbox_debug --toolchain_resolution_debug
 
+# If you change these flags, please also update the documentation.
+build:asan --features asan
+build:asan --strip never
+build:asan --action_env ASAN_OPTIONS=detect_leaks=1:color=always
+build:asan --action_env LSAN_OPTIONS=report_objects=1
+
+# If you change these flags, please also update the documentation.
+build:tsan --features tsan
+build:tsan --strip never
+build:tsan --action_env TSAN_OPTIONS=halt_on_error=1:second_deadlock_stack=1
+
+# If you change these flags, please also update the documentation.
+build:ubsan --features ubsan
+build:ubsan --strip never
+build:ubsan --action_env UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
+
 try-import %workspace%/.bazelrc.user
