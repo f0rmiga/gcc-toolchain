@@ -41,7 +41,7 @@ gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-bi
 ## gcc_register_toolchain
 
 <pre>
-gcc_register_toolchain(<a href="#gcc_register_toolchain-name">name</a>, <a href="#gcc_register_toolchain-kwargs">kwargs</a>)
+gcc_register_toolchain(<a href="#gcc_register_toolchain-name">name</a>, <a href="#gcc_register_toolchain-target_arch">target_arch</a>, <a href="#gcc_register_toolchain-kwargs">kwargs</a>)
 </pre>
 
 Declares a `gcc_toolchain` and calls `register_toolchain` for it.
@@ -52,6 +52,7 @@ Declares a `gcc_toolchain` and calls `register_toolchain` for it.
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
 | <a id="gcc_register_toolchain-name"></a>name |  The name passed to <code>gcc_toolchain</code>.   |  none |
+| <a id="gcc_register_toolchain-target_arch"></a>target_arch |  The target architecture of the toolchain.   |  none |
 | <a id="gcc_register_toolchain-kwargs"></a>kwargs |  The extra arguments passed to <code>gcc_toolchain</code>. See <code>gcc_toolchain</code> for more info.   |  none |
 
 

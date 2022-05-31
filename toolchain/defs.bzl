@@ -3,6 +3,8 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("//sysroot:flags.bzl", "cflags", "cxxflags", "ldflags", "includes")
 
 def _gcc_toolchain_impl(rctx):
     absolute_toolchain_root = str(rctx.path("."))
@@ -214,16 +216,89 @@ gcc_toolchain = repository_rule(
     ),
 )
 
-def gcc_register_toolchain(name, **kwargs):
+def gcc_register_toolchain(
+    name,
+    target_arch,
+    **kwargs
+):
     """Declares a `gcc_toolchain` and calls `register_toolchain` for it.
 
     Args:
         name: The name passed to `gcc_toolchain`.
+        target_arch: The target architecture of the toolchain.
         **kwargs: The extra arguments passed to `gcc_toolchain`. See `gcc_toolchain` for more info.
     """
+    sysroot = kwargs.pop("sysroot", None)
+    if not sysroot:
+        http_archive(
+            name = "sysroot_{}".format(target_arch),
+            build_file_content = _SYSROOT_BUILD_FILE_CONTENT,
+            sha256 = _SYSROOTS[target_arch].sha256,
+            url = _SYSROOTS[target_arch].url,
+        )
+
     gcc_toolchain(
         name = name,
+        binary_prefix = kwargs.pop("binary_prefix", "arm" if target_arch == ARCHS.armv7 else None),
+        extra_cflags = kwargs.pop("extra_cflags", cflags),
+        extra_cxxflags = kwargs.pop("extra_cxxflags", cxxflags),
+        extra_ldflags = kwargs.pop("extra_ldflags", ldflags(target_arch, _GCC_VERSION)),
+        includes = kwargs.pop("includes", includes(target_arch, _GCC_VERSION)),
+        sha256 = kwargs.pop("sha256", _TOOLCHAINS[target_arch].sha256),
+        strip_prefix = kwargs.pop("strip_prefix", _TOOLCHAINS[target_arch].strip_prefix),
+        sysroot = kwargs.pop("sysroot", "@sysroot_{}//:sysroot".format(target_arch)),
+        target_arch = target_arch,
+        url = kwargs.pop("url", _TOOLCHAINS[target_arch].url),
         **kwargs
     )
 
     native.register_toolchains("@{}//:toolchain".format(name))
+
+ARCHS = struct(
+    aarch64 = "aarch64",
+    armv7 = "armv7",
+    x86_64 = "x86_64",
+)
+
+_SYSROOTS = {
+    "aarch64": struct(
+        sha256 = "8ccddd7ca9cd188fbfb06bf29fc5dccc213e5b80591f44e3f84c38e5ad0bb419",
+        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.1.0/sysroot-aarch64.tar.xz",
+    ),
+    "armv7": struct(
+        sha256 = "a3941793e74fd21b1dfc067c7e96d4e6e246914f9050eaf44abb0ebc91121227",
+        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.1.0/sysroot-armv7.tar.xz",
+    ),
+    "x86_64": struct(
+        sha256 = "a5b0f5515684b16fb564b935f4b7ee28feda8ded966e26be7c67db71c6148493",
+        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.1.0/sysroot-x86_64.tar.xz",
+    ),
+}
+
+_TOOLCHAINS = {
+    "aarch64": struct(
+        sha256 = "dec070196608124fa14c3f192364c5b5b057d7f34651ad58ebb8fc87959c97f7",
+        strip_prefix = "aarch64--glibc--stable-2021.11-1",
+        url = "https://toolchains.bootlin.com/downloads/releases/toolchains/aarch64/tarballs/aarch64--glibc--stable-2021.11-1.tar.bz2",
+    ),
+    "armv7": struct(
+        sha256 = "6d10f356811429f1bddc23a174932c35127ab6c6f3b738b768f0c29c3bf92f10",
+        strip_prefix = "armv7-eabihf--glibc--stable-2021.11-1",
+        url = "https://toolchains.bootlin.com/downloads/releases/toolchains/armv7-eabihf/tarballs/armv7-eabihf--glibc--stable-2021.11-1.tar.bz2",
+    ),
+    "x86_64": struct(
+        sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
+        strip_prefix = "x86-64--glibc--stable-2021.11-5",
+        url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2021.11-5.tar.bz2",
+    ),
+}
+
+_GCC_VERSION = "10.3.0"
+
+_SYSROOT_BUILD_FILE_CONTENT = """\
+filegroup(
+    name = "sysroot",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+"""
