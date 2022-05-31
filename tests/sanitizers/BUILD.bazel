@@ -1,0 +1,86 @@
+cc_binary(
+    name = "asan",
+    srcs = ["asan.cc"],
+)
+
+sh_test(
+    name = "asan_test",
+    srcs = ["sanitizer_test.sh"],
+    data = [
+        ":asan",
+        "@sysroot_x86_64//:libasan",
+        "@sysroot_x86_64//:lib64/libasan.so",
+    ],
+    env = {
+        "BINARY": "$(rootpath :asan)",
+        "EXPECTED_MESSAGE": "ERROR: AddressSanitizer: heap-use-after-free",
+        "INTERNAL_LD_PRELOAD": "$(rootpath @sysroot_x86_64//:lib64/libasan.so)",
+    },
+    tags = ["manual"],
+)
+
+cc_binary(
+    name = "lsan",
+    srcs = ["lsan.cc"],
+)
+
+# The lsan test requires SYS_PTRACE capability when running under a containerized environment.
+sh_test(
+    name = "lsan_test",
+    srcs = ["sanitizer_test.sh"],
+    data = [
+        ":lsan",
+        "@sysroot_x86_64//:liblsan",
+        "@sysroot_x86_64//:lib64/liblsan.so",
+    ],
+    env = {
+        "BINARY": "$(rootpath :lsan)",
+        "EXPECTED_MESSAGE": "ERROR: LeakSanitizer: detected memory leaks",
+        "INTERNAL_LD_PRELOAD": "$(rootpath @sysroot_x86_64//:lib64/liblsan.so)",
+    },
+    tags = ["manual"],
+)
+
+cc_binary(
+    name = "tsan",
+    srcs = ["tsan.cc"],
+    linkopts = ["-pthread"],
+)
+
+sh_test(
+    name = "tsan_test",
+    srcs = ["sanitizer_test.sh"],
+    data = [
+        ":tsan",
+        "@sysroot_x86_64//:libtsan",
+        "@sysroot_x86_64//:lib64/libtsan.so",
+    ],
+    env = {
+        "BINARY": "$(rootpath :tsan)",
+        "EXPECTED_MESSAGE": "WARNING: ThreadSanitizer: data race",
+        "INTERNAL_LD_PRELOAD": "$(rootpath @sysroot_x86_64//:lib64/libtsan.so)",
+    },
+    tags = ["manual"],
+)
+
+cc_binary(
+    name = "ubsan",
+    srcs = ["ubsan.c"],
+    features = ["no_libstdcxx"],
+)
+
+sh_test(
+    name = "ubsan_test",
+    srcs = ["sanitizer_test.sh"],
+    data = [
+        ":ubsan",
+        "@sysroot_x86_64//:libubsan",
+        "@sysroot_x86_64//:lib64/libubsan.so",
+    ],
+    env = {
+        "BINARY": "$(rootpath :ubsan)",
+        "EXPECTED_MESSAGE": "tests/sanitizers/ubsan.c:4:7: runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'",
+        "INTERNAL_LD_PRELOAD": "$(rootpath @sysroot_x86_64//:lib64/libubsan.so)",
+    },
+    tags = ["manual"],
+)

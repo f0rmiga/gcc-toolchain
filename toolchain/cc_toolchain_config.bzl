@@ -224,6 +224,62 @@ def _impl(ctx):
         ],
     )
 
+    sanitizers = [
+        struct(
+            name = "asan",
+            cflags = [
+                "-fsanitize=address",
+                "-DADDRESS_SANITIZER",
+                "-O0",
+                "-g",
+                "-fno-omit-frame-pointer",
+            ],
+            ldflags = [
+                "-fsanitize=address",
+            ],
+        ),
+        struct(
+            name = "lsan",
+            cflags = [
+                "-fsanitize=leak",
+                "-O0",
+                "-g",
+                "-fno-omit-frame-pointer",
+            ],
+            ldflags = [
+                "-fsanitize=leak",
+            ],
+        ),
+        struct(
+            name = "tsan",
+            cflags = [
+                "-fsanitize=thread",
+                "-O1",
+                "-g",
+                "-fno-omit-frame-pointer",
+            ],
+            ldflags = [
+                "-fsanitize=thread",
+            ],
+        ),
+        struct(
+            name = "ubsan",
+            cflags = [
+                "-fsanitize=undefined",
+                "-g",
+                "-fno-omit-frame-pointer",
+            ],
+            ldflags = [
+                "-fsanitize=undefined",
+            ],
+        ),
+    ]
+
+    sanitizers_features = [
+        _sanitizer_feature(sanitizer)
+        for sanitizer in sanitizers
+    ]
+
     include_paths_feature = feature(
         name = "include_paths",
         enabled = True,
@@ -384,7 +440,7 @@ def _impl(ctx):
         ],
     )
 
-    features = [
+    features = sanitizers_features + [
         default_compile_flags_feature,
         include_paths_feature,
         library_search_directories_feature,
@@ -443,3 +499,32 @@ cc_toolchain_config = rule(
     },
     provides = [CcToolchainConfigInfo],
 )
+
+def _sanitizer_feature(sanitizer):
+    feature_sets = [with_feature_set(
+        features = [sanitizer.name],
+        not_features = ["opt"],
+    )]
+    return feature(
+        name = sanitizer.name,
+        flag_sets = [
+            flag_set(
+                actions = all_compile_actions,
+                flag_groups = [
+                    flag_group(
+                        flags = sanitizer.cflags,
+                    ),
+                ],
+                with_features = feature_sets,
+            ),
+            flag_set(
+                actions = all_link_actions,
+                flag_groups = [
+                    flag_group(
+                        flags = sanitizer.ldflags,
+                    ),
+                ],
+                with_features = feature_sets,
+            ),
+        ],
+    )

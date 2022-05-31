@@ -29,3 +29,74 @@ build --strategy=remote
 build --genrule_strategy=remote
 build --spawn_strategy=remote
 ```
+
+## Running sanitizers
+
+If you want to run automated tests with the sanitizers enabled, see how we do testing under
+`//tests/sanitizers`, and how we call them from CI.
+
+For running the binaries with the sanitizers enabled, check the following topics.
+
+### Address Sanitizer (asan)
+
+Add the following to your `.bazelrc`:
+
+```shell
+build:asan --features asan
+build:asan --strip never
+build:asan --action_env ASAN_OPTIONS=detect_leaks=0:color=always
+```
+
+Then run:
+
+```shell
+bazel run --config asan //<your_binary>
+```
+
+### Leak Sanitizer (lsan)
+
+Add the following to your `.bazelrc`:
+
+```shell
+build:lsan --features lsan
+build:lsan --strip never
+build:lsan --action_env LSAN_OPTIONS=verbosity=1:log_threads=1:report_objects=1
+```
+
+Then run:
+
+```shell
+bazel run --config lsan //<your_binary>
+```
+
+### Thread Sanitizer (tsan)
+
+Add the following to your `.bazelrc`:
+
+```shell
+build:tsan --features tsan
+build:tsan --strip never
+build:tsan --action_env TSAN_OPTIONS=halt_on_error=1:second_deadlock_stack=1
+```
+
+Then run:
+
+```shell
+bazel run --config tsan //<your_binary>
+```
+
+### Undefined Behaviour Sanitizer (ubsan)
+
+Add the following to your `.bazelrc`:
+
+```shell
+build:ubsan --features ubsan
+build:ubsan --strip never
+build:ubsan --action_env UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
+```
+
+Then run:
+
+```shell
+bazel run --config ubsan //<your_binary>
+```
