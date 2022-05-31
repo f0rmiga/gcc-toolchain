@@ -17,6 +17,12 @@ workflows:
         bazel:
           test_targets: [//tests/sanitizers:asan_test]
           test_flags: [--config, asan]
+      # TODO:
+      # The lsan test requires SYS_PTRACE capability when running under a containerized environment.
+      # - name: bazel test lsan
+      #   bazel:
+      #     test_targets: [//tests/sanitizers:lsan_test]
+      #     test_flags: [--config, lsan]
       - name: bazel test tsan
         bazel:
           test_targets: [//tests/sanitizers:tsan_test]

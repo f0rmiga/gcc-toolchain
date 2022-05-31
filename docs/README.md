@@ -44,14 +44,29 @@ Add the following to your `.bazelrc`:
 ```shell
 build:asan --features asan
 build:asan --strip never
-build:asan --action_env ASAN_OPTIONS=detect_leaks=1:color=always
-build:asan --action_env LSAN_OPTIONS=report_objects=1
+build:asan --action_env ASAN_OPTIONS=detect_leaks=0:color=always
 ```
 
 Then run:
 
 ```shell
 bazel run --config asan //<your_binary>
+```
+
+### Leak Sanitizer (lsan)
+
+Add the following to your `.bazelrc`:
+
+```shell
+build:lsan --features lsan
+build:lsan --strip never
+build:lsan --action_env LSAN_OPTIONS=verbosity=1:log_threads=1:report_objects=1
+```
+
+Then run:
+
+```shell
+bazel run --config lsan //<your_binary>
 ```
 
 ### Thread Sanitizer (tsan)

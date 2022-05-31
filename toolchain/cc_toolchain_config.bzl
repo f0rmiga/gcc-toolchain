@@ -239,6 +239,18 @@ def _impl(ctx):
             ],
         ),
         struct(
+            name = "lsan",
+            cflags = [
+                "-fsanitize=leak",
+                "-O0",
+                "-g",
+                "-fno-omit-frame-pointer",
+            ],
+            ldflags = [
+                "-fsanitize=leak",
+            ],
+        ),
+        struct(
             name = "tsan",
             cflags = [
                 "-fsanitize=thread",
