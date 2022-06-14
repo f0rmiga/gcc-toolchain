@@ -2,7 +2,6 @@
 
 readonly arch=$1
 readonly output=$2
-builder=$3
 
 set -o errexit -o nounset -o pipefail
 
@@ -16,36 +15,13 @@ if [ -z "${output}" ]; then
     exit 1
 fi
 
-if [ -z "${builder}" ]; then
-    builder="default"
-    >&2 echo "WARNING: the third argument (builder) of the script was not set. Using default builder."
-fi
-
-if [[ "${arch}" == "armv7" ]]; then
-    readonly gcc_target_suffix="eabihf"
-    readonly platform="linux/arm/v7"
-elif [[ "${arch}" == "aarch64" ]]; then
-    readonly gcc_target_suffix=""
-    readonly platform="linux/aarch64"
-elif [[ "${arch}" == "x86_64" ]]; then
-    readonly gcc_target_suffix=""
-    readonly platform="linux/amd64"
-else
-    >&2 echo "ERROR: '${arch}' is not a valid target architecture."
-    exit 1
-fi
-
 echo "INFO: building sysroot inside container..."
 
 sysroot_dir="$(git rev-parse --show-toplevel)/sysroot"
 
 (cd "${sysroot_dir}"; \
-    docker buildx build \
-        --builder "${builder}" \
+    docker build \
         --build-arg ARCH="${arch}" \
-        --build-arg GCC_TARGET_SUFFIX="${gcc_target_suffix}" \
-        --load \
-        --platform "${platform}" \
         --tag "sysroot-${arch}" \
         .)
 
@@ -72,3 +48,4 @@ elif [[ "${os_name}" == "Darwin" ]]; then
     readonly cpus="$(sysctl -n hw.ncpu)"
 fi
 (cd "${tmpdir}/sysroot"; tar --create --file /dev/stdout . | XZ_DEFAULTS="--threads ${cpus}" xz -9e > "${output}")
+shasum -a 256 "${output}"
