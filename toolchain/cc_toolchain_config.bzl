@@ -152,6 +152,22 @@ def _impl(ctx):
                             "-no-canonical-prefixes",
                             "-fno-canonical-system-headers",
                             "-Wno-builtin-macro-redefined",
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    redacted_dates_feature = feature(
+        name = "redacted_dates",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = all_compile_actions,
+                flag_groups = [
+                    flag_group(
+                        flags = [
                             "-D__DATE__=\"redacted\"",
                             "-D__TIMESTAMP__=\"redacted\"",
                             "-D__TIME__=\"redacted\"",
@@ -455,6 +471,7 @@ def _impl(ctx):
         user_compile_flags_feature,
         sysroot_feature,
         unfiltered_compile_flags_feature,
+        redacted_dates_feature,
         extra_cflags_feature,
         extra_cxxflags_feature,
         extra_ldflags_feature,
