@@ -22,21 +22,21 @@ cxxflags = [
 def ldflags(arch, gcc_version):
     if arch == ARCH_X86_64:
         lib = "lib64"
-        target_triplet = "x86_64-linux-gnu"
+        target = "x86_64-linux"
         arch_specific_prefix = ""
     elif arch == ARCH_ARMV7:
         lib = "lib"
-        target_triplet = "arm-linux-gnueabihf"
-        arch_specific_prefix = target_triplet + "/"
+        target = "arm-linux-gnueabihf"
+        arch_specific_prefix = target + "/"
     elif arch == ARCH_AARCH64:
         lib = "lib64"
-        target_triplet = "aarch64-linux-gnu"
-        arch_specific_prefix = ""
+        target = "aarch64-linux"
+        arch_specific_prefix = target + "/"
     else:
         fail("unknown arch")
     return [
         "-B{toolchain_root}/bin",
-        "-B%sysroot%/usr/{lib}".format(lib = lib),
+        "-B%sysroot%/usr/lib".format(lib = lib),
         "-B%sysroot%/{arch_specific_prefix}{lib}".format(
             arch_specific_prefix = arch_specific_prefix,
             lib = lib
@@ -45,24 +45,24 @@ def ldflags(arch, gcc_version):
             arch_specific_prefix = arch_specific_prefix,
             lib = lib
         ),
-        "-L%sysroot%/usr/{lib}".format(lib = lib),
-        "-L%sysroot%/lib/gcc/{target_triplet}/{gcc_version}".format(
+        "-L%sysroot%/usr/lib".format(lib = lib),
+        "-L%sysroot%/lib/gcc/{target}/{gcc_version}".format(
             gcc_version = gcc_version,
-            target_triplet = target_triplet,
+            target = target,
         ),
     ]
 
 # buildifier: disable=function-docstring
 def includes(arch, gcc_version):
     if arch == ARCH_X86_64:
-        target_triplet = "x86_64-linux-gnu"
+        target = "x86_64-linux"
         include_prefix = ""
     elif arch == ARCH_ARMV7:
-        target_triplet = "arm-linux-gnueabihf"
-        include_prefix = target_triplet + "/"
+        target = "arm-linux-gnueabihf"
+        include_prefix = target + "/"
     elif arch == ARCH_AARCH64:
-        target_triplet = "aarch64-linux-gnu"
-        include_prefix = ""
+        target = "aarch64-linux"
+        include_prefix = target + "/"
     else:
         fail("unknown arch")
     return [
@@ -70,18 +70,18 @@ def includes(arch, gcc_version):
             gcc_version = gcc_version,
             include_prefix = include_prefix,
         ),
-        "%sysroot%/{include_prefix}include/c++/{gcc_version}/{target_triplet}".format(
+        "%sysroot%/{include_prefix}include/c++/{gcc_version}/{target}".format(
             gcc_version = gcc_version,
             include_prefix = include_prefix,
-            target_triplet = target_triplet,
+            target = target,
         ),
-        "%sysroot%/lib/gcc/{target_triplet}/{gcc_version}/include-fixed".format(
+        "%sysroot%/lib/gcc/{target}/{gcc_version}/include-fixed".format(
             gcc_version = gcc_version,
-            target_triplet = target_triplet,
+            target = target,
         ),
-        "%sysroot%/lib/gcc/{target_triplet}/{gcc_version}/include".format(
+        "%sysroot%/lib/gcc/{target}/{gcc_version}/include".format(
             gcc_version = gcc_version,
-            target_triplet = target_triplet,
+            target = target,
         ),
         "%sysroot%/usr/include",
     ]
