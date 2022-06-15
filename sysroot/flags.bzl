@@ -8,14 +8,12 @@ ARCH_AARCH64 = "aarch64"
 cflags = [
     "-fdiagnostics-color=always",
     "-nostdinc",
-    "-B{toolchain_root}/bin",
 ]
 
 cxxflags = [
     "-fdiagnostics-color=always",
     "-nostdinc",
     "-nostdinc++",
-    "-B{toolchain_root}/bin",
 ]
 
 # buildifier: disable=function-docstring
@@ -35,8 +33,7 @@ def ldflags(arch, gcc_version):
     else:
         fail("unknown arch")
     return [
-        "-B{toolchain_root}/bin",
-        "-B%sysroot%/usr/lib".format(lib = lib),
+        "-B%sysroot%/usr/lib",
         "-B%sysroot%/{arch_specific_prefix}{lib}".format(
             arch_specific_prefix = arch_specific_prefix,
             lib = lib
@@ -45,7 +42,7 @@ def ldflags(arch, gcc_version):
             arch_specific_prefix = arch_specific_prefix,
             lib = lib
         ),
-        "-L%sysroot%/usr/lib".format(lib = lib),
+        "-L%sysroot%/usr/lib",
         "-L%sysroot%/lib/gcc/{target}/{gcc_version}".format(
             gcc_version = gcc_version,
             target = target,
