@@ -99,8 +99,9 @@ WORKDIR /build/gcc/build
 COPY --from=kernel /var/buildlibs/kernel /var/builds/sysroot
 COPY --from=glibc /var/buildlibs/glibc /var/builds/sysroot
 RUN --mount=source=configure.sh,target=/usr/bin/configure.sh IS_GCC_BUILD=1 configure.sh \
-        --disable-multilib \
+        --enable-default-pie \
         --enable-languages=c,c++,fortran \
+        --disable-multilib \
         --prefix=/var/buildlibs/gcc \
         --enable-libstdcxx-threads \
         --with-build-sysroot=/var/builds/sysroot \
