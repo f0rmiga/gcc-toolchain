@@ -50,8 +50,8 @@ def _gcc_toolchain_impl(rctx):
         cxx_builtin_include_directories = str(cxx_builtin_include_directories),
 
         # Flags
-        extra_cflags = str(rctx.attr.extra_cflags),
-        extra_cxxflags = str(rctx.attr.extra_cxxflags),
+        extra_cflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_cflags),
+        extra_cxxflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_cxxflags),
         extra_ldflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_ldflags),
         includes = str(includes),
     ))
