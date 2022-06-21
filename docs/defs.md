@@ -8,7 +8,7 @@ This module provides the definitions for registering a GCC toolchain for C and C
 ## gcc_toolchain
 
 <pre>
-gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-binary_prefix">binary_prefix</a>, <a href="#gcc_toolchain-extra_cflags">extra_cflags</a>, <a href="#gcc_toolchain-extra_cxxflags">extra_cxxflags</a>, <a href="#gcc_toolchain-extra_ldflags">extra_ldflags</a>,
+gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-binary_prefix">binary_prefix</a>, <a href="#gcc_toolchain-extra_cflags">extra_cflags</a>, <a href="#gcc_toolchain-extra_cxxflags">extra_cxxflags</a>, <a href="#gcc_toolchain-extra_fflags">extra_fflags</a>, <a href="#gcc_toolchain-extra_ldflags">extra_ldflags</a>,
               <a href="#gcc_toolchain-gcc_toolchain_workspace_name">gcc_toolchain_workspace_name</a>, <a href="#gcc_toolchain-includes">includes</a>, <a href="#gcc_toolchain-repo_mapping">repo_mapping</a>, <a href="#gcc_toolchain-sysroot">sysroot</a>, <a href="#gcc_toolchain-target_arch">target_arch</a>,
               <a href="#gcc_toolchain-target_compatible_with">target_compatible_with</a>, <a href="#gcc_toolchain-toolchain_files_repository_name">toolchain_files_repository_name</a>)
 </pre>
@@ -24,6 +24,7 @@ gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-bi
 | <a id="gcc_toolchain-binary_prefix"></a>binary_prefix |  An explicit prefix used by each binary in bin/.   | String | required |  |
 | <a id="gcc_toolchain-extra_cflags"></a>extra_cflags |  Extra flags for compiling C.   | List of strings | optional | [] |
 | <a id="gcc_toolchain-extra_cxxflags"></a>extra_cxxflags |  Extra flags for compiling C++.   | List of strings | optional | [] |
+| <a id="gcc_toolchain-extra_fflags"></a>extra_fflags |  Extra flags for compiling Fortran.   | List of strings | optional | [] |
 | <a id="gcc_toolchain-extra_ldflags"></a>extra_ldflags |  Extra flags for linking. %sysroot% is rendered to the sysroot path. %workspace% is rendered to the toolchain root path. See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.   | List of strings | optional | [] |
 | <a id="gcc_toolchain-gcc_toolchain_workspace_name"></a>gcc_toolchain_workspace_name |  The name given to the gcc-toolchain repository, if the default was not used.   | String | optional | "aspect_gcc_toolchain" |
 | <a id="gcc_toolchain-includes"></a>includes |  Extra includes for compiling C and C++. %sysroot% is rendered to the sysroot path. %workspace% is rendered to the toolchain root path. See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.   | List of strings | optional | [] |

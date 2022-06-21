@@ -1,0 +1,11 @@
+load("//rules_fortran:defs.bzl", "current_fortran_toolchain")
+
+toolchain_type(
+    name = "toolchain_type",
+    visibility = ["//visibility:public"],
+)
+
+current_fortran_toolchain(
+    name = "current_fortran_toolchain",
+    visibility = ["//visibility:public"],
+)

@@ -18,6 +18,13 @@ cxxflags = [
     "-B%workspace%/bin",
 ]
 
+fflags = [
+    "-fdiagnostics-color=always",
+    "-nostdinc",
+    "-nostdinc++",
+    "-B%workspace%/bin",
+]
+
 # buildifier: disable=function-docstring
 def ldflags(arch, gcc_version):
     if arch == ARCH_X86_64:
