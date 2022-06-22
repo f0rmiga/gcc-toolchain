@@ -1,0 +1,37 @@
+load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("//rules_fortran:defs.bzl", "fortran_binary")
+
+fortran_binary(
+    name = "tabulate_fortran",
+    srcs = [
+        "functions.f90",
+        "tabulate.f90",
+    ],
+)
+
+platform_transition_filegroup(
+    name = "tabulate_fortran_aarch64",
+    target_platform = "//platforms:aarch64_linux",
+    srcs = [":tabulate_fortran"],
+)
+
+pkg_tar(
+    name = "tabulate_fortran_aarch64_tar",
+    srcs = [":tabulate_fortran_aarch64"],
+    include_runfiles = True,
+    strip_prefix = "/",
+)
+
+platform_transition_filegroup(
+    name = "tabulate_fortran_armv7",
+    target_platform = "//platforms:armv7_linux",
+    srcs = [":tabulate_fortran"],
+)
+
+pkg_tar(
+    name = "tabulate_fortran_armv7_tar",
+    srcs = [":tabulate_fortran_armv7"],
+    include_runfiles = True,
+    strip_prefix = "/",
+)
