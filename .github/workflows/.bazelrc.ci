@@ -1,0 +1,18 @@
+build --keep_going
+
+# Remote cache
+build --bes_backend=grpcs://tourmaline.cluster.engflow.com
+build --bes_results_url=https://tourmaline.cluster.engflow.com/invocation/
+build --remote_cache=grpcs://tourmaline.cluster.engflow.com
+build --remote_download_toplevel
+build --remote_timeout=3600
+build --remote_upload_local_results
+build --tls_client_certificate=tourmaline-client.crt
+build --tls_client_key=tourmaline-client.key
+
+# Remote build execution
+build:rbe --extra_execution_platforms=//platforms:x86_64_linux_remote
+build:rbe --genrule_strategy=remote
+build:rbe --host_platform=//platforms:x86_64_linux_remote
+build:rbe --jobs=32
+build:rbe --remote_executor=grpcs://tourmaline.cluster.engflow.com
