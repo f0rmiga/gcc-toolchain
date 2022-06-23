@@ -94,7 +94,7 @@ sh_test(
     ],
     env = {
         "BINARY": "$(rootpath :ubsan)",
-        "EXPECTED_MESSAGE": "tests/sanitizers/ubsan.c:4:7: runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'",
+        "EXPECTED_MESSAGE": "runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'",
         "INTERNAL_LD_PRELOAD": "$(rootpath @sysroot_x86_64//:lib64/libubsan.so)",
     },
     tags = ["manual"],
