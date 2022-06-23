@@ -11,7 +11,7 @@ on:
 
 jobs:
   test:
-    if: ${{ github.event.label.name == 'ci-test' }}
+    if: ${{ github.ref == 'refs/heads/master' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
         os:
@@ -42,7 +42,7 @@ jobs:
             --compilation_mode ${{ matrix.compilation_mode }} \
             //...
   sanitizers:
-    if: ${{ github.event.label.name == 'ci-test' }}
+    if: ${{ github.ref == 'refs/heads/master' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
         sanitizer:
@@ -70,7 +70,7 @@ jobs:
             --config ${{ matrix.sanitizer }} \
             //tests/sanitizers:${{ matrix.sanitizer }}_test
   rbe:
-    if: ${{ github.event.label.name == 'ci-test' }}
+    if: ${{ github.ref == 'refs/heads/master' }} or ${{ github.event.label.name == 'ci-test' }}
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
