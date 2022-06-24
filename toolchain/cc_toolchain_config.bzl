@@ -1,3 +1,18 @@
+# Copyright (c) Joby Aviation 2022
+# Original authors: Thulio Ferraz Assis (thulio@aspect.dev), Aspect.dev
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """This module provides the cc_toolchain_config rule.
 """
 
@@ -12,6 +27,7 @@ load(
     "with_feature_set",
 )
 load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
+load("//toolchain/fortran:action_names.bzl", FORTRAN_ACTION_NAMES = "ACTION_NAMES")
 
 all_compile_actions = [
     ACTION_NAMES.c_compile,
@@ -59,6 +75,7 @@ all_link_actions = [
     ACTION_NAMES.cpp_link_executable,
     ACTION_NAMES.cpp_link_dynamic_library,
     ACTION_NAMES.cpp_link_nodeps_dynamic_library,
+    FORTRAN_ACTION_NAMES.fortran_link_executable,
 ]
 
 lto_index_actions = [
@@ -73,15 +90,17 @@ def _impl(ctx):
     tool_paths = ctx.attr.tool_paths
     extra_cflags = ctx.attr.extra_cflags
     extra_cxxflags = ctx.attr.extra_cxxflags
+    extra_fflags = ctx.attr.extra_fflags
     extra_ldflags = ctx.attr.extra_ldflags
     includes = ctx.attr.includes
 
-    objcopy_tool = tool_paths.get("objcopy")
-    objcopy_embed_data_action = action_config(
+    action_configs = []
+
+    action_configs.append(action_config(
         action_name = "objcopy_embed_data",
         enabled = True,
-        tools = [tool(path = objcopy_tool)],
-    )
+        tools = [tool(path = tool_paths.get("objcopy"))],
+    ))
 
     no_libstdcxx_feature = feature(name = "no_libstdcxx")
     static_libstdcxx_feature = feature(name = "static_libstdcxx")
@@ -164,7 +183,7 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = all_compile_actions,
+                actions = all_compile_actions + [FORTRAN_ACTION_NAMES.fortran_compile],
                 flag_groups = [
                     flag_group(
                         flags = [
@@ -183,12 +202,57 @@ def _impl(ctx):
         enabled = True,
     )
 
+    fortran_compile_flags_feature = feature(
+        name = "fortran_compile_flags",
+        enabled = True,
+    )
+
+    static_libgfortran_feature = feature(name = "static_libgfortran")
+
+    fortran_link_flags_feature = feature(
+        name = "fortran_link_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = [FORTRAN_ACTION_NAMES.fortran_link_executable],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-static-libgfortran"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = ["static_libgfortran"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    action_configs.append(action_config(
+        action_name = FORTRAN_ACTION_NAMES.fortran_compile,
+        enabled = True,
+        tools = [tool(path = tool_paths.get("gfortran"))],
+    ))
+
+    action_configs.append(action_config(
+        action_name = FORTRAN_ACTION_NAMES.fortran_link_executable,
+        enabled = True,
+        tools = [tool(path = tool_paths.get("gfortran"))],
+    ))
+
+    action_configs.append(action_config(
+        action_name = FORTRAN_ACTION_NAMES.fortran_archive,
+        enabled = True,
+        tools = [tool(path = tool_paths.get("ar"))],
+    ))
+
     default_compile_flags_feature = feature(
         name = "default_compile_flags",
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = all_cpp_compile_actions,
+                actions = all_cpp_compile_actions + [FORTRAN_ACTION_NAMES.fortran_compile],
                 flag_groups = [
                     flag_group(
                         flags = [
@@ -202,7 +266,7 @@ def _impl(ctx):
                 ],
             ),
             flag_set(
-                actions = all_cpp_compile_actions,
+                actions = all_cpp_compile_actions + [FORTRAN_ACTION_NAMES.fortran_compile],
                 flag_groups = [
                     flag_group(
                         flags = [
@@ -214,12 +278,12 @@ def _impl(ctx):
                 with_features = [with_feature_set(features = ["opt"])],
             ),
             flag_set(
-                actions = all_cpp_compile_actions,
+                actions = all_cpp_compile_actions + [FORTRAN_ACTION_NAMES.fortran_compile],
                 flag_groups = [flag_group(flags = ["-g"])],
                 with_features = [with_feature_set(features = ["dbg"])],
             ),
             flag_set(
-                actions = all_cpp_compile_actions,
+                actions = all_cpp_compile_actions + [FORTRAN_ACTION_NAMES.fortran_compile],
                 flag_groups = [
                     flag_group(
                         flags = [
@@ -371,7 +435,7 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = all_compile_actions,
+                actions = all_compile_actions + [FORTRAN_ACTION_NAMES.fortran_compile],
                 flag_groups = [
                     flag_group(
                         flags = ["%{user_compile_flags}"],
@@ -405,12 +469,23 @@ def _impl(ctx):
         ] if len(extra_cxxflags) > 0 else [],
     )
 
+    extra_fflags_feature = feature(
+        name = "extra_fflags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = [FORTRAN_ACTION_NAMES.fortran_compile],
+                flag_groups = [flag_group(flags = extra_fflags)],
+            ),
+        ] if len(extra_fflags) > 0 else [],
+    )
+
     includes_feature = feature(
         name = "includes",
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = all_compile_actions,
+                actions = all_compile_actions + [FORTRAN_ACTION_NAMES.fortran_compile],
                 flag_groups = [flag_group(flags = [
                     "-isystem{}".format(include)
                     for include in includes
@@ -445,6 +520,7 @@ def _impl(ctx):
                     ACTION_NAMES.cpp_module_codegen,
                     ACTION_NAMES.lto_backend,
                     ACTION_NAMES.clif_match,
+                    FORTRAN_ACTION_NAMES.fortran_compile,
                 ] + all_link_actions + lto_index_actions,
                 flag_groups = [
                     flag_group(
@@ -457,6 +533,9 @@ def _impl(ctx):
     )
 
     features = sanitizers_features + [
+        fortran_compile_flags_feature,
+        static_libgfortran_feature,
+        fortran_link_flags_feature,
         default_compile_flags_feature,
         include_paths_feature,
         library_search_directories_feature,
@@ -474,6 +553,7 @@ def _impl(ctx):
         redacted_dates_feature,
         extra_cflags_feature,
         extra_cxxflags_feature,
+        extra_fflags_feature,
         extra_ldflags_feature,
         includes_feature,
     ]
@@ -482,7 +562,7 @@ def _impl(ctx):
         cc_common.create_cc_toolchain_config_info(
             abi_libc_version = "local",
             abi_version = "local",
-            action_configs = [objcopy_embed_data_action],
+            action_configs = action_configs,
             artifact_name_patterns = [],
             builtin_sysroot = builtin_sysroot,
             cc_target_os = None,
@@ -510,6 +590,7 @@ cc_toolchain_config = rule(
         "cxx_builtin_include_directories": attr.string_list(mandatory = True),
         "extra_cflags": attr.string_list(mandatory = True),
         "extra_cxxflags": attr.string_list(mandatory = True),
+        "extra_fflags": attr.string_list(mandatory = True),
         "extra_ldflags": attr.string_list(mandatory = True),
         "includes": attr.string_list(mandatory = True),
         "tool_paths": attr.string_dict(mandatory = True),

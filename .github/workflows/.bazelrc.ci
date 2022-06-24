@@ -1,0 +1,28 @@
+build --keep_going
+
+# Generic remote cache
+build --remote_download_toplevel
+build --remote_timeout=3600
+build --remote_upload_local_results
+
+# Generic remote build execution
+build:rbe --extra_execution_platforms=//platforms:x86_64_linux_remote
+build:rbe --genrule_strategy=remote
+build:rbe --host_platform=//platforms:x86_64_linux_remote
+build:rbe --jobs=32
+
+# EngFlow remote cache
+build:engflow --bes_backend=grpcs://tourmaline.cluster.engflow.com
+build:engflow --bes_results_url=https://tourmaline.cluster.engflow.com/invocation/
+build:engflow --remote_cache=grpcs://tourmaline.cluster.engflow.com
+
+# EngFlow remote build execution
+build:engflow_rbe --remote_executor=grpcs://tourmaline.cluster.engflow.com
+
+# BuildBuddy remote cache
+build:buildbuddy --bes_backend=grpcs://remote.buildbuddy.io
+build:buildbuddy --bes_results_url=https://app.buildbuddy.io/invocation/
+build:buildbuddy --remote_cache=grpcs://remote.buildbuddy.io
+
+# BuildBuddy remote build execution
+build:buildbuddy_rbe --remote_executor=grpcs://remote.buildbuddy.io

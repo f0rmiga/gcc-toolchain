@@ -1,2 +1,4 @@
 .bazelrc.user
 bazel-*
+*.crt
+*.key

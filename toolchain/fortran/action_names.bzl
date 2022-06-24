@@ -13,29 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-config_setting(
-    name = "aarch64_linux",
-    constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:aarch64",
-    ],
-    visibility = ["//visibility:public"],
-)
+"""This module provides the action names analogous to @bazel_tools//tools/build_defs/cc:action_names.bzl.
+"""
 
-config_setting(
-    name = "armv7_linux",
-    constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:armv7",
-    ],
-    visibility = ["//visibility:public"],
-)
+# Name for the Fortran compilation action.
+FORTRAN_COMPILE_ACTION_NAME = "fortran-compile"
 
-config_setting(
-    name = "x86_64_linux",
-    constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-    ],
-    visibility = ["//visibility:public"],
+# Name of the link action producing executable binary.
+FORTRAN_LINK_EXECUTABLE_ACTION_NAME = "fortran-link-executable"
+
+# Name of the archive action producing static archives.
+FORTRAN_ARCHIVE_ACTION_NAME = "fortran-archive"
+
+ACTION_NAMES = struct(
+    fortran_compile = FORTRAN_COMPILE_ACTION_NAME,
+    fortran_link_executable = FORTRAN_LINK_EXECUTABLE_ACTION_NAME,
+    fortran_archive = FORTRAN_ARCHIVE_ACTION_NAME,
 )

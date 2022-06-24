@@ -1,0 +1,110 @@
+name: Default
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [labeled]
+
+  # Allows manually triggering this workflow from the Actions tab.
+  workflow_dispatch:
+
+jobs:
+  distros:
+    if: ${{ github.ref == 'refs/heads/master' }} or ${{ github.event.label.name == 'ci-test' }}
+    strategy:
+      matrix:
+        remote:
+          - buildbuddy
+          # TODO(f0rmiga): re-enable once cluster is fixed.
+          # - engflow
+        os:
+          - ubuntu-18.04
+          - ubuntu-20.04
+          - ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: bazelbuild/setup-bazelisk@v1
+      - name: Test
+        run: ./.github/workflows/${{ matrix.remote }}.sh --config ${{ matrix.remote }} //...
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
+          ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
+  compilation_modes:
+    if: ${{ github.ref == 'refs/heads/master' }} or ${{ github.event.label.name == 'ci-test' }}
+    strategy:
+      matrix:
+        remote:
+          - buildbuddy
+          # TODO(f0rmiga): re-enable once cluster is fixed.
+          # - engflow
+        compilation_mode:
+          - fastbuild
+          - dbg
+          - opt
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: bazelbuild/setup-bazelisk@v1
+      - name: Test
+        run: |-
+          ./.github/workflows/${{ matrix.remote }}.sh \
+            --config ${{ matrix.remote }} \
+            --compilation_mode ${{ matrix.compilation_mode }} \
+            //...
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
+          ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
+  sanitizers:
+    if: ${{ github.ref == 'refs/heads/master' }} or ${{ github.event.label.name == 'ci-test' }}
+    strategy:
+      matrix:
+        remote:
+          - buildbuddy
+          # TODO(f0rmiga): re-enable once cluster is fixed.
+          # - engflow
+        sanitizer:
+          - asan
+          - lsan
+          - tsan
+          - ubsan
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: bazelbuild/setup-bazelisk@v1
+      - name: Test ${{ matrix.sanitizer }}
+        run: |-
+          ./.github/workflows/${{ matrix.remote }}.sh \
+            --config ${{ matrix.remote }} \
+            --config ${{ matrix.sanitizer }} \
+            //tests/sanitizers:${{ matrix.sanitizer }}_test
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
+          ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
+  rbe:
+    if: ${{ github.ref == 'refs/heads/master' }} or ${{ github.event.label.name == 'ci-test' }}
+    strategy:
+      matrix:
+        remote:
+          - buildbuddy
+          # TODO(f0rmiga): re-enable once cluster is fixed.
+          # - engflow
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: bazelbuild/setup-bazelisk@v1
+      - name: Test with RBE
+        run: |-
+          ./.github/workflows/${{ matrix.remote }}.sh \
+            --config rbe \
+            --config ${{ matrix.remote }} \
+            --config ${{ matrix.remote }}_rbe \
+            //...
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
+          ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}

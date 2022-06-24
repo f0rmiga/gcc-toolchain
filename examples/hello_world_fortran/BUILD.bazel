@@ -15,35 +15,35 @@
 
 load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
 load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("//rules_fortran:defs.bzl", "fortran_binary")
 
-cc_binary(
-    name = "hello_world_c",
-    srcs = ["main.c"],
-    features = ["no_libstdcxx"],
+fortran_binary(
+    name = "hello_world_fortran",
+    srcs = ["main.f90"],
 )
 
 platform_transition_filegroup(
-    name = "hello_world_c_linux_aarch64",
+    name = "hello_world_fortran_aarch64",
     target_platform = "//platforms:aarch64_linux",
-    srcs = [":hello_world_c"],
+    srcs = [":hello_world_fortran"],
 )
 
 pkg_tar(
-    name = "hello_world_c_linux_aarch64_tar",
-    srcs = [":hello_world_c_linux_aarch64"],
+    name = "hello_world_fortran_aarch64_tar",
+    srcs = [":hello_world_fortran_aarch64"],
     include_runfiles = True,
     strip_prefix = "/",
 )
 
 platform_transition_filegroup(
-    name = "hello_world_c_linux_armv7",
+    name = "hello_world_fortran_armv7",
     target_platform = "//platforms:armv7_linux",
-    srcs = [":hello_world_c"],
+    srcs = [":hello_world_fortran"],
 )
 
 pkg_tar(
-    name = "hello_world_c_linux_armv7_tar",
-    srcs = [":hello_world_c_linux_armv7"],
+    name = "hello_world_fortran_armv7_tar",
+    srcs = [":hello_world_fortran_armv7"],
     include_runfiles = True,
     strip_prefix = "/",
 )

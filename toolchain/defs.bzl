@@ -1,10 +1,25 @@
+# Copyright (c) Joby Aviation 2022
+# Original authors: Thulio Ferraz Assis (thulio@aspect.dev), Aspect.dev
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """This module provides the definitions for registering a GCC toolchain for C and C++.
 """
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//sysroot:flags.bzl", "cflags", "cxxflags", "ldflags", "includes")
+load("//sysroot:flags.bzl", "cflags", "cxxflags", "fflags", "ldflags", "includes")
 
 def _gcc_toolchain_impl(rctx):
     absolute_toolchain_root = str(rctx.path("."))
@@ -52,6 +67,7 @@ def _gcc_toolchain_impl(rctx):
         # Flags
         extra_cflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_cflags),
         extra_cxxflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_cxxflags),
+        extra_fflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_fflags),
         extra_ldflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_ldflags),
         includes = str(includes),
     ))
@@ -77,6 +93,10 @@ _FEATURE_ATTRS = {
     ),
     "extra_cxxflags": attr.string_list(
         doc = "Extra flags for compiling C++.",
+        default = [],
+    ),
+    "extra_fflags": attr.string_list(
+        doc = "Extra flags for compiling Fortran.",
         default = [],
     ),
     "extra_ldflags": attr.string_list(
@@ -156,6 +176,10 @@ def _render_tool_paths(rctx, repository_name, toolchain_files_repository_name, b
             binary_prefix = binary_prefix,
         ),
         "gcov": "external/{repository_name}/bin/{binary_prefix}-linux-gcov".format(
+            repository_name = toolchain_files_repository_name,
+            binary_prefix = binary_prefix,
+        ),
+        "gfortran": "external/{repository_name}/bin/{binary_prefix}-linux-gfortran".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
@@ -255,6 +279,7 @@ def gcc_register_toolchain(
         binary_prefix = binary_prefix,
         extra_cflags = kwargs.pop("extra_cflags", cflags),
         extra_cxxflags = kwargs.pop("extra_cxxflags", cxxflags),
+        extra_fflags = kwargs.pop("extra_fflags", fflags),
         extra_ldflags = kwargs.pop("extra_ldflags", ldflags(target_arch, gcc_version)),
         includes = kwargs.pop("includes", includes(target_arch, gcc_version)),
         sysroot = str(sysroot),
@@ -263,7 +288,8 @@ def gcc_register_toolchain(
         **kwargs
     )
 
-    native.register_toolchains("@{}//:toolchain".format(name))
+    native.register_toolchains("@{}//:cc_toolchain".format(name))
+    native.register_toolchains("@{}//:fortran_toolchain".format(name))
 
 ARCHS = struct(
     aarch64 = "aarch64",
@@ -358,6 +384,7 @@ filegroup(
     srcs = [
         ":as",
         ":gcc",
+        ":gfortran",
         ":include",
     ] + ([sysroot_label] if sysroot_label else []),
     visibility = ["//visibility:public"],
@@ -390,13 +417,14 @@ filegroup(
 
 filegroup(
     name = "lib",
-    srcs = glob([
-        "lib/**",
-        "lib64/**",
-        "{platform_directory_glob_pattern}/lib/**",
-        "{platform_directory_glob_pattern}/lib64/**",
-        "**/*.so",
-    ]),
+    srcs = glob(
+        include = [
+            "lib*/**",
+            "{platform_directory_glob_pattern}/lib*/**",
+            "**/*.so",
+        ],
+        exclude = ["lib*/**/*python*/**"],
+    ),
     visibility = ["//visibility:public"],
 )
 
@@ -417,6 +445,15 @@ filegroup(
         "lib/libmpc.so*",
         "lib/libmpfr.so*",
     ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "gfortran",
+    srcs = [
+        "bin/{binary_prefix}-linux-gfortran",
+        "bin/{binary_prefix}-linux-gfortran.br_real",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -517,19 +554,32 @@ filegroup(
 _TOOLCHAIN_BUILD_FILE_CONTENT = """\
 load("@rules_cc//cc:defs.bzl", "cc_toolchain")
 load("@{gcc_toolchain_workspace_name}//toolchain:cc_toolchain_config.bzl", "cc_toolchain_config")
+load("@{gcc_toolchain_workspace_name}//toolchain/fortran:defs.bzl", "fortran_toolchain")
 load("//:tool_paths.bzl", "tool_paths")
 
 sysroot = "{sysroot}"
 
 toolchain(
-    name = "toolchain",
+    name = "fortran_toolchain",
     target_compatible_with = {target_compatible_with},
-    toolchain = ":cc_toolchain",
+    toolchain = ":_fortran_toolchain",
+    toolchain_type = "@{gcc_toolchain_workspace_name}//toolchain/fortran:toolchain_type",
+)
+
+fortran_toolchain(
+    name = "_fortran_toolchain",
+    cc_toolchain = ":_cc_toolchain",
+)
+
+toolchain(
+    name = "cc_toolchain",
+    target_compatible_with = {target_compatible_with},
+    toolchain = ":_cc_toolchain",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
 
 cc_toolchain(
-    name = "cc_toolchain",
+    name = "_cc_toolchain",
     all_files = ":all_files",
     ar_files = ":ar_files",
     as_files = ":as_files",
@@ -549,6 +599,7 @@ cc_toolchain_config(
     cxx_builtin_include_directories = {cxx_builtin_include_directories},
     extra_cflags = {extra_cflags},
     extra_cxxflags = {extra_cxxflags},
+    extra_fflags = {extra_fflags},
     extra_ldflags ={extra_ldflags},
     includes = {includes},
     tool_paths = tool_paths,
@@ -573,6 +624,7 @@ filegroup(
         "@{toolchain_files_repository_name}//:compiler_files",
         ":as",
         ":gcc",
+        ":gfortran",
     ],
 )
 
@@ -630,6 +682,11 @@ filegroup(
         "bin/g++",
         "bin/gcc",
     ],
+)
+
+filegroup(
+    name = "gfortran",
+    srcs = ["bin/gfortran"],
 )
 
 filegroup(

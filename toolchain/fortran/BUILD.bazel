@@ -13,29 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-config_setting(
-    name = "aarch64_linux",
-    constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:aarch64",
-    ],
+load("//rules_fortran:defs.bzl", "current_fortran_toolchain")
+
+toolchain_type(
+    name = "toolchain_type",
     visibility = ["//visibility:public"],
 )
 
-config_setting(
-    name = "armv7_linux",
-    constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:armv7",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-config_setting(
-    name = "x86_64_linux",
-    constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-    ],
+current_fortran_toolchain(
+    name = "current_fortran_toolchain",
     visibility = ["//visibility:public"],
 )
