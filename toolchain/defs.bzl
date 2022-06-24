@@ -299,16 +299,16 @@ ARCHS = struct(
 
 _SYSROOTS = {
     "aarch64": struct(
-        sha256 = "11e01ece0de5265be7446ab6de55b3d75b6aa75d42acd1db057efe3db8cce7f9",
-        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.2.0/sysroot-aarch64.tar.xz",
+        sha256 = "b23690426137bdbf23c9572d8d6b3db6de30dc80b7cac148fb98b6d50d9fb192",
+        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-base-aarch64.tar.xz",
     ),
     "armv7": struct(
-        sha256 = "14180244f06f6cdf98ec283dffaf333f21a91d5e3ddaebc71967d798d2a73bd3",
-        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.2.0/sysroot-armv7.tar.xz",
+        sha256 = "049865707f6c4c62e244b28ff4c7fe597539b0cff3bc6d4ca80ab93f845240e7",
+        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-base-armv7.tar.xz",
     ),
     "x86_64": struct(
-        sha256 = "fc37e9dd5184093b6f92fc4e0a4b680dc144814d6225bc44daaf1b284311b0cc",
-        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.2.0/sysroot-x86_64.tar.xz",
+        sha256 = "b9993ee16de8c2c8111c4baa9ea1c554ef74c2b32b5768dc93fcec013b549d68",
+        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-base-x86_64.tar.xz",
     ),
 }
 
