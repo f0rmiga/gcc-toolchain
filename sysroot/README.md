@@ -15,9 +15,9 @@ cross-compilation from x86_64.
 ### Using the build script
 
 ```shell
-./sysroot/build.sh x86_64 sysroot-x86_64.tar.xz base
-./sysroot/build.sh armv7 sysroot-armv7.tar.xz base
-./sysroot/build.sh aarch64 sysroot-aarch64.tar.xz base
+./sysroot/build.sh x86_64 ./sysroot base
+./sysroot/build.sh armv7 ./sysroot base
+./sysroot/build.sh aarch64 ./sysroot base
 ```
 
 ### Variants
@@ -25,5 +25,5 @@ cross-compilation from x86_64.
 If you want to build a sysroot containing extra libraries, you can build a variant. E.g. the X11:
 
 ```shell
-./sysroot/build.sh x86_64 sysroot-X11-x86_64.tar.xz X11
+./sysroot/build.sh x86_64 ./sysroot X11
 ```
