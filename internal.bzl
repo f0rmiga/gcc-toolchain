@@ -98,6 +98,15 @@ EOF
 
     maybe(
         http_archive,
+        name = "avl",
+        build_file = "@//:examples/avl/avl.BUILD.bazel",
+        sha256 = "6d62e563578b79795a84958cfe4e221a4c9847fbeb4a821d45bc049934fc6a90",
+        strip_prefix = "Avl",
+        url = "https://web.mit.edu/drela/Public/web/avl/avl3.40b.tgz",
+    )
+
+    maybe(
+        http_archive,
         name = "com_google_protobuf",
         sha256 = "3bd7828aa5af4b13b99c191e8b1e884ebfa9ad371b0ce264605d347f135d2568",
         strip_prefix = "protobuf-3.19.4",
