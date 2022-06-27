@@ -236,6 +236,11 @@ def _link(
     shared_objects = []
     archives = []
     for dep in deps:
+        if CcInfo in dep:
+            for linker_input in dep[CcInfo].linking_context.linker_inputs.to_list():
+                for library in linker_input.libraries:
+                    if library.static_library:
+                        archives.append(library.static_library)
         if linkstatic and hasattr(dep.output_groups, "archive"):
             archives.append(dep.output_groups.archive.to_list()[0])
         elif not linkstatic and hasattr(dep.output_groups, "dynamic_library"):
