@@ -313,7 +313,7 @@ def _archive(
 def _current_fortran_toolchain_impl(ctx):
     (fortran_toolchain, feature_configuration) = _get_configuration(ctx)
     (compiler, compile_flags) = _get_compiler(fortran_toolchain, feature_configuration)
-    (_, link_flags) = _get_compiler(fortran_toolchain, feature_configuration)
+    (_, link_flags) = _get_linker(fortran_toolchain, feature_configuration)
     vars = {
         "FC": compiler,
         "FFLAGS": " ".join(compile_flags),
