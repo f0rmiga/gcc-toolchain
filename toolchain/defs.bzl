@@ -269,6 +269,14 @@ def gcc_register_toolchain(
             platform_directory_glob_pattern = platform_directory_glob_pattern,
             sysroot_label = str(sysroot),
         ),
+        patch_cmds = [
+            # The sysroot shipped with the bootlin toolchain should never be used.
+            "find . -type d -name 'sysroot' -exec rm -rf {} +",
+            # We also remove the libgfortran and libstdc++ that are outside the sysroot. They are
+            # provided by our custom-built sysroot.
+            "find . -type f -name 'libgfortran*' -exec rm \"{}\" \\;",
+            "find . -type f -name 'libstdc++*' -exec rm \"{}\" \\;",
+        ],
         strip_prefix = kwargs.pop("strip_prefix", _TOOLCHAINS[gcc_version][target_arch].strip_prefix),
         sha256 = kwargs.pop("sha256", _TOOLCHAINS[gcc_version][target_arch].sha256),
         url = kwargs.pop("url", _TOOLCHAINS[gcc_version][target_arch].url),
