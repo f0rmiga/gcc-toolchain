@@ -404,6 +404,7 @@ filegroup(
         ":ar",
         ":gcc",
         ":ld",
+        ":ld.bfd",
         ":lib",
     ] + ([sysroot_label] if sysroot_label else []),
     visibility = ["//visibility:public"],
@@ -497,66 +498,29 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-filegroup(
-    name = "ld",
-    srcs = [
-        "bin/{binary_prefix}-linux-ld",
-        "bin/{binary_prefix}-linux-ld.bfd",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "ar",
-    srcs = [
-        "bin/{binary_prefix}-linux-ar",
-    ] + glob([
-        "bin/{binary_prefix}-buildroot-*-ar",
-    ]),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "as",
-    srcs = ["bin/{binary_prefix}-linux-as"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "nm",
-    srcs = ["bin/{binary_prefix}-linux-nm"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "objcopy",
-    srcs = ["bin/{binary_prefix}-linux-objcopy"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "objdump",
-    srcs = ["bin/{binary_prefix}-linux-objdump"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "ranlib",
-    srcs = ["bin/{binary_prefix}-linux-ranlib"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "readelf",
-    srcs = ["bin/{binary_prefix}-linux-readelf"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "strip",
-    srcs = ["bin/{binary_prefix}-linux-strip"],
-    visibility = ["//visibility:public"],
-)
+[
+    filegroup(
+        name = bin,
+        srcs = [
+            "bin/{binary_prefix}-linux-" + bin,
+        ] + glob([
+            "bin/{binary_prefix}-buildroot-*-" + bin,
+        ]),
+        visibility = ["//visibility:public"],
+    )
+    for bin in [
+        "ar",
+        "as",
+        "ld",
+        "ld.bfd",
+        "nm",
+        "objcopy",
+        "objdump",
+        "ranlib",
+        "readelf",
+        "strip",
+    ]
+]
 """
 
 _TOOLCHAIN_BUILD_FILE_CONTENT = """\
