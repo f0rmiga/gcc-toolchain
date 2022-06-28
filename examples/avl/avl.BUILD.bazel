@@ -19,7 +19,6 @@ cc_library(
     name = "xwin",
     srcs = ["plotlib/xwin11/Xwin2.c"],
     defines = ["UNDERSCORE", "NDEBUG"],
-    copts = ["-O2"],
     linkopts = ["-lX11"],
     features = ["no_libstdcxx"],
 )
@@ -52,8 +51,6 @@ fortran_library(
     defines = ["UNDERSCORE"],
     fopts = [
         "-fdefault-real-8",
-        "-fPIC",
-        "-O2",
         "-std=legacy",
         "-Wno-conversion",
         "-Wno-intrinsic-shadow",
@@ -71,8 +68,6 @@ fortran_library(
     fopts = [
         "-fdefault-double-8",
         "-fdefault-real-8",
-        "-fPIC",
-        "-O2",
         "-std=legacy",
         "-Wno-conversion",
         "-Wno-maybe-uninitialized",
@@ -133,7 +128,6 @@ fortran_binary(
     fopts = [
         "-fdefault-real-8",
         "-fdollar-ok",
-        "-O2",
         "-std=legacy",
         "-Wno-character-truncation",
         "-Wno-conversion",
