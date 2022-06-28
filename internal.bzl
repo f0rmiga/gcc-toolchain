@@ -18,6 +18,8 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
+load("//examples/lapack:patches.bzl", "LAPACK_PATCHES")
+
 # buildifier: disable=function-docstring
 def internal_dependencies():
     maybe(
@@ -59,38 +61,7 @@ def internal_dependencies():
         http_archive,
         name = "lapack",
         build_file_content = _ALL_SRCS,
-        patch_cmds = ["""\
-cat > make.inc <<EOF
-####################################################################
-#  LAPACK make include file.                                       #
-####################################################################
-
-SHELL = $0
-
-CC ?=
-
-FC ?=
-FFLAGS ?=
-FFLAGS_DRV ?=
-FFLAGS_NOOPT ?=
-
-LDFLAGS ?=
-
-AR ?=
-ARFLAGS = cr
-RANLIB = echo
-
-BLASLIB ?=
-CBLASLIB ?=
-LAPACKLIB ?=
-TMGLIB ?=
-LAPACKELIB ?=
-
-DOCSDIR ?=
-
-TIMER ?=
-EOF
-"""],
+        patch_cmds = LAPACK_PATCHES,
         sha256 = "cd005cd021f144d7d5f7f33c943942db9f03a28d110d6a3b80d718a295f7f714",
         strip_prefix = "lapack-3.10.1",
         url = "https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.10.1.tar.gz",
