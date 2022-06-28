@@ -1,0 +1,88 @@
+# Copyright (c) Joby Aviation 2022
+# Original authors: Thulio Ferraz Assis (thulio@aspect.dev), Aspect.dev
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "make")
+
+libs = [
+    "liblapack.a",
+    "librefblas.a",
+    "libtmglib.a",
+]
+
+make(
+    name = "lapack",
+    args = [
+        "BLASLIB='$(TOPSRCDIR)/librefblas.a'",
+        "CBLASLIB='$(TOPSRCDIR)/libcblas.a'",
+        "LAPACKLIB='$(TOPSRCDIR)/liblapack.a'",
+        "TMGLIB='$(TOPSRCDIR)/libtmglib.a'",
+        "LAPACKELIB='$(TOPSRCDIR)/liblapacke.a'",
+        "TIMER='INT_ETIME'",
+    ],
+    env = {
+        "FC": "$$EXT_BUILD_ROOT$$/$(FC)",
+        "FFLAGS": "$(FFLAGS) -frecursive",
+        "LD": "$$EXT_BUILD_ROOT$$/$(LD)",
+        "LDFLAGS": "$(FLDFLAGS)",
+    },
+    lib_name = "lapack",
+    lib_source = "@lapack//:srcs",
+    out_static_libs = libs,
+    postfix_script = "\n".join([
+        "cp {0} $$INSTALLDIR$$/lib/{0}".format(lib)
+        for lib in libs
+    ]),
+    targets = [
+        "lapack_install",
+        "blaslib",
+        "lapacklib",
+        "tmglib",
+
+        # Uncomment the following if testing the built artifacts is required:
+        # "blas_testing",
+        # "lapack_testing",
+    ],
+    toolchains = [
+        "@bazel_tools//tools/cpp:current_cc_toolchain",
+        "//toolchain/fortran:current_static_fortran_toolchain",
+    ],
+)
+
+filegroup(
+    name = "lapack_gen_dir",
+    srcs = [":lapack"],
+    output_group = "gen_dir",
+)
+
+genrule(
+    name = "libs_reexport",
+    srcs = [":lapack_gen_dir"],
+    outs = libs,
+    cmd = "set -o errexit -o nounset -o pipefail\n" + "\n".join([
+        "cp '$(execpath :lapack_gen_dir)/lib/{0}' '$(execpath :{0})'".format(lib)
+        for lib in libs
+    ]),
+)
+
+[
+    cc_import(
+        name = lib.replace(".a", ""),
+        static_library = ":{}".format(lib),
+        visibility = ["//visibility:public"],
+    )
+    for lib in libs
+]
+
+# TODO(f0rmiga): cross-compile to aarch64 and armv7.
