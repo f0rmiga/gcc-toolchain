@@ -1,0 +1,149 @@
+# Copyright (c) Joby Aviation 2022
+# Original authors: Thulio Ferraz Assis (thulio@aspect.dev), Aspect.dev
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@//rules_fortran:defs.bzl", "fortran_binary", "fortran_library")
+
+cc_library(
+    name = "xwin",
+    srcs = ["plotlib/xwin11/Xwin2.c"],
+    defines = ["UNDERSCORE", "NDEBUG"],
+    copts = ["-O2"],
+    linkopts = ["-lX11"],
+    features = ["no_libstdcxx"],
+)
+
+fortran_library(
+    name = "plotlib",
+    srcs = [
+        "plotlib/gw_subs.f",
+        "plotlib/plt_3D.f",
+        "plotlib/plt_base.f",
+        "plotlib/plt_color.f",
+        "plotlib/plt_font.f",
+        "plotlib/plt_old.f",
+        "plotlib/plt_util.f",
+        "plotlib/ps_subs_old.f",
+        "plotlib/ps_subs.f",
+        "plotlib/set_subs.f",
+        "plotlib/sym/symgen.f",
+        "plotlib/sym/test.f",
+        "plotlib/util-ops.f",
+    ],
+    includes = [
+        "plotlib/CHAR.INC",
+        "plotlib/MATH.INC",
+        "plotlib/SLAN.INC",
+        "plotlib/SYMB.INC",
+        "plotlib/pltlib.inc",
+    ],
+    deps = [":xwin"],
+    defines = ["UNDERSCORE"],
+    fopts = [
+        "-fdefault-real-8",
+        "-fPIC",
+        "-O2",
+        "-std=legacy",
+        "-Wno-conversion",
+        "-Wno-intrinsic-shadow",
+        "-Wno-maybe-uninitialized",
+        "-Wno-tabs",
+        "-Wno-unused-dummy-argument",
+        "-Wno-unused-label",
+        "-Wno-unused-variable",
+    ],
+)
+
+fortran_library(
+    name = "eispack",
+    srcs = ["eispack/eispack.f"],
+    fopts = [
+        "-fdefault-double-8",
+        "-fdefault-real-8",
+        "-fPIC",
+        "-O2",
+        "-std=legacy",
+        "-Wno-conversion",
+        "-Wno-maybe-uninitialized",
+    ],
+)
+
+fortran_binary(
+    name = "avl",
+    srcs = [
+        "src/aero.f",
+        "src/aic.f",
+        "src/ainput.f",
+        "src/airutil.f",
+        "src/amake.f",
+        "src/amass.f",
+        "src/amode.f",
+        "src/aoml.f",
+        "src/aoper.f",
+        "src/aoutmrf.f",
+        "src/aoutput.f",
+        "src/aplotmd.f",
+        "src/aplottp.f",
+        "src/aplotvl.f",
+        "src/arrow3d.f",
+        "src/asetup.f",
+        "src/atpforc.f",
+        "src/atrim.f",
+        "src/autil.f",
+        "src/avl.f",
+        "src/cdcl.f",
+        "src/getvm.f",
+        "src/hidden.f",
+        "src/limits.f",
+        "src/matrix-lapackdp.f",
+        "src/plsubs.f",
+        "src/pltops.f",
+        "src/plutil.f",
+        "src/second.f",
+        "src/sgutil.f",
+        "src/spline.f",
+        "src/userio.f",
+    ],
+    deps = [
+        ":plotlib",
+        ":eispack",
+        "@//examples/lapack",
+
+        # libxwin.a must be linked after libplotlib.a.
+        ":xwin",
+    ],
+    includes = [
+        "src/AINDEX.INC",
+        "src/AVL.INC",
+        "src/AVLPLT.INC",
+        "src/MASKS.INC",
+    ],
+    features = ["static_libgfortran"],
+    fopts = [
+        "-fdefault-real-8",
+        "-fdollar-ok",
+        "-O2",
+        "-std=legacy",
+        "-Wno-character-truncation",
+        "-Wno-conversion",
+        "-Wno-maybe-uninitialized",
+        "-Wno-surprising",
+        "-Wno-tabs",
+        "-Wno-unused-dummy-argument",
+        "-Wno-unused-label",
+        "-Wno-unused-variable",
+    ],
+    linkopts = ["-lX11"],
+    visibility = ["//visibility:public"],
+)

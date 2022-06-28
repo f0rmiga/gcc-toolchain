@@ -243,15 +243,16 @@ def gcc_register_toolchain(
     """
     sysroot = kwargs.pop("sysroot", None)
     if not sysroot:
-        sysroot_repository_name = "sysroot_{target_arch}".format(target_arch = target_arch)
+        sysroot_variant = kwargs.pop("sysroot_variant", target_arch)
+        sysroot_repository_name = "sysroot_{sysroot_variant}".format(sysroot_variant = sysroot_variant)
         sysroot = Label("@{sysroot_repository_name}//:sysroot".format(
             sysroot_repository_name = sysroot_repository_name,
         ))
         http_archive(
             name = sysroot_repository_name,
             build_file_content = _SYSROOT_BUILD_FILE_CONTENT,
-            sha256 = _SYSROOTS[target_arch].sha256,
-            url = _SYSROOTS[target_arch].url,
+            sha256 = _SYSROOTS[sysroot_variant].sha256,
+            url = _SYSROOTS[sysroot_variant].url,
         )
 
     binary_prefix = kwargs.pop("binary_prefix", "arm" if target_arch == ARCHS.armv7 else target_arch)
@@ -317,6 +318,10 @@ _SYSROOTS = {
     "x86_64": struct(
         sha256 = "b9993ee16de8c2c8111c4baa9ea1c554ef74c2b32b5768dc93fcec013b549d68",
         url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-base-x86_64.tar.xz",
+    ),
+    "x86_64-X11": struct(
+        sha256 = "36caaa7b9445ffe46142becdbce5733843d99efa70ac027ba82c2909f0ae6dc4",
+        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-X11-x86_64.tar.xz",
     ),
 }
 
