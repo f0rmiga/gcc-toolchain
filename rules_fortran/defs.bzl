@@ -173,7 +173,7 @@ def _compile(
 ):
     (compiler, compile_flags) = _get_compiler(fortran_toolchain, feature_configuration, fopts)
     objects = [
-        actions.declare_file(paths.replace_extension(paths.basename(src.path), ".o"))
+        actions.declare_file(paths.replace_extension(src.path, ".o"))
         for src in srcs
     ]
     defines_flags = ["-D{}".format(define) for define in defines]
