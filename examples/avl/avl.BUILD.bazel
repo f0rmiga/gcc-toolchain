@@ -118,9 +118,7 @@ fortran_binary(
     deps = [
         ":plotlib",
         ":eispack",
-        "@//examples/lapack:liblapack",
-        "@//examples/lapack:librefblas",
-        "@//examples/lapack:libtmglib",
+        "@//examples/lapack",
 
         # libxwin.a must be linked after libplotlib.a.
         ":xwin",
