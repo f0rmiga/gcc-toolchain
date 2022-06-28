@@ -24,10 +24,6 @@ libs = [
 make(
     name = "lapack",
     args = [
-        "FC=\"${FC}\"",
-        "FFLAGS=\"${FFLAGS} -frecursive\"",
-        "LD=\"${LD}\"",
-        "LDFLAGS=\"${FLDFLAGS}\"",
         "BLASLIB='$(TOPSRCDIR)/librefblas.a'",
         "CBLASLIB='$(TOPSRCDIR)/libcblas.a'",
         "LAPACKLIB='$(TOPSRCDIR)/liblapack.a'",
@@ -37,9 +33,9 @@ make(
     ],
     env = {
         "FC": "$$EXT_BUILD_ROOT$$/$(FC)",
-        "FFLAGS": "$(FFLAGS)",
+        "FFLAGS": "$(FFLAGS) -frecursive",
         "LD": "$$EXT_BUILD_ROOT$$/$(LD)",
-        "FLDFLAGS": "$(FLDFLAGS)",
+        "LDFLAGS": "$(FLDFLAGS)",
     },
     lib_name = "lapack",
     lib_source = "@lapack//:srcs",
