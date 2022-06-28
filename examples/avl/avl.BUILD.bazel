@@ -51,7 +51,6 @@ fortran_library(
     defines = ["UNDERSCORE"],
     fopts = [
         "-fdefault-real-8",
-        "-fPIC",
         "-std=legacy",
         "-Wno-conversion",
         "-Wno-intrinsic-shadow",
@@ -69,7 +68,6 @@ fortran_library(
     fopts = [
         "-fdefault-double-8",
         "-fdefault-real-8",
-        "-fPIC",
         "-std=legacy",
         "-Wno-conversion",
         "-Wno-maybe-uninitialized",
