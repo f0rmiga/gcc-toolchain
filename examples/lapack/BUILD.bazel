@@ -48,7 +48,16 @@ make(
         "cp {0} $$INSTALLDIR$$/lib/{0}".format(lib)
         for lib in libs
     ]),
-    targets = ["all"],
+    targets = [
+        "lapack_install",
+        "blaslib",
+        "lapacklib",
+        "tmglib",
+
+        # Uncomment the following if testing the built artifacts is required:
+        # "blas_testing",
+        # "lapack_testing",
+    ],
     toolchains = [
         "@bazel_tools//tools/cpp:current_cc_toolchain",
         "//toolchain/fortran:current_static_fortran_toolchain",
