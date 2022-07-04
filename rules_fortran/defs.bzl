@@ -153,7 +153,7 @@ def _get_configuration(ctx):
         "fortran_compile_flags",
         "fortran_link_flags",
         "no_libstdcxx",
-    ] + ctx.attr.features
+    ] + ctx.features
     fortran_toolchain = ctx.toolchains[ctx.attr._fortran_toolchain_type.label].cc
     feature_configuration = cc_common.configure_features(
         cc_toolchain = fortran_toolchain,
