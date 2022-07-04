@@ -49,7 +49,7 @@ def _gcc_toolchain_impl(rctx):
     ]
 
     target_compatible_with = [
-        str(Label(v.format(target_arch = target_arch)))
+        v.format(target_arch = target_arch)
         for v in rctx.attr.target_compatible_with
     ]
 
