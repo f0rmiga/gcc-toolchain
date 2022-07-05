@@ -49,7 +49,7 @@ def _gcc_toolchain_impl(rctx):
     ]
 
     target_compatible_with = [
-        str(Label(v.format(target_arch = target_arch)))
+        v.format(target_arch = target_arch)
         for v in rctx.attr.target_compatible_with
     ]
 
@@ -243,15 +243,16 @@ def gcc_register_toolchain(
     """
     sysroot = kwargs.pop("sysroot", None)
     if not sysroot:
-        sysroot_repository_name = "sysroot_{target_arch}".format(target_arch = target_arch)
+        sysroot_variant = kwargs.pop("sysroot_variant", target_arch)
+        sysroot_repository_name = "sysroot_{sysroot_variant}".format(sysroot_variant = sysroot_variant)
         sysroot = Label("@{sysroot_repository_name}//:sysroot".format(
             sysroot_repository_name = sysroot_repository_name,
         ))
         http_archive(
             name = sysroot_repository_name,
             build_file_content = _SYSROOT_BUILD_FILE_CONTENT,
-            sha256 = _SYSROOTS[target_arch].sha256,
-            url = _SYSROOTS[target_arch].url,
+            sha256 = _SYSROOTS[sysroot_variant].sha256,
+            url = _SYSROOTS[sysroot_variant].url,
         )
 
     binary_prefix = kwargs.pop("binary_prefix", "arm" if target_arch == ARCHS.armv7 else target_arch)
@@ -269,6 +270,14 @@ def gcc_register_toolchain(
             platform_directory_glob_pattern = platform_directory_glob_pattern,
             sysroot_label = str(sysroot),
         ),
+        patch_cmds = [
+            # The sysroot shipped with the bootlin toolchain should never be used.
+            "find . -type d -name 'sysroot' -exec rm -rf {} +",
+            # We also remove the libgfortran and libstdc++ that are outside the sysroot. They are
+            # provided by our custom-built sysroot.
+            "find . -type f -name 'libgfortran*' -exec rm \"{}\" \\;",
+            "find . -type f -name 'libstdc++*' -exec rm \"{}\" \\;",
+        ],
         strip_prefix = kwargs.pop("strip_prefix", _TOOLCHAINS[gcc_version][target_arch].strip_prefix),
         sha256 = kwargs.pop("sha256", _TOOLCHAINS[gcc_version][target_arch].sha256),
         url = kwargs.pop("url", _TOOLCHAINS[gcc_version][target_arch].url),
@@ -309,6 +318,10 @@ _SYSROOTS = {
     "x86_64": struct(
         sha256 = "b9993ee16de8c2c8111c4baa9ea1c554ef74c2b32b5768dc93fcec013b549d68",
         url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-base-x86_64.tar.xz",
+    ),
+    "x86_64-X11": struct(
+        sha256 = "36caaa7b9445ffe46142becdbce5733843d99efa70ac027ba82c2909f0ae6dc4",
+        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-X11-x86_64.tar.xz",
     ),
 }
 
@@ -396,6 +409,7 @@ filegroup(
         ":ar",
         ":gcc",
         ":ld",
+        ":ld.bfd",
         ":lib",
     ] + ([sysroot_label] if sysroot_label else []),
     visibility = ["//visibility:public"],
@@ -489,66 +503,29 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-filegroup(
-    name = "ld",
-    srcs = [
-        "bin/{binary_prefix}-linux-ld",
-        "bin/{binary_prefix}-linux-ld.bfd",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "ar",
-    srcs = [
-        "bin/{binary_prefix}-linux-ar",
-    ] + glob([
-        "bin/{binary_prefix}-buildroot-*-ar",
-    ]),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "as",
-    srcs = ["bin/{binary_prefix}-linux-as"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "nm",
-    srcs = ["bin/{binary_prefix}-linux-nm"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "objcopy",
-    srcs = ["bin/{binary_prefix}-linux-objcopy"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "objdump",
-    srcs = ["bin/{binary_prefix}-linux-objdump"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "ranlib",
-    srcs = ["bin/{binary_prefix}-linux-ranlib"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "readelf",
-    srcs = ["bin/{binary_prefix}-linux-readelf"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "strip",
-    srcs = ["bin/{binary_prefix}-linux-strip"],
-    visibility = ["//visibility:public"],
-)
+[
+    filegroup(
+        name = bin,
+        srcs = [
+            "bin/{binary_prefix}-linux-" + bin,
+        ] + glob([
+            "bin/{binary_prefix}-buildroot-*-" + bin,
+        ]),
+        visibility = ["//visibility:public"],
+    )
+    for bin in [
+        "ar",
+        "as",
+        "ld",
+        "ld.bfd",
+        "nm",
+        "objcopy",
+        "objdump",
+        "ranlib",
+        "readelf",
+        "strip",
+    ]
+]
 """
 
 _TOOLCHAIN_BUILD_FILE_CONTENT = """\

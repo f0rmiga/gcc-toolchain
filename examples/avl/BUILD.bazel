@@ -13,20 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//rules_fortran:defs.bzl", "current_fortran_toolchain")
-
-toolchain_type(
-    name = "toolchain_type",
-    visibility = ["//visibility:public"],
-)
-
-current_fortran_toolchain(
-    name = "current_fortran_toolchain",
-    visibility = ["//visibility:public"],
-)
-
-current_fortran_toolchain(
-    name = "current_static_fortran_toolchain",
-    visibility = ["//visibility:public"],
-    features = ["static_libgfortran"],
+alias(
+    name = "avl",
+    actual = "@avl",
 )

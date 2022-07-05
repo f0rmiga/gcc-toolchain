@@ -18,6 +18,8 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
+load("//examples/lapack:patches.bzl", "LAPACK_PATCHES")
+
 # buildifier: disable=function-docstring
 def internal_dependencies():
     maybe(
@@ -53,6 +55,25 @@ def internal_dependencies():
         sha256 = "40dceb51a4f6a5275bde0e6bf20ef4b91bfc32ed57c0552e2e8e15463372b17a",
         strip_prefix = "openssl-1.1.1n",
         url = "https://www.openssl.org/source/openssl-1.1.1n.tar.gz",
+    )
+
+    maybe(
+        http_archive,
+        name = "lapack",
+        build_file_content = _ALL_SRCS,
+        patch_cmds = LAPACK_PATCHES,
+        sha256 = "cd005cd021f144d7d5f7f33c943942db9f03a28d110d6a3b80d718a295f7f714",
+        strip_prefix = "lapack-3.10.1",
+        url = "https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.10.1.tar.gz",
+    )
+
+    maybe(
+        http_archive,
+        name = "avl",
+        build_file = "@//:examples/avl/avl.BUILD.bazel",
+        sha256 = "6d62e563578b79795a84958cfe4e221a4c9847fbeb4a821d45bc049934fc6a90",
+        strip_prefix = "Avl",
+        url = "https://web.mit.edu/drela/Public/web/avl/avl3.40b.tgz",
     )
 
     maybe(
