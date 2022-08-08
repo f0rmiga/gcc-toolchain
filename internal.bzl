@@ -43,9 +43,9 @@ def internal_dependencies():
     maybe(
         http_archive,
         name = "rules_foreign_cc",
-        sha256 = "6041f1374ff32ba711564374ad8e007aef77f71561a7ce784123b9b4b88614fc",
-        strip_prefix = "rules_foreign_cc-0.8.0",
-        url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.8.0.tar.gz",
+        sha256 = "2a4d07cd64b0719b39a7c12218a3e507672b82a97b98c6a89d38565894cf7c51",
+        strip_prefix = "rules_foreign_cc-0.9.0",
+        url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.9.0.tar.gz",
     )
 
     maybe(
