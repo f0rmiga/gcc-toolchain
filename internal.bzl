@@ -25,10 +25,10 @@ def internal_dependencies():
     maybe(
         http_archive,
         name = "io_bazel_stardoc",
-        sha256 = "aa814dae0ac400bbab2e8881f9915c6f47c49664bf087c409a15f90438d2c23e",
+        sha256 = "05fb57bb4ad68a360470420a3b6f5317e4f722839abc5b17ec4ef8ed465aaa47",
         urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/stardoc/releases/download/0.5.1/stardoc-0.5.1.tar.gz",
-            "https://github.com/bazelbuild/stardoc/releases/download/0.5.1/stardoc-0.5.1.tar.gz",
+            "https://mirror.bazel.build/github.com/bazelbuild/stardoc/releases/download/0.5.2/stardoc-0.5.2.tar.gz",
+            "https://github.com/bazelbuild/stardoc/releases/download/0.5.2/stardoc-0.5.2.tar.gz",
         ],
     )
 
@@ -79,10 +79,10 @@ def internal_dependencies():
     maybe(
         http_archive,
         name = "com_google_protobuf",
-        sha256 = "3bd7828aa5af4b13b99c191e8b1e884ebfa9ad371b0ce264605d347f135d2568",
-        strip_prefix = "protobuf-3.19.4",
+        sha256 = "85d42d4485f36f8cec3e475a3b9e841d7d78523cd775de3a86dba77081f4ca25",
+        strip_prefix = "protobuf-3.21.4",
         urls = [
-            "https://github.com/protocolbuffers/protobuf/archive/v3.19.4.tar.gz",
+            "https://github.com/protocolbuffers/protobuf/archive/v3.21.4.tar.gz",
         ],
     )
 
