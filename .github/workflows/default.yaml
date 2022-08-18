@@ -2,7 +2,7 @@ name: Default
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
     types: [labeled]
 
@@ -11,7 +11,7 @@ on:
 
 jobs:
   distros:
-    if: ${{ github.ref == 'refs/heads/master' }} or ${{ github.event.label.name == 'ci-test' }}
+    if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
         remote:
@@ -32,7 +32,7 @@ jobs:
           ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
           ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
   compilation_modes:
-    if: ${{ github.ref == 'refs/heads/master' }} or ${{ github.event.label.name == 'ci-test' }}
+    if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
         remote:
@@ -57,7 +57,7 @@ jobs:
           ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
           ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
   sanitizers:
-    if: ${{ github.ref == 'refs/heads/master' }} or ${{ github.event.label.name == 'ci-test' }}
+    if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
         remote:
@@ -83,7 +83,7 @@ jobs:
           ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
           ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
   rbe:
-    if: ${{ github.ref == 'refs/heads/master' }} or ${{ github.event.label.name == 'ci-test' }}
+    if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
         remote:
