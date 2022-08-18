@@ -14,9 +14,6 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
-        remote:
-          - buildbuddy
-          - engflow
         os:
           - ubuntu-18.04
           - ubuntu-20.04
@@ -26,18 +23,14 @@ jobs:
       - uses: actions/checkout@v3
       - uses: bazelbuild/setup-bazelisk@v2
       - name: Test
-        run: ./.github/workflows/${{ matrix.remote }}.sh --config ${{ matrix.remote }} //...
+        run: ./.github/workflows/engflow.sh --config engflow //...
         env:
-          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
           ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
           ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
   compilation_modes:
     if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
-        remote:
-          - buildbuddy
-          - engflow
         compilation_mode:
           - fastbuild
           - dbg
@@ -48,21 +41,17 @@ jobs:
       - uses: bazelbuild/setup-bazelisk@v2
       - name: Test
         run: |-
-          ./.github/workflows/${{ matrix.remote }}.sh \
-            --config ${{ matrix.remote }} \
+          ./.github/workflows/engflow.sh \
+            --config engflow \
             --compilation_mode ${{ matrix.compilation_mode }} \
             //...
         env:
-          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
           ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
           ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
   sanitizers:
     if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
-        remote:
-          - buildbuddy
-          - engflow
         sanitizer:
           - asan
           - lsan
@@ -74,33 +63,26 @@ jobs:
       - uses: bazelbuild/setup-bazelisk@v2
       - name: Test ${{ matrix.sanitizer }}
         run: |-
-          ./.github/workflows/${{ matrix.remote }}.sh \
-            --config ${{ matrix.remote }} \
+          ./.github/workflows/engflow.sh \
+            --config engflow \
             --config ${{ matrix.sanitizer }} \
             //tests/sanitizers:${{ matrix.sanitizer }}_test
         env:
-          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
           ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
           ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
   rbe:
     if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
-    strategy:
-      matrix:
-        remote:
-          - buildbuddy
-          - engflow
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: bazelbuild/setup-bazelisk@v2
       - name: Test with RBE
         run: |-
-          ./.github/workflows/${{ matrix.remote }}.sh \
+          ./.github/workflows/engflow.sh \
             --config rbe \
-            --config ${{ matrix.remote }} \
-            --config ${{ matrix.remote }}_rbe \
+            --config engflow \
+            --config engflow_rbe \
             //...
         env:
-          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
           ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
           ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
