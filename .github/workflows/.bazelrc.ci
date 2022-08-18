@@ -20,11 +20,3 @@ build:engflow --grpc_keepalive_time=30s
 
 # EngFlow remote build execution
 build:engflow_rbe --remote_executor=grpcs://tourmaline.cluster.engflow.com
-
-# BuildBuddy remote cache
-build:buildbuddy --bes_backend=grpcs://remote.buildbuddy.io
-build:buildbuddy --bes_results_url=https://app.buildbuddy.io/invocation/
-build:buildbuddy --remote_cache=grpcs://remote.buildbuddy.io
-
-# BuildBuddy remote build execution
-build:buildbuddy_rbe --remote_executor=grpcs://remote.buildbuddy.io
