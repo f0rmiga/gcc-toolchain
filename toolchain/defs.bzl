@@ -538,6 +538,7 @@ sysroot = "{sysroot}"
 
 toolchain(
     name = "fortran_toolchain",
+    exec_compatible_with = ["@platforms//cpu:x86_64"],
     target_compatible_with = {target_compatible_with},
     toolchain = ":_fortran_toolchain",
     toolchain_type = "@{gcc_toolchain_workspace_name}//toolchain/fortran:toolchain_type",
@@ -550,6 +551,7 @@ fortran_toolchain(
 
 toolchain(
     name = "cc_toolchain",
+    exec_compatible_with = ["@platforms//cpu:x86_64"],
     target_compatible_with = {target_compatible_with},
     toolchain = ":_cc_toolchain",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
