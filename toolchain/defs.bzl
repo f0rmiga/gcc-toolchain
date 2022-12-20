@@ -529,6 +529,7 @@ filegroup(
 """
 
 _TOOLCHAIN_BUILD_FILE_CONTENT = """\
+package(default_visibility = ["//visibility:public"])
 load("@rules_cc//cc:defs.bzl", "cc_toolchain")
 load("@{gcc_toolchain_workspace_name}//toolchain:cc_toolchain_config.bzl", "cc_toolchain_config")
 load("@{gcc_toolchain_workspace_name}//toolchain/fortran:defs.bzl", "fortran_toolchain")
