@@ -16,6 +16,7 @@
 """This module provides the definitions for registering a GCC toolchain for C and C++.
 """
 
+package(default_visibility = ["//visibility:public"])
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
