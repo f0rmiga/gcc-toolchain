@@ -534,6 +534,8 @@ load("@{gcc_toolchain_workspace_name}//toolchain:cc_toolchain_config.bzl", "cc_t
 load("@{gcc_toolchain_workspace_name}//toolchain/fortran:defs.bzl", "fortran_toolchain")
 load("//:tool_paths.bzl", "tool_paths")
 
+package(default_visibility = ["//visibility:public"])
+
 sysroot = "{sysroot}"
 
 toolchain(
