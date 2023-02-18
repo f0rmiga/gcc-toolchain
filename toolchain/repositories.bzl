@@ -36,9 +36,9 @@ def gcc_toolchain_dependencies():
     maybe(
         http_archive,
         name = "aspect_bazel_lib",
-        sha256 = "5829c55a2400cdfbbdeeaf562bce947361d31c7cab13d56f12c34d781b6c0344",
-        strip_prefix = "bazel-lib-1.24.1",
-        url = "https://github.com/aspect-build/bazel-lib/archive/refs/tags/v1.24.1.tar.gz",
+        sha256 = "dce068f085e9eabfec6d795caaabdbbe4a73550810f3cae3035aff7162e42b3c",
+        strip_prefix = "bazel-lib-1.26.2",
+        url = "https://github.com/aspect-build/bazel-lib/archive/refs/tags/v1.26.2.tar.gz",
     )
 
     maybe(
