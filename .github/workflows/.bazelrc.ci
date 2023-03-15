@@ -6,9 +6,13 @@ build --remote_timeout=3600
 build --remote_upload_local_results
 
 # Generic remote build execution
-build:rbe --extra_execution_platforms=//platforms:x86_64_linux_remote
-build:rbe --genrule_strategy=remote
 build:rbe --host_platform=//platforms:x86_64_linux_remote
+build:rbe --extra_execution_platforms=//platforms:x86_64_linux_remote
+build:rbe --cpu k8
+build:rbe --crosstool_top=@gcc_toolchain_x86_64//:_cc_toolchain
+build:rbe --strategy=remote
+build:rbe --genrule_strategy=remote
+build:rbe --spawn_strategy=remote
 build:rbe --jobs=32
 
 # EngFlow remote cache
