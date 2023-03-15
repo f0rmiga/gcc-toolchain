@@ -572,7 +572,7 @@ def _impl(ctx):
             features = features,
             host_system_name = "local",
             make_variables = [],
-            target_cpu = "local",
+            target_cpu = "k8",
             target_libc = "local",
             target_system_name = "local",
             tool_paths = [
