@@ -25,6 +25,8 @@ the `http_archive` when importing this repository:
 ```shell
 build --host_platform=@<gcc_toolchain_workspace>//platforms:x86_64_linux_remote
 build --extra_execution_platforms=@<gcc_toolchain_workspace>//platforms:x86_64_linux_remote
+build --cpu k8 # Force host platforms other than Linux to use this configuration.
+build --crosstool_top=@gcc_toolchain_x86_64//:_cc_toolchain # Allows the toolchain resolution for --cpu k8.
 build --strategy=remote
 build --genrule_strategy=remote
 build --spawn_strategy=remote
