@@ -72,7 +72,12 @@ jobs:
           ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
   rbe:
     if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
-    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        os:
+          - ubuntu-20.04
+          - macos-11
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
       - uses: bazelbuild/setup-bazelisk@v2
