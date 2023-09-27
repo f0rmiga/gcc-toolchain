@@ -22,6 +22,12 @@ cc_binary(
     data = ["names.txt"],
 )
 
+cc_test(
+    name = "hello_world_cpp_test",
+    srcs = ["main.cpp"],
+    data = ["names.txt"],
+)
+
 platform_transition_filegroup(
     name = "hello_world_cpp_linux_aarch64",
     target_platform = "//platforms:aarch64_linux",
