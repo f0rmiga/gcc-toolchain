@@ -503,6 +503,12 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "coverage_files",
+    srcs = [":gcov"],
+    visibility = ["//visibility:public"],
+)
+
 [
     filegroup(
         name = bin,
@@ -516,6 +522,7 @@ filegroup(
     for bin in [
         "ar",
         "as",
+        "gcov",
         "ld",
         "ld.bfd",
         "nm",
@@ -575,6 +582,7 @@ cc_toolchain(
     linker_files = ":linker_files",
     objcopy_files = ":objcopy_files",
     strip_files = ":strip_files",
+    coverage_files = ":coverage_files",
     supports_param_files = 0,
     toolchain_config = ":cc_toolchain_config",
     toolchain_identifier = "gcc-toolchain",
@@ -598,6 +606,7 @@ filegroup(
         ":ar_files",
         ":as_files",
         ":compiler_files",
+        ":coverage_files",
         ":dwp_files",
         ":linker_files",
         ":objcopy_files",
@@ -663,12 +672,25 @@ filegroup(
 )
 
 filegroup(
+    name = "coverage_files",
+    srcs = [
+        "@{toolchain_files_repository_name}//:coverage_files",
+        ":gcov",
+    ],
+)
+
+filegroup(
     name = "gcc",
     srcs = [
         "bin/cpp",
         "bin/g++",
         "bin/gcc",
     ],
+)
+
+filegroup(
+    name = "gcov",
+    srcs = ["bin/gcov"],
 )
 
 filegroup(
