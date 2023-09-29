@@ -23,7 +23,7 @@ function on_exit {
 
 trap on_exit EXIT
 
-bazel test \
+bazel "$1" \
     --tls_client_certificate="${crt_file}" \
     --tls_client_key="${key_file}" \
-    "$@"
+    "${@:2}"
