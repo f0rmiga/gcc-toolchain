@@ -42,4 +42,24 @@ build:ubsan --features ubsan
 build:ubsan --strip never
 build:ubsan --action_env UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 
+build:ci --keep_going
+
+# Generic remote cache
+build:ci --remote_download_toplevel
+build:ci --remote_timeout=3600
+build:ci --remote_upload_local_results
+
+# Generic remote build execution
+build:rbe --host_platform=//platforms:x86_64_linux_remote
+build:rbe --extra_execution_platforms=//platforms:x86_64_linux_remote
+build:rbe --cpu k8
+build:rbe --crosstool_top=@gcc_toolchain_x86_64//:_cc_toolchain
+build:rbe --strategy=remote
+build:rbe --genrule_strategy=remote
+build:rbe --spawn_strategy=remote
+build:rbe --jobs=32
+
+# BuildBuddy remote exec
+build:rbe --remote_executor=grpcs://remote.buildbuddy.io
+
 try-import %workspace%/.bazelrc.user
