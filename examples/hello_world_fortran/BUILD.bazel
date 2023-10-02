@@ -14,8 +14,18 @@
 # limitations under the License.
 
 load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules_fortran:defs.bzl", "fortran_binary")
+
+build_test(
+    name = "hello_world_fortran_build_test",
+    targets = [
+        ":hello_world_fortran",
+        ":hello_world_fortran_aarch64_tar",
+        ":hello_world_fortran_armv7_tar",
+    ],
+)
 
 fortran_binary(
     name = "hello_world_fortran",
@@ -24,8 +34,8 @@ fortran_binary(
 
 platform_transition_filegroup(
     name = "hello_world_fortran_aarch64",
-    target_platform = "//platforms:aarch64_linux",
     srcs = [":hello_world_fortran"],
+    target_platform = "//platforms:aarch64_linux",
 )
 
 pkg_tar(
@@ -37,8 +47,8 @@ pkg_tar(
 
 platform_transition_filegroup(
     name = "hello_world_fortran_armv7",
-    target_platform = "//platforms:armv7_linux",
     srcs = [":hello_world_fortran"],
+    target_platform = "//platforms:armv7_linux",
 )
 
 pkg_tar(
