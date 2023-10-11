@@ -62,6 +62,17 @@ jobs:
           bazel test --config ci --config ${{ matrix.sanitizer }} //tests/sanitizers:${{ matrix.sanitizer }}_test
         env:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+  coverage:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: bazelbuild/setup-bazelisk@v2
+      - name: Test Coverage
+        run: |
+          ./.github/workflows/configurebb.sh
+          bazel coverage --config ci //examples/hello_world_cpp:hello_world_cpp_test
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
   rbe:
     if: (github.ref == 'refs/heads/main' || contains(github.head_ref, 'rbe'))
     strategy:
