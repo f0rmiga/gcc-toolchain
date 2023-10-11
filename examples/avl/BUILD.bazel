@@ -12,8 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 
 alias(
     name = "avl",
     actual = "@avl",
+)
+
+build_test(
+    name = "avl_build_test",
+    targets = [":avl"],
 )

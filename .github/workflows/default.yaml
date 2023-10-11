@@ -1,17 +1,17 @@
 name: Default
 
 on:
+  # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [main]
   pull_request:
-    types: [labeled]
+    branches: [main]
 
   # Allows manually triggering this workflow from the Actions tab.
   workflow_dispatch:
 
 jobs:
   distros:
-    if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
         os:
@@ -22,12 +22,12 @@ jobs:
       - uses: actions/checkout@v3
       - uses: bazelbuild/setup-bazelisk@v2
       - name: Test
-        run: ./.github/workflows/engflow.sh test --config engflow //...
+        run: |
+          ./.github/workflows/configurebb.sh
+          bazel test --config ci //...
         env:
-          ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
-          ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
   compilation_modes:
-    if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
         compilation_mode:
@@ -39,17 +39,12 @@ jobs:
       - uses: actions/checkout@v3
       - uses: bazelbuild/setup-bazelisk@v2
       - name: Test
-        run: |-
-          ./.github/workflows/engflow.sh \
-            test \
-            --config engflow \
-            --compilation_mode ${{ matrix.compilation_mode }} \
-            //...
+        run: |
+          ./.github/workflows/configurebb.sh
+          bazel test --config ci --compilation_mode ${{ matrix.compilation_mode }} //...
         env:
-          ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
-          ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
   sanitizers:
-    if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
     strategy:
       matrix:
         sanitizer:
@@ -62,32 +57,31 @@ jobs:
       - uses: actions/checkout@v3
       - uses: bazelbuild/setup-bazelisk@v2
       - name: Test ${{ matrix.sanitizer }}
-        run: |-
-          ./.github/workflows/engflow.sh \
-            test \
-            --config engflow \
-            --config ${{ matrix.sanitizer }} \
-            //tests/sanitizers:${{ matrix.sanitizer }}_test
+        run: |
+          ./.github/workflows/configurebb.sh
+          bazel test --config ci --config ${{ matrix.sanitizer }} //tests/sanitizers:${{ matrix.sanitizer }}_test
         env:
-          ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
-          ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
   coverage:
-    if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
+    strategy:
+      matrix:
+        sanitizer:
+          - asan
+          - lsan
+          - tsan
+          - ubsan
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: bazelbuild/setup-bazelisk@v2
-      - name: Test Coverage
-        run: |-
-          ./.github/workflows/engflow.sh \
-            coverage \
-            --config engflow \
-            //examples/hello_world_cpp:hello_world_cpp_test
+      - name: Test ${{ matrix.sanitizer }}
+        run: |
+          ./.github/workflows/configurebb.sh
+          bazel coverage --config ci //examples/hello_world_cpp:hello_world_cpp_test
         env:
-          ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
-          ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
   rbe:
-    if: ${{ github.ref == 'refs/heads/main' }} or ${{ github.event.label.name == 'ci-test' }}
+    if: (github.ref == 'refs/heads/main' || contains(github.head_ref, 'rbe'))
     strategy:
       matrix:
         os:
@@ -98,13 +92,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: bazelbuild/setup-bazelisk@v2
       - name: Test with RBE
-        run: |-
-          ./.github/workflows/engflow.sh \
-            test \
-            --config rbe \
-            --config engflow \
-            --config engflow_rbe \
-            //...
+        run: |
+          ./.github/workflows/configurebb.sh
+          bazel test --config ci --config rbe //...
         env:
-          ENGFLOW_CLIENT_CRT: ${{ secrets.ENGFLOW_CLIENT_CRT }}
-          ENGFLOW_PRIVATE_KEY: ${{ secrets.ENGFLOW_PRIVATE_KEY }}
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
