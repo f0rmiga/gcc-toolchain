@@ -63,18 +63,11 @@ jobs:
         env:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
   coverage:
-    strategy:
-      matrix:
-        sanitizer:
-          - asan
-          - lsan
-          - tsan
-          - ubsan
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: bazelbuild/setup-bazelisk@v2
-      - name: Test ${{ matrix.sanitizer }}
+      - name: Test Coverage
         run: |
           ./.github/workflows/configurebb.sh
           bazel coverage --config ci //examples/hello_world_cpp:hello_world_cpp_test
