@@ -23,8 +23,8 @@ sh_test(
     srcs = ["sanitizer_test.sh"],
     data = [
         ":asan",
-        "@sysroot_x86_64-X11//:libasan",
         "@sysroot_x86_64-X11//:lib64/libasan.so",
+        "@sysroot_x86_64-X11//:libasan",
     ],
     env = {
         "BINARY": "$(rootpath :asan)",
@@ -45,8 +45,8 @@ sh_test(
     srcs = ["sanitizer_test.sh"],
     data = [
         ":lsan",
-        "@sysroot_x86_64-X11//:liblsan",
         "@sysroot_x86_64-X11//:lib64/liblsan.so",
+        "@sysroot_x86_64-X11//:liblsan",
     ],
     env = {
         "BINARY": "$(rootpath :lsan)",
@@ -67,8 +67,8 @@ sh_test(
     srcs = ["sanitizer_test.sh"],
     data = [
         ":tsan",
-        "@sysroot_x86_64-X11//:libtsan",
         "@sysroot_x86_64-X11//:lib64/libtsan.so",
+        "@sysroot_x86_64-X11//:libtsan",
     ],
     env = {
         "BINARY": "$(rootpath :tsan)",
@@ -89,8 +89,8 @@ sh_test(
     srcs = ["sanitizer_test.sh"],
     data = [
         ":ubsan",
-        "@sysroot_x86_64-X11//:libubsan",
         "@sysroot_x86_64-X11//:lib64/libubsan.so",
+        "@sysroot_x86_64-X11//:libubsan",
     ],
     env = {
         "BINARY": "$(rootpath :ubsan)",

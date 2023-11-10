@@ -35,7 +35,7 @@ load("@aspect_bazel_lib//lib:repositories.bzl", "aspect_bazel_lib_dependencies")
 
 aspect_bazel_lib_dependencies()
 
-load("//toolchain:defs.bzl", "gcc_register_toolchain", "ARCHS")
+load("//toolchain:defs.bzl", "ARCHS", "gcc_register_toolchain")
 
 gcc_register_toolchain(
     name = "gcc_toolchain_aarch64",

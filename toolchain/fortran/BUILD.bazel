@@ -27,6 +27,6 @@ current_fortran_toolchain(
 
 current_fortran_toolchain(
     name = "current_static_fortran_toolchain",
-    visibility = ["//visibility:public"],
     features = ["static_libgfortran"],
+    visibility = ["//visibility:public"],
 )

@@ -61,11 +61,11 @@ def ldflags(arch, gcc_version):
         "-B%sysroot%/usr/lib",
         "-B%sysroot%/{arch_specific_prefix}{lib}".format(
             arch_specific_prefix = arch_specific_prefix,
-            lib = lib
+            lib = lib,
         ),
         "-L%sysroot%/{arch_specific_prefix}{lib}".format(
             arch_specific_prefix = arch_specific_prefix,
-            lib = lib
+            lib = lib,
         ),
         "-L%sysroot%/usr/lib",
         "-L%sysroot%/lib/gcc/{target}/{gcc_version}".format(

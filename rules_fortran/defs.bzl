@@ -163,14 +163,13 @@ def _get_configuration(ctx):
     return (fortran_toolchain, feature_configuration)
 
 def _compile(
-    actions,
-    defines,
-    feature_configuration,
-    fopts,
-    fortran_toolchain,
-    includes,
-    srcs,
-):
+        actions,
+        defines,
+        feature_configuration,
+        fopts,
+        fortran_toolchain,
+        includes,
+        srcs):
     (compiler, compile_flags) = _get_compiler(fortran_toolchain, feature_configuration, fopts)
     objects = [
         actions.declare_file(paths.replace_extension(src.path, ".o"))
@@ -222,16 +221,15 @@ def _get_compiler(fortran_toolchain, feature_configuration, fopts = []):
     return (compiler, compile_flags)
 
 def _link(
-    actions,
-    deps,
-    feature_configuration,
-    fortran_toolchain,
-    linkopts,
-    linkshared,
-    linkstatic,
-    objects,
-    output_name,
-):
+        actions,
+        deps,
+        feature_configuration,
+        fortran_toolchain,
+        linkopts,
+        linkshared,
+        linkstatic,
+        objects,
+        output_name):
     (linker, link_flags) = _get_linker(fortran_toolchain, feature_configuration, linkopts)
     shared_objects = []
     archives = []
@@ -291,12 +289,11 @@ def _get_linker(fortran_toolchain, feature_configuration, linkopts = []):
     return (linker, link_flags)
 
 def _archive(
-    actions,
-    feature_configuration,
-    fortran_toolchain,
-    objects,
-    output_name,
-):
+        actions,
+        feature_configuration,
+        fortran_toolchain,
+        objects,
+        output_name):
     archiver = cc_common.get_tool_for_action(
         action_name = ACTION_NAMES.fortran_archive,
         feature_configuration = feature_configuration,

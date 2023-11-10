@@ -28,12 +28,12 @@ exports_files(
 bzl_library(
     name = "defs",
     srcs = ["defs.bzl"],
+    visibility = ["//visibility:public"],
     deps = [
+        "//sysroot:flags.bzl",
         "@bazel_skylib//lib:dicts",
         "@bazel_skylib//lib:paths",
         "@bazel_tools//tools/build_defs/repo:http.bzl",
         "@bazel_tools//tools/build_defs/repo:utils.bzl",
-        "//sysroot:flags.bzl",
     ],
-    visibility = ["//visibility:public"],
 )
