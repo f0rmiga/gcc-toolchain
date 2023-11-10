@@ -24,7 +24,7 @@ and build system unreliable.
 When it comes to building portable ELF binaries, the libc plays an important role. The linker will
 try to link against new symbols, and since the GNU libc has symbol versioning, linking against a
 newer glibc will prevent that program from running on a system using an older glibc. To solve this,
-we ship glibc 2.26 with the sysroots, which should be old enough by now to make all programs
+we ship glibc 2.37 with the sysroots, which should be old enough by now to make all programs
 compiled with this toolchain portable.
 
 ### Use cases
@@ -33,5 +33,5 @@ compiled with this toolchain portable.
 * You need to run sanitizers (asan, lsan, tsan, ubsan) on your code; or
 * You need to cross-compile from Linux x86_64 to Linux armv7 or aarch64; or
 * You want to make your program portable to other Linux distros (our default sysroot ships with
-glibc 2.26); or
+glibc 2.37); or
 * You want reproducibility.
