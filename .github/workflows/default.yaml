@@ -39,7 +39,7 @@ jobs:
           - fastbuild
           - dbg
           - opt
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: bazelbuild/setup-bazelisk@v2
@@ -57,7 +57,7 @@ jobs:
           - lsan
           - tsan
           - ubsan
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: bazelbuild/setup-bazelisk@v2
@@ -68,7 +68,7 @@ jobs:
         env:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
   coverage:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: bazelbuild/setup-bazelisk@v2
