@@ -35,9 +35,9 @@ def internal_dependencies():
     maybe(
         http_archive,
         name = "aspect_bazel_lib",
-        sha256 = "d488d8ecca98a4042442a4ae5f1ab0b614f896c0ebf6e3eafff363bcc51c6e62",
-        strip_prefix = "bazel-lib-1.33.0",
-        url = "https://github.com/aspect-build/bazel-lib/archive/refs/tags/v1.33.0.tar.gz",
+        sha256 = "a7e356f8a5cb8bf1e9be38c2c617ad22f5a1606792e839fc040971bdfbecf971",
+        strip_prefix = "bazel-lib-1.40.2",
+        url = "https://github.com/aspect-build/bazel-lib/archive/refs/tags/v1.40.2.tar.gz",
     )
 
     maybe(
