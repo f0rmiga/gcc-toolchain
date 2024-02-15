@@ -79,10 +79,10 @@ def internal_dependencies():
     maybe(
         http_archive,
         name = "com_google_protobuf",
-        sha256 = "930c2c3b5ecc6c9c12615cf5ad93f1cd6e12d0aba862b572e076259970ac3a53",
-        strip_prefix = "protobuf-3.21.12",
+        sha256 = "da82be8acc5347c7918ef806ebbb621b24988f7e1a19b32cd7fc73bc29b59186",
+        strip_prefix = "protobuf-3.25.3",
         urls = [
-            "https://github.com/protocolbuffers/protobuf/archive/v3.21.12.tar.gz",
+            "https://github.com/protocolbuffers/protobuf/archive/v3.25.3.tar.gz",
         ],
     )
 
