@@ -62,9 +62,9 @@ def internal_dependencies():
         name = "lapack",
         build_file_content = _ALL_SRCS,
         patch_cmds = LAPACK_PATCHES,
-        sha256 = "4b9ba79bfd4921ca820e83979db76ab3363155709444a787979e81c22285ffa9",
-        strip_prefix = "lapack-3.11.0",
-        url = "https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.11.0.tar.gz",
+        sha256 = "eac9570f8e0ad6f30ce4b963f4f033f0f643e7c3912fc9ee6cd99120675ad48b",
+        strip_prefix = "lapack-3.12.0",
+        url = "https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.12.0.tar.gz",
     )
 
     maybe(
