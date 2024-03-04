@@ -1,6 +1,8 @@
 ! Copyright (c) Joby Aviation 2022
 ! Original authors: Thulio Ferraz Assis (thulio@aspect.dev), Aspect.dev
 !
+! Copyright (c) Thulio Ferraz Assis 2024
+!
 ! Licensed under the Apache License, Version 2.0 (the "License");
 ! you may not use this file except in compliance with the License.
 ! You may obtain a copy of the License at
