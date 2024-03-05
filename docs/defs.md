@@ -52,7 +52,5 @@ Declares a `gcc_toolchain` and calls `register_toolchain` for it.
 | :------------- | :------------- | :------------- |
 | <a id="gcc_register_toolchain-name"></a>name |  The name passed to <code>gcc_toolchain</code>.   |  none |
 | <a id="gcc_register_toolchain-target_arch"></a>target_arch |  The target architecture of the toolchain.   |  none |
-| <a id="gcc_register_toolchain-gcc_version"></a>gcc_version |  The version of GCC used by the toolchain.   |  <code>"10.3.0"</code> |
+| <a id="gcc_register_toolchain-gcc_version"></a>gcc_version |  The version of GCC used by the toolchain.   |  <code>"12.3.0"</code> |
 | <a id="gcc_register_toolchain-kwargs"></a>kwargs |  The extra arguments passed to <code>gcc_toolchain</code>. See <code>gcc_toolchain</code> for more info.   |  none |
-
-

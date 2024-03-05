@@ -4,7 +4,7 @@ As GCC (and other toolchains) see it, the sysroot is the logical root directory 
 libraries.
 
 This subdirectory contains the definitions and scripts to build sysroots for x86_64, armv7 and
-aarch64 (aka arm64 and armv8).
+aarch64 (a.k.a. arm64 and armv8).
 
 ## Building the sysroots
 
@@ -22,7 +22,8 @@ cross-compilation from x86_64.
 
 ### Variants
 
-If you want to build a sysroot containing extra libraries, you can build a variant. E.g. the X11:
+If you want to build a sysroot containing extra libraries, you can build a variant, such as the X11
+variant:
 
 ```shell
 ./sysroot/build.sh x86_64 ./sysroot X11
