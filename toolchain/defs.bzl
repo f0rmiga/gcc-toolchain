@@ -325,6 +325,11 @@ _SYSROOTS = {
         sha256 = "36caaa7b9445ffe46142becdbce5733843d99efa70ac027ba82c2909f0ae6dc4",
         url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-X11-x86_64.tar.xz",
     ),
+    "x86_64-gcc13": struct(
+        sha256 = "687f647f8c6c6cf7714111470fd20d3e23c1a1a617e4a95829bb207d0f63bff3",
+        # TODO: This must go into nexus/github
+        url = "file:///home/timotheus/git/gcc-toolchain/sysroot/sysroot-base-x86_64.tar.xz",
+    ),
 }
 
 _TOOLCHAINS = {
@@ -343,6 +348,13 @@ _TOOLCHAINS = {
             sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
             strip_prefix = "x86-64--glibc--stable-2021.11-5",
             url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2021.11-5.tar.bz2",
+        ),
+    },
+    "13.2.0": {
+        "x86_64": struct(
+            sha256 = "7aac949737ebfb3f4bccc6a75af79d50cf1fadd9ffbdf21e26c1508dff67f23d",
+            strip_prefix = "x86-64--glibc--bleeding-edge-2024.02-1",
+            url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--bleeding-edge-2024.02-1.tar.bz2",
         ),
     },
 }

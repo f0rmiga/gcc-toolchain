@@ -49,12 +49,12 @@ RUN curl --fail-early --location https://github.com/torvalds/linux/archive/refs/
 
 FROM base_image AS glibc_download
 WORKDIR /downloads/glibc
-RUN curl --fail-early --location https://ftp.gnu.org/gnu/glibc/glibc-2.26.tar.xz \
+RUN curl --fail-early --location https://ftp.gnu.org/gnu/glibc/glibc-2.22.tar.xz \
         | tar --xz --extract --strip-components=1 --file -
 
 FROM base_image AS gcc_download
 WORKDIR /downloads/gcc
-RUN curl --fail-early --location https://ftp.gnu.org/gnu/gcc/gcc-10.3.0/gcc-10.3.0.tar.xz \
+RUN curl --fail-early --location https://ftp.gnu.org/gnu/gcc/gcc-13.2.0/gcc-13.2.0.tar.xz \
         | tar --xz --extract --strip-components=1 --file -
 RUN ./contrib/download_prerequisites
 

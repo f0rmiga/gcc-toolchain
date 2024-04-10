@@ -51,7 +51,8 @@ gcc_register_toolchain(
 
 gcc_register_toolchain(
     name = "gcc_toolchain_x86_64",
-    sysroot_variant = "x86_64-X11",
+    gcc_version = "13.2.0",
+    sysroot_variant = "x86_64-gcc13",
     target_arch = ARCHS.x86_64,
 )
 
