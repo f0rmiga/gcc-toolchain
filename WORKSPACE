@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-workspace(name = "aspect_gcc_toolchain")
+workspace(name = "gcc_toolchain")
 
 load("//toolchain:repositories.bzl", "gcc_toolchain_dependencies")
 
