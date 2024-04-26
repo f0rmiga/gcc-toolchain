@@ -110,7 +110,7 @@ _FEATURE_ATTRS = {
     ),
     "gcc_toolchain_workspace_name": attr.string(
         doc = "The name given to the gcc-toolchain repository, if the default was not used.",
-        default = "aspect_gcc_toolchain",
+        default = "gcc_toolchain",
     ),
     "includes": attr.string_list(
         doc = "Extra includes for compiling C and C++." +
