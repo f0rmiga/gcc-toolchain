@@ -64,4 +64,8 @@ build:rbe --jobs=32
 # BuildBuddy remote exec
 build:rbe --remote_executor=grpcs://remote.buildbuddy.io
 
+# Disable bazelmod
+common --noenable_bzlmod
+
+
 try-import %workspace%/.bazelrc.user

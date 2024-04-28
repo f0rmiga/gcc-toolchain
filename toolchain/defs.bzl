@@ -157,60 +157,61 @@ gcc_toolchain = repository_rule(
 
 def _render_tool_paths(rctx, repository_name, toolchain_files_repository_name, binary_prefix):
     relative_tool_paths = {
-        "ar": "external/{repository_name}/bin/{binary_prefix}-linux-ar".format(
+        "ar": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-ar".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
-        "as": "external/{repository_name}/bin/{binary_prefix}-linux-as".format(
+        "as": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-as".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
-        "cpp": "external/{repository_name}/bin/{binary_prefix}-linux-cpp".format(
+        "cpp": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-cpp".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
-        "g++": "external/{repository_name}/bin/{binary_prefix}-linux-g++".format(
+        "g++": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-g++".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
-        "gcc": "external/{repository_name}/bin/{binary_prefix}-linux-gcc".format(
+        "gcc": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-gcc".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
-        "gcov": "external/{repository_name}/bin/{binary_prefix}-linux-gcov".format(
+        "gcov": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-gcov".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
-        "gfortran": "external/{repository_name}/bin/{binary_prefix}-linux-gfortran".format(
+        "gfortran": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-gfortran".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
-        "ld": "external/{repository_name}/bin/{binary_prefix}-linux-ld".format(
+        "ld": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-ld".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
-        "nm": "external/{repository_name}/bin/{binary_prefix}-linux-nm".format(
+        "nm": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-nm".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
-        "objcopy": "external/{repository_name}/bin/{binary_prefix}-linux-objcopy".format(
+        "objcopy": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-objcopy".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
-        "objdump": "external/{repository_name}/bin/{binary_prefix}-linux-objdump".format(
+        "objdump": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-objdump".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
-        "strip": "external/{repository_name}/bin/{binary_prefix}-linux-strip".format(
+        "strip": "bazel-working-directory/gcc_toolchain/external/{repository_name}/bin/{binary_prefix}-linux-strip".format(
             repository_name = toolchain_files_repository_name,
             binary_prefix = binary_prefix,
         ),
     }
 
     path_env = ":".join([
-        "${{EXECROOT}}/external/{}/bin".format(repository)
+        "${{EXECROOT}}/bazel-working-directory/gcc_toolchain/external/{}/bin".format(repository)
         for repository in [repository_name, toolchain_files_repository_name]
     ])
+    print(path_env)
 
     tool_paths = {}
     for name, tool_path in relative_tool_paths.items():

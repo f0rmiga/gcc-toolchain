@@ -23,7 +23,20 @@ set -o errexit -o nounset -o pipefail
 # symlinks of the BASH_SOURCE[0] is more reliable than navigating to the
 # execroot from $PWD. This is due to the fact that the Bazel C++ toolchain can
 # be called from different working directories (e.g. rules_foreign_cc rules).
+# EXECROOT="${EXECROOT:-"$(realpath "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/../")"}"
 EXECROOT="${EXECROOT:-"$(realpath "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/../../..")"}"
+
+echo "EXECROOT: ${EXECROOT}"
+# ls -lh "${EXECROOT}"
+# ls -lh "${EXECROOT}/bazel-execroot/gcc_toolchain"
+# ls -lh "${EXECROOT}/bazel-source-roots"
+# ls -lh "${EXECROOT}/bazel-working-directory/gcc_toolchain/external"
+# ls -lh "${EXECROOT}/bazel-working-directory/gcc-toolchain"
+# echo "BINARY: __binary__"
+# echo "Running: ${EXECROOT}/__binary__ ${args[@]}"
+echo "PATH = __PATH__"
+# ls -lh /tmp/external/
+
 export EXECROOT
 export PATH="__PATH__"
 args=("$@")
@@ -43,5 +56,6 @@ for i in "${!args[@]}"; do
         args["${next_index}"]="${EXECROOT}/${val}"
     fi
 done
+
 
 exec "${EXECROOT}/__binary__" "${args[@]}"
