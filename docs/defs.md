@@ -10,7 +10,7 @@ This module provides the definitions for registering a GCC toolchain for C and C
 <pre>
 gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-binary_prefix">binary_prefix</a>, <a href="#gcc_toolchain-extra_cflags">extra_cflags</a>, <a href="#gcc_toolchain-extra_cxxflags">extra_cxxflags</a>, <a href="#gcc_toolchain-extra_fflags">extra_fflags</a>, <a href="#gcc_toolchain-extra_ldflags">extra_ldflags</a>,
               <a href="#gcc_toolchain-gcc_toolchain_workspace_name">gcc_toolchain_workspace_name</a>, <a href="#gcc_toolchain-includes">includes</a>, <a href="#gcc_toolchain-repo_mapping">repo_mapping</a>, <a href="#gcc_toolchain-sysroot">sysroot</a>, <a href="#gcc_toolchain-target_arch">target_arch</a>,
-              <a href="#gcc_toolchain-target_compatible_with">target_compatible_with</a>, <a href="#gcc_toolchain-toolchain_files_repository_name">toolchain_files_repository_name</a>)
+              <a href="#gcc_toolchain-target_compatible_with">target_compatible_with</a>, <a href="#gcc_toolchain-target_settings">target_settings</a>, <a href="#gcc_toolchain-toolchain_files_repository_name">toolchain_files_repository_name</a>)
 </pre>
 
 
@@ -32,6 +32,7 @@ gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-bi
 | <a id="gcc_toolchain-sysroot"></a>sysroot |  A sysroot to be used as the logical build root.   | String | required |  |
 | <a id="gcc_toolchain-target_arch"></a>target_arch |  The target architecture this toolchain produces. E.g. x86_64.   | String | required |  |
 | <a id="gcc_toolchain-target_compatible_with"></a>target_compatible_with |  contraint_values passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.   | List of strings | optional | <code>["@platforms//os:linux", "@platforms//cpu:{target_arch}"]</code> |
+| <a id="gcc_toolchain-target_settings"></a>target_settings |  config_settings passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.   | List of strings | optional | <code>[]</code> |
 | <a id="gcc_toolchain-toolchain_files_repository_name"></a>toolchain_files_repository_name |  The name of the repository containing the toolchain files.   | String | required |  |
 
 

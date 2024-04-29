@@ -55,9 +55,15 @@ def _gcc_toolchain_impl(rctx):
         for v in rctx.attr.target_compatible_with
     ]
 
+    target_settings = [
+        v.format(target_arch = target_arch)
+        for v in rctx.attr.target_settings
+    ]
+
     rctx.file("BUILD.bazel", _TOOLCHAIN_BUILD_FILE_CONTENT.format(
         gcc_toolchain_workspace_name = rctx.attr.gcc_toolchain_workspace_name,
         target_compatible_with = str(target_compatible_with),
+        target_settings = str(target_settings),
         toolchain_files_repository_name = rctx.attr.toolchain_files_repository_name,
 
         # Sysroot
@@ -133,6 +139,11 @@ _FEATURE_ATTRS = {
             "@platforms//cpu:{target_arch}",
         ],
         doc = "contraint_values passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.",
+        mandatory = False,
+    ),
+    "target_settings": attr.string_list(
+        default = [],
+        doc = "config_settings passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.",
         mandatory = False,
     ),
     "toolchain_files_repository_name": attr.string(
@@ -570,6 +581,7 @@ toolchain(
         "@platforms//cpu:x86_64",
     ],
     target_compatible_with = {target_compatible_with},
+    target_settings = {target_settings},
     toolchain = ":_cc_toolchain",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
