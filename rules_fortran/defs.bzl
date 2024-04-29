@@ -103,6 +103,23 @@ def _fortran_binary_impl(ctx):
         providers.append(OutputGroupInfo(
             dynamic_library = depset([output]),
         ))
+        providers.append(CcInfo(
+            linking_context = cc_common.create_linking_context(
+                linker_inputs = depset([
+                    cc_common.create_linker_input(
+                        owner = ctx.label,
+                        libraries = depset([
+                            cc_common.create_library_to_link(
+                                actions = ctx.actions,
+                                feature_configuration = feature_configuration,
+                                cc_toolchain = fortran_toolchain,
+                                dynamic_library = output,
+                            ),
+                        ]),
+                    ),
+                ]),
+            ),
+        ))
 
     return providers
 
@@ -143,6 +160,23 @@ def _fortran_library_impl(ctx):
         OutputGroupInfo(
             archive = depset([output]),
             includes = ctx.files.includes,
+        ),
+        CcInfo(
+            linking_context = cc_common.create_linking_context(
+                linker_inputs = depset([
+                    cc_common.create_linker_input(
+                        owner = ctx.label,
+                        libraries = depset([
+                            cc_common.create_library_to_link(
+                                actions = ctx.actions,
+                                feature_configuration = feature_configuration,
+                                cc_toolchain = fortran_toolchain,
+                                static_library = output,
+                            ),
+                        ]),
+                    ),
+                ]),
+            ),
         ),
     ]
 
