@@ -321,20 +321,20 @@ ARCHS = struct(
 
 _SYSROOTS = {
     "aarch64": struct(
-        sha256 = "b23690426137bdbf23c9572d8d6b3db6de30dc80b7cac148fb98b6d50d9fb192",
-        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-base-aarch64.tar.xz",
+        sha256 = "6c1b53e2fa3b895fec34f630f8aec41a9a75e9527d7c5f6d859aa9f186edf4a7",
+        url = "https://github.com/f0rmiga/gcc-toolchain/releases/download/sysroot-29042024/sysroot-base-aarch64.tar.xz",
     ),
     "armv7": struct(
-        sha256 = "049865707f6c4c62e244b28ff4c7fe597539b0cff3bc6d4ca80ab93f845240e7",
-        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-base-armv7.tar.xz",
+        sha256 = "f974f5ad7385cdfa41085389511a528837689e4eae8a9ed3aa528256e760ebd7",
+        url = "https://github.com/f0rmiga/gcc-toolchain/releases/download/sysroot-29042024/sysroot-base-armv7.tar.xz",
     ),
     "x86_64": struct(
-        sha256 = "b9993ee16de8c2c8111c4baa9ea1c554ef74c2b32b5768dc93fcec013b549d68",
-        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-base-x86_64.tar.xz",
+        sha256 = "70e38e7b5ffc67fe599f761b04ab30b41b66f264b19bba1504902198a2cd046a",
+        url = "https://github.com/f0rmiga/gcc-toolchain/releases/download/sysroot-29042024/sysroot-base-x86_64.tar.xz",
     ),
     "x86_64-X11": struct(
-        sha256 = "36caaa7b9445ffe46142becdbce5733843d99efa70ac027ba82c2909f0ae6dc4",
-        url = "https://github.com/aspect-build/gcc-toolchain/releases/download/0.3.0/sysroot-X11-x86_64.tar.xz",
+        sha256 = "806023b77643c311892c46b474d10bf4c536671eb8714a008b4e5d8c1b7a7176",
+        url = "https://github.com/f0rmiga/gcc-toolchain/releases/download/sysroot-29042024/sysroot-X11-x86_64.tar.xz",
     ),
 }
 
