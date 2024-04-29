@@ -76,6 +76,7 @@ def _fortran_binary_impl(ctx):
     objects = _compile(
         actions = ctx.actions,
         defines = ctx.attr.defines,
+        deps = ctx.attr.deps,
         feature_configuration = feature_configuration,
         fopts = ctx.attr.fopts,
         fortran_toolchain = fortran_toolchain,
@@ -118,6 +119,7 @@ def _fortran_library_impl(ctx):
     objects = _compile(
         actions = ctx.actions,
         defines = ctx.attr.defines,
+        deps = ctx.attr.deps,
         feature_configuration = feature_configuration,
         fopts = ctx.attr.fopts,
         fortran_toolchain = fortran_toolchain,
@@ -140,6 +142,7 @@ def _fortran_library_impl(ctx):
         ),
         OutputGroupInfo(
             archive = depset([output]),
+            includes = ctx.files.includes,
         ),
     ]
 
@@ -167,6 +170,7 @@ def _get_configuration(ctx):
 def _compile(
     actions,
     defines,
+    deps,
     feature_configuration,
     fopts,
     fortran_toolchain,
@@ -178,8 +182,17 @@ def _compile(
         actions.declare_file(paths.replace_extension(src.path, ".o"))
         for src in srcs
     ]
+    deps_includes = []
+    for dep in deps:
+        if hasattr(dep.output_groups, "includes"):
+            deps_includes.append(dep.output_groups.includes)
+    deps_includes = depset(direct = [], transitive = deps_includes)
+    deps_includes_flags = [
+        "-I{}".format(inc.dirname)
+        for inc in deps_includes.to_list()
+    ]
     defines_flags = ["-D{}".format(define) for define in defines]
-    flags = defines_flags + compile_flags + fopts
+    flags = defines_flags + compile_flags + fopts + deps_includes_flags
     command = """\
 set -o errexit -o nounset -o pipefail
 
@@ -200,7 +213,10 @@ set -o errexit -o nounset -o pipefail
     )
     actions.run_shell(
         command = command,
-        inputs = depset(srcs + includes),
+        inputs = depset(
+            direct = srcs + includes,
+            transitive = [deps_includes],
+        ),
         outputs = objects,
         tools = fortran_toolchain.all_files,
     )
