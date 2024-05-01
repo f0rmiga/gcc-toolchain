@@ -83,7 +83,7 @@ def _fortran_binary_impl(ctx):
     precompiled_fortran_objects = []
     for src in ctx.attr.srcs:
         if FortranInfo in src:
-            precompiled_fortran_objects.extend(src[FortranInfo].compiled_objects.to_list())
+            precompiled_fortran_objects.extend(src[FortranInfo].compiled_objects)
         else:
             fortran_sources.extend(src[DefaultInfo].files.to_list())
     objects = _compile(
@@ -113,7 +113,7 @@ def _fortran_binary_impl(ctx):
             executable = output,
         ),
         FortranInfo(
-            compiled_objects = depset(objects),
+            compiled_objects = objects,
         ),
     ]
 
@@ -155,7 +155,7 @@ def _fortran_library_impl(ctx):
     precompiled_fortran_objects = []
     for src in ctx.attr.srcs:
         if FortranInfo in src:
-            precompiled_fortran_objects.extend(src[FortranInfo].compiled_objects.to_list())
+            precompiled_fortran_objects.extend(src[FortranInfo].compiled_objects)
         else:
             fortran_sources.extend(src[DefaultInfo].files.to_list())
     objects = _compile(
@@ -183,7 +183,7 @@ def _fortran_library_impl(ctx):
             runfiles = ctx.runfiles(transitive_files = files),
         ),
         FortranInfo(
-            compiled_objects = depset(objects),
+            compiled_objects = objects,
         ),
         OutputGroupInfo(
             archive = depset([output]),
