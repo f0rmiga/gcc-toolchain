@@ -21,6 +21,11 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//toolchain/fortran:action_names.bzl", "ACTION_NAMES")
 
+FortranInfo = provider(
+    "Information from a Fortran rule.",
+    fields = {"compiled_objects": "The list of compiled Fortran objects."},
+)
+
 _attrs = {
     "defines": attr.string_list(
         default = [],
@@ -45,8 +50,9 @@ _attrs = {
     ),
     "srcs": attr.label_list(
         allow_files = True,
+        default = [],
         doc = "The list of Fortran source files.",
-        mandatory = True,
+        mandatory = False,
     ),
     "linkopts": attr.string_list(
         default = [],
@@ -73,6 +79,13 @@ _binary_attrs = {
 
 def _fortran_binary_impl(ctx):
     (fortran_toolchain, feature_configuration) = _get_configuration(ctx)
+    fortran_sources = []
+    precompiled_fortran_objects = []
+    for src in ctx.attr.srcs:
+        if FortranInfo in src:
+            precompiled_fortran_objects.extend(src[FortranInfo].compiled_objects.to_list())
+        else:
+            fortran_sources.extend(src[DefaultInfo].files.to_list())
     objects = _compile(
         actions = ctx.actions,
         defines = ctx.attr.defines,
@@ -81,7 +94,7 @@ def _fortran_binary_impl(ctx):
         fopts = ctx.attr.fopts,
         fortran_toolchain = fortran_toolchain,
         includes = ctx.files.includes,
-        srcs = ctx.files.srcs,
+        srcs = fortran_sources,
     )
     output = _link(
         actions = ctx.actions,
@@ -91,13 +104,18 @@ def _fortran_binary_impl(ctx):
         linkopts = ctx.attr.linkopts,
         linkshared = ctx.attr.linkshared,
         linkstatic = ctx.attr.linkstatic,
-        objects = objects,
+        objects = objects + precompiled_fortran_objects,
         output_name = ctx.attr.name,
     )
 
-    providers = [DefaultInfo(
-        executable = output,
-    )]
+    providers = [
+        DefaultInfo(
+            executable = output,
+        ),
+        FortranInfo(
+            compiled_objects = depset(objects),
+        ),
+    ]
 
     if ctx.attr.linkshared:
         providers.append(OutputGroupInfo(
@@ -133,6 +151,13 @@ fortran_binary = rule(
 
 def _fortran_library_impl(ctx):
     (fortran_toolchain, feature_configuration) = _get_configuration(ctx)
+    fortran_sources = []
+    precompiled_fortran_objects = []
+    for src in ctx.attr.srcs:
+        if FortranInfo in src:
+            precompiled_fortran_objects.extend(src[FortranInfo].compiled_objects.to_list())
+        else:
+            fortran_sources.extend(src[DefaultInfo].files.to_list())
     objects = _compile(
         actions = ctx.actions,
         defines = ctx.attr.defines,
@@ -141,13 +166,13 @@ def _fortran_library_impl(ctx):
         fopts = ctx.attr.fopts,
         fortran_toolchain = fortran_toolchain,
         includes = ctx.files.includes,
-        srcs = ctx.files.srcs,
+        srcs = fortran_sources,
     )
     output = _archive(
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         fortran_toolchain = fortran_toolchain,
-        objects = objects,
+        objects = objects + precompiled_fortran_objects,
         output_name = ctx.attr.name,
     )
 
@@ -156,6 +181,9 @@ def _fortran_library_impl(ctx):
         DefaultInfo(
             files = files,
             runfiles = ctx.runfiles(transitive_files = files),
+        ),
+        FortranInfo(
+            compiled_objects = depset(objects),
         ),
         OutputGroupInfo(
             archive = depset([output]),
@@ -216,6 +244,8 @@ def _compile(
         actions.declare_file(paths.replace_extension(src.path, ".o"))
         for src in srcs
     ]
+    if len(objects) == 0:
+        return []
     deps_includes = []
     for dep in deps:
         if hasattr(dep.output_groups, "includes"):
