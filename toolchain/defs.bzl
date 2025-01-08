@@ -150,10 +150,7 @@ _FEATURE_ATTRS = {
         doc = "The name of the repository containing the toolchain files.",
         mandatory = True,
     ),
-}
-
-_PRIVATE_ATTRS = {
-    "_wrapper_sh_template": attr.label(
+    "wrapper_sh_template": attr.label(
         default = Label("//toolchain:wrapper.sh.tpl"),
     ),
 }
@@ -162,7 +159,6 @@ gcc_toolchain = repository_rule(
     _gcc_toolchain_impl,
     attrs = dicts.add(
         _FEATURE_ATTRS,
-        _PRIVATE_ATTRS,
     ),
 )
 
@@ -228,7 +224,7 @@ def _render_tool_paths(rctx, repository_name, toolchain_files_repository_name, b
         wrapped_tool_path = paths.join("bin", name)
         rctx.template(
             wrapped_tool_path,
-            rctx.attr._wrapper_sh_template,
+            rctx.attr.wrapper_sh_template,
             substitutions = {
                 "__PATH__": path_env,
                 "__binary__": tool_path,
