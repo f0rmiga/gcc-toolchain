@@ -19,12 +19,13 @@
 
 set -o errexit -o nounset -o pipefail
 
-args=()
+args=(
+    --with-pic
+)
 
 if [[ "${ARCH}" == "aarch64" ]]; then
     readonly target="aarch64-linux"
     args+=(
-        --with-pic
         --build=x86_64-linux-gnu
         --target="${target}"
     )
@@ -40,7 +41,6 @@ if [[ "${ARCH}" == "aarch64" ]]; then
 elif [[ "${ARCH}" == "armv7" ]]; then
     readonly target="arm-linux-gnueabihf"
     args+=(
-        --with-pic
         --build=x86_64-linux-gnu
         --target="${target}"
         --with-arch=armv7-a
@@ -60,7 +60,6 @@ elif [[ "${ARCH}" == "armv7" ]]; then
 elif [[ "${ARCH}" == "x86_64" ]]; then
     readonly target="x86_64-linux"
     args+=(
-        --with-pic
         --build=x86_64-linux-gnu
         --host="${target}"
         --target="${target}"

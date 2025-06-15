@@ -19,7 +19,6 @@
 
 readonly arch=$1
 readonly output_dir=$2
-readonly variant=$3
 
 set -o errexit -o nounset -o pipefail
 
@@ -33,25 +32,24 @@ if [ -z "${output_dir}" ]; then
     exit 1
 fi
 
-if [ -z "${variant}" ]; then
-    >&2 echo "ERROR: the third argument of the script must be the variant (base, X11)."
-    exit 1
-fi
+output_filename="gcc-toolchain-${arch}.tar.xz"
+container_source_dir="/var/builds/toolchain"
 
-echo "INFO: building sysroot inside container..."
+echo "INFO: building toolchain inside container..."
 
-sysroot_dir="$(git rev-parse --show-toplevel)/sysroot"
-output=$(realpath "${output_dir}/sysroot-${variant}-${arch}.tar.xz")
-image_tag=$(tr '[:upper:]' '[:lower:]' <<<"sysroot-${variant}-${arch}")
+project_dir="$(git rev-parse --show-toplevel)"
+build_dir="${project_dir}/sysroot"
+output=$(realpath "${output_dir}/${output_filename}")
+image_tag=$(tr '[:upper:]' '[:lower:]' <<<"${arch}")
 
-(cd "${sysroot_dir}"; \
+(cd "${build_dir}"; \
     docker build \
         --build-arg ARCH="${arch}" \
         --tag "${image_tag}" \
-        --target "sysroot_${variant}" \
+        --target toolchain \
         .)
 
-echo "INFO: exporting sysroot to '${output}'..."
+echo "INFO: exporting toolchain to '${output}'..."
 
 tmpdir="$(mktemp -d)"
 function remove_tmpdir {
@@ -66,12 +64,17 @@ function remove_container {
 }
 trap remove_container EXIT
 
-docker cp "${container_id}:/var/builds/sysroot" "${tmpdir}"
+docker cp "${container_id}:${container_source_dir}" "${tmpdir}"
 readonly os_name="$(uname -s)"
 if [[ "${os_name}" == "Linux" ]]; then
     readonly cpus="$(nproc --all)"
 elif [[ "${os_name}" == "Darwin" ]]; then
     readonly cpus="$(sysctl -n hw.ncpu)"
 fi
-(cd "${tmpdir}/sysroot"; tar --create --file /dev/stdout . | XZ_DEFAULTS="--threads ${cpus}" xz -9e > "${output}")
+
+source_dir_name=$(basename "${container_source_dir}")
+
+(cd "${tmpdir}/${source_dir_name}"; tar --create --file /dev/stdout . | XZ_DEFAULTS="--threads ${cpus}" xz -5 > "${output}")
 shasum -a 256 "${output}"
+
+echo "INFO: Successfully created ${output_filename}"

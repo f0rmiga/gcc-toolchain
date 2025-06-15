@@ -1,1 +1,3 @@
-sysroot*.tar.xz
+*.tar.xz
+
+!gcc-toolchain-*.tar.xz
