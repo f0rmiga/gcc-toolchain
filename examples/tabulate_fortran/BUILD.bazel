@@ -37,6 +37,8 @@ fortran_binary(
     modules = {
         "functions.f90": "user_functions.mod",
     },
+    fopts = ["-fopenmp"],
+    linkopts = ["-fopenmp"],
 )
 
 platform_transition_filegroup(
