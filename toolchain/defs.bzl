@@ -60,6 +60,11 @@ def _gcc_toolchain_impl(rctx):
         for v in rctx.attr.target_settings
     ]
 
+    builtin_include_directories = []
+    builtin_include_directories.extend(cxx_builtin_include_directories)
+    builtin_include_directories.extend(rctx.attr.includes)
+    builtin_include_directories.extend(rctx.attr.fincludes)
+
     rctx.file("BUILD.bazel", _TOOLCHAIN_BUILD_FILE_CONTENT.format(
         gcc_toolchain_workspace_name = rctx.attr.gcc_toolchain_workspace_name,
         target_compatible_with = str(target_compatible_with),
@@ -70,18 +75,19 @@ def _gcc_toolchain_impl(rctx):
         sysroot = sysroot,
 
         # Includes
-        cxx_builtin_include_directories = str(cxx_builtin_include_directories),
+        cxx_builtin_include_directories = str(builtin_include_directories),
+        includes = str(includes),
+        fincludes = str(rctx.attr.fincludes),
 
         # Flags
         extra_cflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_cflags),
         extra_cxxflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_cxxflags),
         extra_fflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_fflags),
         extra_ldflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_ldflags),
-        includes = str(includes),
     ))
 
     binary_prefix = rctx.attr.binary_prefix
-    tool_paths = _render_tool_paths(rctx, rctx.name, rctx.attr.toolchain_files_repository_name, binary_prefix)
+    tool_paths = _render_tool_paths(rctx, rctx.name, rctx.attr.toolchain_files_repository_name, binary_prefix)	
     rctx.file("tool_paths.bzl", "tool_paths = {}".format(str(tool_paths)))
 
 def _format_flags(sysroot, toolchain_root, flags):
@@ -123,6 +129,11 @@ _FEATURE_ATTRS = {
             " %sysroot% is rendered to the sysroot path." +
             " %workspace% is rendered to the toolchain root path." +
             " See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.",
+        default = [],
+    ),
+    "fincludes": attr.string_list(
+        doc = "Extra includes for compiling Fortran." +
+              " %workspace% is rendered to the toolchain root path.",
         default = [],
     ),
     "sysroot": attr.string(
@@ -304,6 +315,7 @@ def gcc_register_toolchain(
         extra_fflags = kwargs.pop("extra_fflags", fflags),
         extra_ldflags = kwargs.pop("extra_ldflags", ldflags(target_arch, gcc_version)),
         includes = kwargs.pop("includes", includes(target_arch, gcc_version)),
+        fincludes = kwargs.pop("fincludes", []),
         sysroot = str(sysroot),
         target_arch = target_arch,
         toolchain_files_repository_name = toolchain_files_repository_name,
@@ -611,6 +623,7 @@ cc_toolchain_config(
     extra_fflags = {extra_fflags},
     extra_ldflags ={extra_ldflags},
     includes = {includes},
+    fincludes = {fincludes},
     tool_paths = tool_paths,
 )
 

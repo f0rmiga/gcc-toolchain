@@ -95,6 +95,7 @@ def _impl(ctx):
     extra_fflags = ctx.attr.extra_fflags
     extra_ldflags = ctx.attr.extra_ldflags
     includes = ctx.attr.includes
+    fincludes = ctx.attr.fincludes
 
     action_configs = []
 
@@ -482,18 +483,34 @@ def _impl(ctx):
         ] if len(extra_fflags) > 0 else [],
     )
 
+    includes_feature_flag_sets = []
+    if len(includes) > 0:
+        includes_feature_flag_sets.append(
+            flag_set(
+                actions = all_compile_actions + [FORTRAN_ACTION_NAMES.fortran_compile],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-isystem{}".format(include) for include in includes],
+                    ),
+                ],
+            ),
+        )
+    if len(fincludes) > 0:
+        includes_feature_flag_sets.append(
+            flag_set(
+                actions = [FORTRAN_ACTION_NAMES.fortran_compile],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-I{}".format(finclude) for finclude in fincludes],
+                    ),
+                ],
+            ),
+        )
+
     includes_feature = feature(
         name = "includes",
         enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = all_compile_actions + [FORTRAN_ACTION_NAMES.fortran_compile],
-                flag_groups = [flag_group(flags = [
-                    "-isystem{}".format(include)
-                    for include in includes
-                ])],
-            ),
-        ] if len(includes) > 0 else [],
+        flag_sets = includes_feature_flag_sets,
     )
 
     extra_ldflags_feature = feature(
@@ -595,6 +612,7 @@ cc_toolchain_config = rule(
         "extra_fflags": attr.string_list(mandatory = True),
         "extra_ldflags": attr.string_list(mandatory = True),
         "includes": attr.string_list(mandatory = True),
+        "fincludes": attr.string_list(mandatory = True),
         "tool_paths": attr.string_dict(mandatory = True),
     },
     provides = [CcToolchainConfigInfo],
