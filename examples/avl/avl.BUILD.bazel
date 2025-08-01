@@ -22,7 +22,6 @@ cc_library(
     srcs = ["plotlib/xwin11/Xwin2.c"],
     defines = ["UNDERSCORE", "NDEBUG"],
     linkopts = ["-lX11"],
-    features = ["no_libstdcxx"],
 )
 
 fortran_library(

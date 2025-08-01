@@ -33,4 +33,4 @@ fi
 make headers_install \
     CROSS_COMPILE="${cross_compile}" \
     ARCH="${arch}" \
-    INSTALL_HDR_PATH="/var/buildlibs/kernel/usr"
+    INSTALL_HDR_PATH="/var/install/kernel/usr"

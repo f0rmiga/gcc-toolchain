@@ -1,1 +1,4 @@
 docs/*.md linguist-generated=true
+sysroot/gcc-toolchain-aarch64.tar.xz filter=lfs diff=lfs merge=lfs -text
+sysroot/gcc-toolchain-armv7.tar.xz filter=lfs diff=lfs merge=lfs -text
+sysroot/gcc-toolchain-x86_64.tar.xz filter=lfs diff=lfs merge=lfs -text
