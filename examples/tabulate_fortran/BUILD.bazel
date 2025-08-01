@@ -32,9 +32,11 @@ build_test(
 fortran_binary(
     name = "tabulate_fortran",
     srcs = [
-        "functions.f90",
         "tabulate.f90",
     ],
+    modules = {
+        "functions.f90": "user_functions.mod",
+    },
 )
 
 platform_transition_filegroup(

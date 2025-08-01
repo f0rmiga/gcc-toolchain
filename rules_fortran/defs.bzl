@@ -23,7 +23,10 @@ load("//toolchain/fortran:action_names.bzl", "ACTION_NAMES")
 
 FortranInfo = provider(
     "Information from a Fortran rule.",
-    fields = {"compiled_objects": "The list of compiled Fortran objects."},
+    fields = {
+        "compiled_objects": "The list of compiled Fortran objects.",
+        "modules_dir": "The directory where the Fortran modules are stored.",
+    },
 )
 
 _attrs = {
@@ -46,6 +49,13 @@ _attrs = {
         allow_files = True,
         default = [],
         doc = "The list of Fortran include files.",
+        mandatory = False,
+    ),
+    "modules": attr.label_keyed_string_dict(
+        allow_files = True,
+        default = {},
+        doc = "The modules produced by this rule." +
+              " The keys are Fortran source files and the values are the module names.",
         mandatory = False,
     ),
     "srcs": attr.label_list(
@@ -79,67 +89,100 @@ _binary_attrs = {
 
 def _fortran_binary_impl(ctx):
     (fortran_toolchain, feature_configuration) = _get_configuration(ctx)
-    fortran_sources = []
-    precompiled_fortran_objects = []
-    for src in ctx.attr.srcs:
-        if FortranInfo in src:
-            precompiled_fortran_objects.extend(src[FortranInfo].compiled_objects)
-        else:
-            fortran_sources.extend(src[DefaultInfo].files.to_list())
-    objects = _compile(
+
+    (compilation_context, compilation_outputs) = _compile(
         actions = ctx.actions,
-        defines = ctx.attr.defines,
-        deps = ctx.attr.deps,
-        feature_configuration = feature_configuration,
-        fopts = ctx.attr.fopts,
-        fortran_toolchain = fortran_toolchain,
-        includes = ctx.files.includes,
-        srcs = fortran_sources,
-    )
-    output = _link(
-        actions = ctx.actions,
-        deps = ctx.attr.deps,
         feature_configuration = feature_configuration,
         fortran_toolchain = fortran_toolchain,
-        linkopts = ctx.attr.linkopts,
-        linkshared = ctx.attr.linkshared,
-        linkstatic = ctx.attr.linkstatic,
-        objects = objects + precompiled_fortran_objects,
-        output_name = ctx.attr.name,
+        modules_attr = ctx.attr.modules,
+        modules_files = ctx.files.modules,
+        srcs_files = ctx.files.srcs,
+        includes_files = ctx.files.includes,
+        fopts_attr = ctx.attr.fopts,
     )
 
-    providers = [
-        DefaultInfo(
-            executable = output,
+    linker = cc_common.get_tool_for_action(
+        action_name = ACTION_NAMES.fortran_link_executable,
+        feature_configuration = feature_configuration,
+    )
+    link_flags = cc_common.get_memory_inefficient_command_line(
+        action_name = ACTION_NAMES.fortran_link_executable,
+        feature_configuration = feature_configuration,
+        variables = cc_common.create_link_variables(
+            cc_toolchain = fortran_toolchain,
+            feature_configuration = feature_configuration,
+            user_link_flags = ctx.attr.linkopts,
         ),
-        FortranInfo(
-            compiled_objects = objects,
-        ),
-    ]
-
+    )
+    output = ctx.actions.declare_file(ctx.attr.name + (".so" if ctx.attr.linkshared else ""))
+    args = ctx.actions.args()
     if ctx.attr.linkshared:
-        providers.append(OutputGroupInfo(
-            dynamic_library = depset([output]),
-        ))
-        providers.append(CcInfo(
-            linking_context = cc_common.create_linking_context(
-                linker_inputs = depset([
+        args.add("-shared")
+    args.add("-o", output)
+    args.add_all(compilation_outputs.objects)
+    args.add_all(link_flags)
+    args.add_all(ctx.attr.linkopts)
+    deps_files = [
+        library.static_library if library.static_library else library.dynamic_library
+        for dep in ctx.attr.deps
+        if CcInfo in dep
+        for linker_input in dep[CcInfo].linking_context.linker_inputs.to_list()
+        for library in linker_input.libraries
+        if library.static_library or library.dynamic_library
+    ]
+    args.add_all([
+        "-L{}".format(dep_file.dirname)
+        for dep_file in deps_files
+    ])
+    args.add_all([
+        "-l:{}".format(dep_file.basename)
+        for dep_file in deps_files
+    ])
+    ctx.actions.run(
+        arguments = [args],
+        executable = linker,
+        inputs = depset(compilation_outputs.objects + deps_files),
+        outputs = [output],
+        tools = fortran_toolchain.all_files,
+        mnemonic = "FortranLink",
+        progress_message = "Linking {}".format(output),
+    )
+
+    linking_context = None
+    if ctx.attr.linkshared:
+        linking_context = cc_common.create_linking_context(
+            linker_inputs = depset(
+                direct = [
                     cc_common.create_linker_input(
                         owner = ctx.label,
                         libraries = depset([
                             cc_common.create_library_to_link(
                                 actions = ctx.actions,
-                                feature_configuration = feature_configuration,
+                                alwayslink = True,
                                 cc_toolchain = fortran_toolchain,
                                 dynamic_library = output,
+                                feature_configuration = feature_configuration,
                             ),
                         ]),
                     ),
-                ]),
+                ],
+                transitive = [
+                    dep[CcInfo].linking_context.linker_inputs
+                    for dep in ctx.attr.deps
+                    if CcInfo in dep
+                ],
             ),
-        ))
+        )
 
-    return providers
+    return [
+        DefaultInfo(
+            executable = output,
+        ),
+        CcInfo(
+            compilation_context = compilation_context,
+            linking_context = linking_context,
+        ),
+    ]
 
 fortran_binary = rule(
     _fortran_binary_impl,
@@ -151,59 +194,68 @@ fortran_binary = rule(
 
 def _fortran_library_impl(ctx):
     (fortran_toolchain, feature_configuration) = _get_configuration(ctx)
-    fortran_sources = []
-    precompiled_fortran_objects = []
-    for src in ctx.attr.srcs:
-        if FortranInfo in src:
-            precompiled_fortran_objects.extend(src[FortranInfo].compiled_objects)
-        else:
-            fortran_sources.extend(src[DefaultInfo].files.to_list())
-    objects = _compile(
-        actions = ctx.actions,
-        defines = ctx.attr.defines,
-        deps = ctx.attr.deps,
-        feature_configuration = feature_configuration,
-        fopts = ctx.attr.fopts,
-        fortran_toolchain = fortran_toolchain,
-        includes = ctx.files.includes,
-        srcs = fortran_sources,
-    )
-    output = _archive(
+
+    (compilation_context, compilation_outputs) = _compile(
         actions = ctx.actions,
         feature_configuration = feature_configuration,
         fortran_toolchain = fortran_toolchain,
-        objects = objects + precompiled_fortran_objects,
-        output_name = ctx.attr.name,
+        modules_attr = ctx.attr.modules,
+        modules_files = ctx.files.modules,
+        srcs_files = ctx.files.srcs,
+        includes_files = ctx.files.includes,
+        fopts_attr = ctx.attr.fopts,
     )
 
-    files = depset([output])
+    archiver = cc_common.get_tool_for_action(
+        action_name = ACTION_NAMES.fortran_archive,
+        feature_configuration = feature_configuration,
+    )
+
+    output = ctx.actions.declare_file("lib{}.a".format(ctx.attr.name))
+    args = ctx.actions.args()
+    args.add("-crs")
+    args.add(output)
+    args.add_all(compilation_outputs.objects)
+    ctx.actions.run(
+        arguments = [args],
+        executable = archiver,
+        inputs = depset(compilation_outputs.objects),
+        outputs = [output],
+        tools = fortran_toolchain.all_files,
+    )
+
     return [
-        DefaultInfo(
-            files = files,
-            runfiles = ctx.runfiles(transitive_files = files),
-        ),
-        FortranInfo(
-            compiled_objects = objects,
-        ),
-        OutputGroupInfo(
-            archive = depset([output]),
-            includes = ctx.files.includes,
-        ),
+        DefaultInfo(),
         CcInfo(
+            compilation_context = cc_common.merge_compilation_contexts(
+                compilation_contexts = [compilation_context] + [
+                    dep[CcInfo].compilation_context
+                    for dep in ctx.attr.deps
+                    if CcInfo in dep
+                ],
+            ),
             linking_context = cc_common.create_linking_context(
-                linker_inputs = depset([
-                    cc_common.create_linker_input(
-                        owner = ctx.label,
-                        libraries = depset([
-                            cc_common.create_library_to_link(
-                                actions = ctx.actions,
-                                feature_configuration = feature_configuration,
-                                cc_toolchain = fortran_toolchain,
-                                static_library = output,
-                            ),
-                        ]),
-                    ),
-                ]),
+                linker_inputs = depset(
+                    direct = [
+                        cc_common.create_linker_input(
+                            owner = ctx.label,
+                            libraries = depset([
+                                cc_common.create_library_to_link(
+                                    actions = ctx.actions,
+                                    alwayslink = True,
+                                    cc_toolchain = fortran_toolchain,
+                                    static_library = output,
+                                    feature_configuration = feature_configuration,
+                                ),
+                            ]),
+                        ),
+                    ],
+                    transitive = [
+                        dep[CcInfo].linking_context.linker_inputs
+                        for dep in ctx.attr.deps
+                        if CcInfo in dep
+                    ],
+                ),
             ),
         ),
     ]
@@ -219,7 +271,6 @@ def _get_configuration(ctx):
     requested_features = [
         "fortran_compile_flags",
         "fortran_link_flags",
-        "no_libstdcxx",
     ] + ctx.features
     fortran_toolchain = ctx.toolchains[ctx.attr._fortran_toolchain_type.label].cc
     feature_configuration = cc_common.configure_features(
@@ -230,15 +281,107 @@ def _get_configuration(ctx):
     return (fortran_toolchain, feature_configuration)
 
 def _compile(
-    actions,
-    defines,
-    deps,
-    feature_configuration,
-    fopts,
-    fortran_toolchain,
-    includes,
-    srcs,
-):
+        actions,
+        feature_configuration,
+        fortran_toolchain,
+        modules_attr,
+        modules_files,
+        srcs_files,
+        includes_files,
+        fopts_attr):
+    to_compile = [
+        struct(
+            source_file = source_file,
+            output_file = actions.declare_file(
+                paths.replace_extension(source_file.basename, ".o"),
+            ),
+            module_files = [
+                actions.declare_file(module_file)
+                for src_key, module_files in modules_attr.items()
+                if src_key.label == source_file.owner
+                for module_file in module_files.split(";")
+            ],
+        )
+        for source_file in modules_files
+    ] + [
+        struct(
+            source_file = source_file,
+            output_file = actions.declare_file(paths.replace_extension(source_file.basename, ".o")),
+            module_files = [],
+        )
+        for source_file in srcs_files
+    ]
+
+    compilation_context = cc_common.create_compilation_context(
+        includes = depset([
+            include.dirname
+            for include in includes_files
+        ]),
+        headers = depset(includes_files),
+    )
+    compilation_outputs = cc_common.create_compilation_outputs(
+        objects = depset([
+            to_compile_item.output_file
+            for to_compile_item in to_compile
+        ]),
+    )
+
+    compiler = cc_common.get_tool_for_action(
+        action_name = ACTION_NAMES.fortran_compile,
+        feature_configuration = feature_configuration,
+    )
+
+    all_modules = []
+    for to_compile_item in to_compile:
+        compile_variables = cc_common.create_compile_variables(
+            feature_configuration = feature_configuration,
+            cc_toolchain = fortran_toolchain,
+            user_compile_flags = fopts_attr,
+            use_pic = True,
+        )
+        compile_flags = cc_common.get_memory_inefficient_command_line(
+            action_name = ACTION_NAMES.fortran_compile,
+            feature_configuration = feature_configuration,
+            variables = compile_variables,
+        )
+        args = actions.args()
+        args.add("-c")
+        args.add_all(compile_flags)
+        if to_compile_item.module_files:
+            args.add("-J{}".format(to_compile_item.module_files[0].dirname))
+        for module_file in all_modules:
+            args.add("-I{}".format(module_file.dirname))
+        args.add("-o", to_compile_item.output_file)
+        args.add(to_compile_item.source_file)
+        actions.run(
+            arguments = [args],
+            executable = compiler,
+            inputs = depset([to_compile_item.source_file] + includes_files + all_modules),
+            outputs = [to_compile_item.output_file] + to_compile_item.module_files,
+            tools = fortran_toolchain.all_files,
+            mnemonic = "FortranCompile",
+            progress_message = "Compiling {}".format(to_compile_item.source_file.path),
+        )
+
+        # We need to feed the module files we just produced to the next compilation step so that
+        # the compiler can find them when compiling the next source file.
+        all_modules.extend(to_compile_item.module_files)
+
+    return (
+        compilation_context,
+        compilation_outputs,
+    )
+
+def _compile_old(
+        actions,
+        defines,
+        deps,
+        feature_configuration,
+        fopts,
+        fortran_toolchain,
+        includes,
+        srcs,
+        modules_dir):
     (compiler, compile_flags) = _get_compiler(fortran_toolchain, feature_configuration, fopts)
     objects = [
         actions.declare_file(paths.replace_extension(src.path, ".o"))
@@ -246,17 +389,51 @@ def _compile(
     ]
     if len(objects) == 0:
         return []
-    deps_includes = []
-    for dep in deps:
-        if hasattr(dep.output_groups, "includes"):
-            deps_includes.append(dep.output_groups.includes)
-    deps_includes = depset(direct = [], transitive = deps_includes)
-    deps_includes_flags = [
-        "-I{}".format(inc.dirname)
-        for inc in deps_includes.to_list()
+    deps_compilation_contexts = [
+        dep[CcInfo].compilation_context
+        for dep in deps
+        if CcInfo in dep
+    ]
+    deps_compilation_context = cc_common.merge_compilation_contexts(
+        compilation_contexts = deps_compilation_contexts,
+    )
+    deps_flags = [
+        "-I{}".format(include)
+        for include in deps_compilation_context.includes.to_list()
+    ] + [
+        "-iquote {}".format(include)
+        for include in deps_compilation_context.quote_includes.to_list()
+    ] + [
+        "-I{}".format(include)
+        for include in deps_compilation_context.system_includes.to_list()
+    ] + [
+        "-F{}".format(include)
+        for include in deps_compilation_context.framework_includes.to_list()
+    ] + [
+        "-D{}".format(define)
+        for define in deps_compilation_context.defines.to_list()
     ]
     defines_flags = ["-D{}".format(define) for define in defines]
-    flags = defines_flags + compile_flags + fopts + deps_includes_flags
+    deps_headers = depset(
+        transitive = [
+            dep[CcInfo].compilation_context.headers
+            for dep in deps
+            if CcInfo in dep
+        ],
+    )
+    input_modules_flags = [
+        "-I{}".format(dep[FortranInfo].modules_dir.path)
+        for dep in deps
+        if FortranInfo in dep
+    ]
+    input_modules = depset([
+        dep[FortranInfo].modules_dir
+        for dep in deps
+        if FortranInfo in dep
+    ])
+    output_modules_flags = ["-J{}".format(modules_dir.path)]
+    modules_flags = input_modules_flags + output_modules_flags
+    flags = defines_flags + compile_flags + fopts + deps_flags + modules_flags
     command = """\
 set -o errexit -o nounset -o pipefail
 
@@ -279,9 +456,12 @@ set -o errexit -o nounset -o pipefail
         command = command,
         inputs = depset(
             direct = srcs + includes,
-            transitive = [deps_includes],
+            transitive = [
+                deps_headers,
+                input_modules,
+            ],
         ),
-        outputs = objects,
+        outputs = objects + [modules_dir],
         tools = fortran_toolchain.all_files,
     )
     return objects
@@ -304,16 +484,15 @@ def _get_compiler(fortran_toolchain, feature_configuration, fopts = []):
     return (compiler, compile_flags)
 
 def _link(
-    actions,
-    deps,
-    feature_configuration,
-    fortran_toolchain,
-    linkopts,
-    linkshared,
-    linkstatic,
-    objects,
-    output_name,
-):
+        actions,
+        deps,
+        feature_configuration,
+        fortran_toolchain,
+        linkopts,
+        linkshared,
+        linkstatic,
+        objects,
+        output_name):
     (linker, link_flags) = _get_linker(fortran_toolchain, feature_configuration, linkopts)
     shared_objects = []
     archives = []
@@ -323,16 +502,18 @@ def _link(
                 for library in linker_input.libraries:
                     if library.static_library:
                         archives.append(library.static_library)
+                    elif library.dynamic_library:
+                        shared_objects.append(library.dynamic_library)
         if linkstatic and hasattr(dep.output_groups, "archive"):
             archives.append(dep.output_groups.archive.to_list()[0])
         elif not linkstatic and hasattr(dep.output_groups, "dynamic_library"):
-            shared_objects.append(dep.output_groups.dynamic_library)
+            shared_objects.append(dep.output_groups.dynamic_library.to_list()[0])
     search_libraries_flags = [
-        "-L{}".format(paths.dirname(shared_object.to_list()[0].path))
+        "-L{}".format(paths.dirname(shared_object.path))
         for shared_object in shared_objects
     ]
     link_libraries_flags = [
-        "-l:{}".format(paths.basename(shared_object.to_list()[0].short_path))
+        "-l:{}".format(paths.basename(shared_object.short_path))
         for shared_object in shared_objects
     ]
     output = actions.declare_file(output_name + (".so" if linkshared else ""))
@@ -373,17 +554,16 @@ def _get_linker(fortran_toolchain, feature_configuration, linkopts = []):
     return (linker, link_flags)
 
 def _archive(
-    actions,
-    feature_configuration,
-    fortran_toolchain,
-    objects,
-    output_name,
-):
+        actions,
+        feature_configuration,
+        fortran_toolchain,
+        objects,
+        output_name):
     archiver = cc_common.get_tool_for_action(
         action_name = ACTION_NAMES.fortran_archive,
         feature_configuration = feature_configuration,
     )
-    output = actions.declare_file(output_name + ".a")
+    output = actions.declare_file("lib{}.a".format(output_name))
     args = actions.args()
     args.add("-crs")
     args.add(output)
