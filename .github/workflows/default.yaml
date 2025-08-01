@@ -25,6 +25,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true
@@ -46,6 +48,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true
@@ -68,6 +72,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true
@@ -83,6 +89,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true
@@ -104,6 +112,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true

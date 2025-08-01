@@ -25,10 +25,6 @@ load("//:internal.bzl", "internal_dependencies")
 
 internal_dependencies()
 
-load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
-
-rules_pkg_dependencies()
-
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
@@ -51,7 +47,6 @@ gcc_register_toolchain(
 
 gcc_register_toolchain(
     name = "gcc_toolchain_x86_64",
-    sysroot_variant = "x86_64-X11",
     target_arch = ARCHS.x86_64,
 )
 
@@ -59,6 +54,18 @@ load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_depende
 
 rules_foreign_cc_dependencies()
 
+load("@bazel_features//:deps.bzl", "bazel_features_deps")
+
+bazel_features_deps()
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 
 protobuf_deps()
+
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+
+rules_pkg_dependencies()
