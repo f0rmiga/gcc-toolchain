@@ -1,35 +1,85 @@
-# Bazel GCC toolchain
+# Bazel GCC Toolchain
 
-This is a fully-hermetic Bazel GCC toolchain for Linux. It supports the glibc variants of
-https://toolchains.bootlin.com. You can find the documentation under [docs](./docs/).
+This is a fully-hermetic Bazel GCC toolchain for Linux that provides cross-compilation support for
+multiple architectures. The toolchain includes custom-built GCC binaries and sysroots optimized for
+performance and portability. You can find the comprehensive documentation under [docs](./docs/).
 
-## Why would someone want or need a hermetic toolchain?
+## Features
 
-Reproducibility and portability.
+- **Multi-architecture**: Support for x86_64, aarch64, and armv7 Linux targets.
+- **Hermetic**: Fully self-contained with no system dependencies.
+- **Optimized**: Reduced toolchain sizes and improved build performance.
+- **Fortran Support**: Complete Fortran compilation, including OpenMP support.
+- **Sanitizers**: Built-in support for AddressSanitizer, LeakSanitizer, ThreadSanitizer,
+  and UndefinedBehaviorSanitizer.
+- **Remote Execution**: Ready for use with Bazel Remote Build Execution (RBE).
 
-Developers want their code to compile correctly, be reproducible on CI systems and other developers
-machines. The way C++ toolchains function usually rely on the system libraries to work.
+## Why Use a Hermetic Toolchain?
 
 ### Reproducibility
 
-If you don't have the exact same headers and libraries, the output produced by Bazel will differ
-from systems. This is particularly expensive with C++ as caches cannot be shared between machines.
-More importantly, bugs may exist in one machine but not in others, making the development lifecycle
-and build system unreliable.
+Hermetic toolchains ensure that builds are reproducible across different machines and environments.
+Without identical headers and libraries, the output produced by Bazel will differ between systems,
+making C++ caches unsharable and introducing machine-specific bugs that make the development
+lifecycle unreliable.
 
 ### Portability
 
-When it comes to building portable ELF binaries, the libc plays an important role. The linker will
-try to link against new symbols, and since the GNU libc has symbol versioning, linking against a
-newer glibc will prevent that program from running on a system using an older glibc. To solve this,
-we ship glibc 2.26 with the sysroots, which should be old enough by now to make all programs
-compiled with this toolchain portable.
+When building portable ELF binaries, the libc version plays a crucial role. The linker attempts to
+link against newer symbols, and GNU libc's symbol versioning means linking against a newer glibc
+prevents programs from running on systems with older glibc versions. This toolchain ships with glibc
+2.26, providing broad compatibility with modern Linux distributions.
 
-### Use cases
+### Performance
 
-* Your repository contains first-party C/C++/Fortran code; or
-* You need to run sanitizers (asan, lsan, tsan, ubsan) on your code; or
-* You need to cross-compile from Linux x86_64 to Linux armv7 or aarch64; or
-* You want to make your program portable to other Linux distros (our default sysroot ships with
-glibc 2.26); or
-* You want reproducibility.
+The toolchain has been optimized to reduce size and improve build performance through:
+- Unified GCC binaries and sysroot compilation.
+- Optimized compiler flags and includes.
+- Streamlined dependencies and reduced overhead.
+
+## Use Cases
+
+* **First-party Code**: Your repository contains C/C++/Fortran code.
+* **Sanitizer Testing**: Need to run sanitizers (asan, lsan, tsan, ubsan) on your code.
+* **Cross-compilation**: Build for Linux armv7 or aarch64 from x86_64.
+* **Portability**: Create binaries compatible with any Linux distribution.
+* **Reproducibility**: Ensure consistent builds across development and CI environments.
+* **Remote Execution**: Use with Bazel RBE for distributed builds.
+
+## Quick Start
+
+### Prerequisites
+
+- **Bazel 7+**: This toolchain is tested with Bazel 7.
+- **Linux**: Primary development and testing environment (RBE supports other platforms).
+
+### Installation
+
+Add to your `WORKSPACE` file:
+
+```bazel
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "gcc_toolchain",
+    sha256 = "...",  # Use the SHA256 of the release
+    urls = ["https://github.com/f0rmiga/gcc-toolchain/archive/refs/tags/vX.X.X.tar.gz"],
+)
+
+load("@gcc_toolchain//toolchain:repositories.bzl", "gcc_toolchain_dependencies")
+
+gcc_toolchain_dependencies()
+
+load("@gcc_toolchain//toolchain:defs.bzl", "gcc_register_toolchain", "ARCHS")
+
+gcc_register_toolchain(
+    name = "gcc_toolchain_x86_64",
+    target_arch = ARCHS.x86_64,
+)
+```
+
+## Documentation
+
+- **[Getting Started Guide](./docs/README.md)** - Setup, configuration, and advanced features.
+- **[API Reference](./docs/defs.md)** - Rule definitions and parameters.
+- **[Examples](./examples/README.md)** - Complete usage examples across languages.

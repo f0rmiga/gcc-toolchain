@@ -1,26 +1,128 @@
-# Docs
+# Documentation
 
 For the rules definitions, see [defs.md](./defs.md).
 
 For examples on how to use this repository, see the [examples](../examples).
 
-## Pure C
 
-For targets that contain C-only code, they don't require linking against `libstdc++`. This can be
-done by adding `features = ["no_libstdcxx"]` to `cc_library` or `cc_binary`. By default,
-`libstdc++.so` will be linked to all `cc_library` and `cc_binary` targets as it's expected by the
-Bazel ecosystem.
+## Getting Started
 
-## Static libstdc++
+### Basic Setup
 
-If you want to link `libstdc++` statically, pass `--features static_libstdcxx` to `bazel build` and
-`bazel test`. It's often a good idea to add it to your `.bazelrc` to enforce the behaviour to the
-whole project.
+Add the following to your `WORKSPACE` file:
 
-## Using this toolchain with RBE
+```bazel
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-Add the following to your `.bazelrc`, replacing `@<gcc_toolchain_workspace>` with the name given to
-the `http_archive` when importing this repository:
+http_archive(
+    name = "gcc_toolchain",
+    # Add appropriate URL and SHA for your desired version
+)
+
+load("@gcc_toolchain//toolchain:repositories.bzl", "gcc_toolchain_dependencies")
+
+gcc_toolchain_dependencies()
+
+load("@gcc_toolchain//toolchain:defs.bzl", "gcc_register_toolchain", "ARCHS")
+
+# Register toolchains for desired architectures
+gcc_register_toolchain(
+    name = "gcc_toolchain_x86_64",
+    target_arch = ARCHS.x86_64,
+)
+
+gcc_register_toolchain(
+    name = "gcc_toolchain_aarch64", 
+    target_arch = ARCHS.aarch64,
+)
+
+gcc_register_toolchain(
+    name = "gcc_toolchain_armv7",
+    target_arch = ARCHS.armv7,
+)
+```
+
+## Language Support
+
+### Pure C
+
+For C-only code, no additional configuration is needed. The toolchain does not automatically link
+`libstdc++`, allowing for clean C compilation without C++ standard library dependencies.
+
+### C++
+
+Full C++ support with modern standards (C++17 by default). The toolchain includes optimized include
+paths and flags for improved compilation performance. C++ programs that need the standard library
+should explicitly link it:
+
+```bazel
+cc_binary(
+    name = "my_cpp_program",
+    srcs = ["main.cpp"],
+    linkopts = ["-lstdc++"],  # Add when using C++ standard library.
+)
+```
+
+### Fortran
+
+Complete Fortran support including:
+- Modern Fortran standards.
+- **OpenMP support** for parallel computing.
+- Integration with C/C++ code.
+
+Example Fortran target with OpenMP:
+
+```bazel
+fortran_library(
+    name = "my_fortran_lib",
+    srcs = ["source.f90"],
+    copts = ["-fopenmp"],
+    linkopts = ["-fopenmp"],
+)
+```
+
+## Advanced Configuration
+
+### Linking C++ Standard Library
+
+The toolchain does not automatically link the C++ standard library, giving you full control over the
+linking behavior:
+
+**Dynamic linking (default for C++):**
+
+```bazel
+cc_binary(
+    name = "my_program",
+    srcs = ["main.cpp"],
+    linkopts = ["-lstdc++"],
+)
+```
+
+**Static linking:**
+
+```bazel
+cc_binary(
+    name = "my_program", 
+    srcs = ["main.cpp"],
+    linkopts = ["-l:libstdc++.a"],
+)
+```
+
+**No C++ standard library (for C code or custom implementations):**
+
+```bazel
+cc_binary(
+    name = "my_c_program",
+    srcs = ["main.c"],
+    # No additional linkopts needed.
+)
+```
+
+## Remote Build Execution (RBE)
+
+The toolchain has been optimized for remote execution with improved performance and macOS host
+compatibility. Add the following to your `.bazelrc`, replacing `@<gcc_toolchain_workspace>` with the
+name given to the `http_archive` when importing this repository:
 
 ```shell
 build --host_platform=@<gcc_toolchain_workspace>//platforms:x86_64_linux_remote
@@ -102,3 +204,11 @@ Then run:
 ```shell
 bazel run --config ubsan //<your_binary>
 ```
+
+## Troubleshooting
+
+### Getting Help
+
+- Check the [examples](../examples/) for working configurations.
+- Open an issue on [GitHub](https://github.com/f0rmiga/gcc-toolchain/issues) for persistent
+  problems.
