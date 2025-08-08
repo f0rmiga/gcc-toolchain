@@ -15,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+common --noenable_bzlmod
+
 build --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 build --incompatible_strict_action_env=true
 build --incompatible_enable_cc_toolchain_resolution

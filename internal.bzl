@@ -18,12 +18,18 @@
 """Internal dependencies the users don't need."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 load("//examples/lapack:patches.bzl", "LAPACK_PATCHES")
 
 # buildifier: disable=function-docstring
 def internal_dependencies():
+    http_archive(
+        name = "bazel_features",
+        sha256 = "c41853e3b636c533b86bf5ab4658064e6cc9db0a3bce52cbff0629e094344ca9",
+        strip_prefix = "bazel_features-1.33.0",
+        url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.33.0/bazel_features-v1.33.0.tar.gz",
+    )
+
     http_archive(
         name = "io_bazel_stardoc",
         sha256 = "dfbc364aaec143df5e6c52faf1f1166775a5b4408243f445f44b661cfdc3134f",
@@ -31,13 +37,6 @@ def internal_dependencies():
             "https://mirror.bazel.build/github.com/bazelbuild/stardoc/releases/download/0.5.6/stardoc-0.5.6.tar.gz",
             "https://github.com/bazelbuild/stardoc/releases/download/0.5.6/stardoc-0.5.6.tar.gz",
         ],
-    )
-
-    http_archive(
-        name = "aspect_bazel_lib",
-        sha256 = "a7e356f8a5cb8bf1e9be38c2c617ad22f5a1606792e839fc040971bdfbecf971",
-        strip_prefix = "bazel-lib-1.40.2",
-        url = "https://github.com/aspect-build/bazel-lib/archive/refs/tags/v1.40.2.tar.gz",
     )
 
     http_archive(
@@ -49,9 +48,9 @@ def internal_dependencies():
 
     http_archive(
         name = "rules_python",
-        sha256 = "7b9039c31e909cf59eeaea8ccbdc54f09f7ebaeb9609b94371c7de45e802977c",
-        strip_prefix = "rules_python-1.5.0",
-        url = "https://github.com/bazel-contrib/rules_python/releases/download/1.5.0/rules_python-1.5.0.tar.gz",
+        sha256 = "9f9f3b300a9264e4c77999312ce663be5dee9a56e361a1f6fe7ec60e1beef9a3",
+        strip_prefix = "rules_python-1.4.1",
+        url = "https://github.com/bazel-contrib/rules_python/releases/download/1.4.1/rules_python-1.4.1.tar.gz",
     )
 
     http_archive(
@@ -90,11 +89,8 @@ def internal_dependencies():
 
     http_archive(
         name = "rules_pkg",
-        sha256 = "8f9ee2dc10c1ae514ee599a8b42ed99fa262b757058f65ad3c384289ff70c4b8",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
-            "https://github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
-        ],
+        sha256 = "b7215c636f22c1849f1c3142c72f4b954bb12bb8dcf3cbe229ae6e69cc6479db",
+        url = "https://github.com/bazelbuild/rules_pkg/releases/download/1.1.0/rules_pkg-1.1.0.tar.gz",
     )
 
 _ALL_SRCS = """\
