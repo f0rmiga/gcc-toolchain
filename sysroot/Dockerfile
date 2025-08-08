@@ -166,7 +166,9 @@ RUN --mount=source=configure.sh,target=/usr/bin/configure.sh configure.sh \
         --prefix=/usr \
         --with-headers=/var/install/kernel/usr/include \
         --with-tls \
-        libc_cv_slibdir=/usr/lib \
+        libc_cv_slibdir=/lib \
+        CFLAGS="-O2 -falign-functions=32" \
+        LDFLAGS="-Wl,-z,max-page-size=0x1000" \
         || (cat config.log && exit 1)
 RUN make all --jobs $(nproc)
 RUN make DESTDIR=/var/install/glibc install
@@ -182,8 +184,12 @@ RUN --mount=source=configure.sh,target=/usr/bin/configure.sh IS_GCC_BUILD=1 conf
         --disable-multilib \
         --prefix=/var/install/gcc \
         --enable-libstdcxx-threads \
+        --with-linker-hash-style=gnu \
         --with-build-sysroot=/var/install/gcc/sysroot \
         --with-sysroot=/RELOCATABLE_SYSROOT \
+        CFLAGS="-O2 -falign-functions=32" \
+        CXXFLAGS="-O2 -falign-functions=32" \
+        LDFLAGS="-Wl,-z,max-page-size=0x1000" \
         || (cat config.log && exit 1)
 RUN grep -rl '/RELOCATABLE_SYSROOT' . | xargs sed -i 's|/RELOCATABLE_SYSROOT|$(exec_prefix)/sysroot|g'
 RUN make --jobs $(nproc) all-gcc
@@ -210,6 +216,8 @@ RUN --mount=source=configure.sh,target=/usr/bin/configure.sh IS_GCC_BUILD=1 conf
         --prefix=/var/install/binutils \
         --with-build-sysroot=/var/install/gcc/sysroot \
         --with-lib-path=/var/install/glibc/usr/lib \
+        CFLAGS="-O2 -falign-functions=32" \
+        LDFLAGS="-Wl,-z,max-page-size=0x1000" \
         || (cat config.log && exit 1)
 RUN make --jobs $(nproc)
 RUN make install
