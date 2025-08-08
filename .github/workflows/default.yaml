@@ -103,12 +103,11 @@ jobs:
         env:
           BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
   rbe:
-    if: (github.ref == 'refs/heads/main' || contains(github.head_ref, 'rbe'))
     strategy:
       matrix:
         os:
           - ubuntu-22.04
-          - macos-11
+          - macos-14
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
