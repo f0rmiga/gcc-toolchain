@@ -20,34 +20,79 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("//sysroot:flags.bzl", "cflags", "cxxflags", "fflags", "ldflags", "includes")
 
 def _gcc_toolchain_impl(rctx):
+    rctx.extract(archive = rctx.attr.toolchain_files)
+
     absolute_toolchain_root = str(rctx.path("."))
     execroot = paths.normalize(paths.join(absolute_toolchain_root, "..", ".."))
     toolchain_root = paths.relativize(absolute_toolchain_root, execroot)
 
+    def _format_flags(flags):
+        return [
+            flag.replace("%workspace%", toolchain_root)
+            for flag in flags
+        ]
+
     target_arch = rctx.attr.target_arch
 
-    sysroot = ""
-    if rctx.attr.sysroot:
-        sysroot_label = Label(rctx.attr.sysroot)
-        sysroot = "external/{workspace}/{package}".format(
-            workspace = sysroot_label.workspace_name,
-            package = sysroot_label.package,
+    binary_prefix = rctx.attr.binary_prefix
+    tool_paths = _render_tool_paths(rctx, toolchain_root, binary_prefix)
+    rctx.file("tool_paths.bzl", "tool_paths = {}".format(str(tool_paths)))
+
+    include_prefix = None
+    if target_arch == ARCHS.aarch64:
+        include_prefix = "aarch64-linux/"
+    elif target_arch == ARCHS.armv7:
+        include_prefix = "arm-linux-gnueabihf/"
+    elif target_arch == ARCHS.x86_64:
+        include_prefix = "x86_64-linux/"
+
+    c_builtin_includes = [
+        include.format(
+            include_prefix = include_prefix,
         )
+        for include in [
+            "%workspace%/lib/gcc/{include_prefix}14.2.0/include",
+            "%workspace%/lib/gcc/{include_prefix}14.2.0/include-fixed",
+        ] + ([
+            "%workspace%/{include_prefix}include",
+        ] if target_arch != ARCHS.x86_64 else []) + [
+            "%workspace%/sysroot/usr/include",
+        ]
+    ]
 
-    cxx_builtin_include_directories = rctx.attr.includes
-    for include in cxx_builtin_include_directories:
-        if paths.is_absolute(include):
-            fail("include ({}) must not be absolute".format(include))
-        if not include.startswith("%sysroot%") and not include.startswith("%workspace%"):
-            fail("include ({}) must be prefixed with %sysroot% or %workspace%".format(include))
+    cxx_builtin_includes = []
+    if target_arch == ARCHS.x86_64:
+        cxx_builtin_includes.extend([
+            include.format(
+                include_prefix = include_prefix,
+            )
+            for include in [
+                "%workspace%/include/c++/14.2.0",
+                "%workspace%/include/c++/14.2.0/{include_prefix}",
+                "%workspace%/include/c++/14.2.0/backward",
+            ]
+        ])
+    else:
+        cxx_builtin_includes.extend([
+            include.format(
+                include_prefix = include_prefix,
+            )
+            for include in [
+                "%workspace%/{include_prefix}include/c++/14.2.0",
+                "%workspace%/{include_prefix}include/c++/14.2.0/{include_prefix}",
+                "%workspace%/{include_prefix}include/c++/14.2.0/backward",
+            ]
+        ])
 
-    includes = [
-        include.replace("%sysroot%", sysroot).replace("%workspace%", toolchain_root)
-        for include in cxx_builtin_include_directories
+    f_builtin_includes = [
+        include.format(
+            include_prefix = include_prefix,
+        )
+        for include in [
+            "%workspace%/lib/gcc/{include_prefix}14.2.0/finclude",
+        ]
     ]
 
     target_compatible_with = [
@@ -60,35 +105,106 @@ def _gcc_toolchain_impl(rctx):
         for v in rctx.attr.target_settings
     ]
 
+    builtin_include_directories = []
+    builtin_include_directories.extend(c_builtin_includes)
+    builtin_include_directories.extend(cxx_builtin_includes)
+    builtin_include_directories.extend(f_builtin_includes)
+    builtin_include_directories.extend(rctx.attr.includes)
+    builtin_include_directories.extend(rctx.attr.fincludes)
+
+    extra_cflags = [
+        "-nostdinc",
+        "-B%workspace%/bin",
+        "-B%workspace%/xbin",
+    ]
+    extra_cflags.extend([
+        "-isystem{}".format(include)
+        for include in c_builtin_includes
+    ])
+    extra_cflags.extend([
+        "-I{}".format(include)
+        for include in rctx.attr.includes
+    ])
+    extra_cflags.extend(rctx.attr.extra_cflags)
+
+    extra_cxxflags = [
+        "-nostdinc",
+        "-nostdinc++",
+        "-B%workspace%/bin",
+        "-B%workspace%/xbin",
+    ]
+    extra_cxxflags.extend([
+        "-isystem{}".format(include)
+        for include in cxx_builtin_includes
+    ])
+    extra_cxxflags.extend([
+        "-isystem{}".format(include)
+        for include in c_builtin_includes
+    ])
+    extra_cxxflags.extend([
+        "-I{}".format(include)
+        for include in rctx.attr.includes
+    ])
+    extra_cxxflags.extend(rctx.attr.extra_cxxflags)
+
+    extra_fflags = [
+        "-nostdinc",
+        "-B%workspace%/bin",
+        "-B%workspace%/xbin",
+    ]
+    extra_fflags.extend([
+        "-I{}".format(include)
+        for include in f_builtin_includes
+    ])
+    extra_fflags.extend([
+        "-I{}".format(include)
+        for include in c_builtin_includes
+    ])
+    extra_fflags.extend([
+        "-I{}".format(finclude)
+        for finclude in rctx.attr.fincludes
+    ])
+    extra_fflags.extend(rctx.attr.extra_fflags)
+
+    extra_ldflags = [
+        lib.format(
+            include_prefix = include_prefix,
+        )
+        for lib in [
+            "-B%workspace%/bin",
+            "-B%workspace%/xbin",
+            "-B%workspace%/lib",
+            "-B%workspace%/{include_prefix}lib",
+            "-B%workspace%/lib64",
+            "-B%workspace%/{include_prefix}lib64",
+            "-B%workspace%/sysroot/lib",
+            "-B%workspace%/sysroot/usr/lib",
+            "-L%workspace%/lib",
+            "-L%workspace%/{include_prefix}lib",
+            "-L%workspace%/lib64",
+            "-L%workspace%/{include_prefix}lib64",
+            "-L%workspace%/sysroot/lib",
+            "-L%workspace%/sysroot/usr/lib",
+        ]
+    ]
+    extra_ldflags.extend(rctx.attr.extra_ldflags)
+
     rctx.file("BUILD.bazel", _TOOLCHAIN_BUILD_FILE_CONTENT.format(
         gcc_toolchain_workspace_name = rctx.attr.gcc_toolchain_workspace_name,
-        target_compatible_with = str(target_compatible_with),
-        target_settings = str(target_settings),
-        toolchain_files_repository_name = rctx.attr.toolchain_files_repository_name,
-
-        # Sysroot
-        sysroot = sysroot,
+        target_compatible_with = target_compatible_with,
+        target_settings = target_settings,
+        binary_prefix = binary_prefix,
+        include_prefix = include_prefix,
 
         # Includes
-        cxx_builtin_include_directories = str(cxx_builtin_include_directories),
+        cxx_builtin_include_directories = builtin_include_directories,
 
         # Flags
-        extra_cflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_cflags),
-        extra_cxxflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_cxxflags),
-        extra_fflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_fflags),
-        extra_ldflags = _format_flags(sysroot, toolchain_root, rctx.attr.extra_ldflags),
-        includes = str(includes),
+        extra_cflags = _format_flags(extra_cflags),
+        extra_cxxflags = _format_flags(extra_cxxflags),
+        extra_fflags = _format_flags(extra_fflags),
+        extra_ldflags = _format_flags(extra_ldflags),
     ))
-
-    binary_prefix = rctx.attr.binary_prefix
-    tool_paths = _render_tool_paths(rctx, rctx.name, rctx.attr.toolchain_files_repository_name, binary_prefix)
-    rctx.file("tool_paths.bzl", "tool_paths = {}".format(str(tool_paths)))
-
-def _format_flags(sysroot, toolchain_root, flags):
-    return str([
-        flag.replace("%sysroot%", sysroot).replace("%workspace%", toolchain_root)
-        for flag in flags
-    ])
 
 _FEATURE_ATTRS = {
     "binary_prefix": attr.string(
@@ -109,9 +225,8 @@ _FEATURE_ATTRS = {
     ),
     "extra_ldflags": attr.string_list(
         doc = "Extra flags for linking." +
-            " %sysroot% is rendered to the sysroot path." +
-            " %workspace% is rendered to the toolchain root path." +
-            " See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.",
+              " %workspace% is rendered to the toolchain root path." +
+              " See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.",
         default = [],
     ),
     "gcc_toolchain_workspace_name": attr.string(
@@ -120,14 +235,14 @@ _FEATURE_ATTRS = {
     ),
     "includes": attr.string_list(
         doc = "Extra includes for compiling C and C++." +
-            " %sysroot% is rendered to the sysroot path." +
-            " %workspace% is rendered to the toolchain root path." +
-            " See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.",
+              " %workspace% is rendered to the toolchain root path." +
+              " See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.",
         default = [],
     ),
-    "sysroot": attr.string(
-        doc = "A sysroot to be used as the logical build root.",
-        mandatory = True,
+    "fincludes": attr.string_list(
+        doc = "Extra includes for compiling Fortran." +
+              " %workspace% is rendered to the toolchain root path.",
+        default = [],
     ),
     "target_arch": attr.string(
         doc = "The target architecture this toolchain produces. E.g. x86_64.",
@@ -146,8 +261,9 @@ _FEATURE_ATTRS = {
         doc = "config_settings passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.",
         mandatory = False,
     ),
-    "toolchain_files_repository_name": attr.string(
-        doc = "The name of the repository containing the toolchain files.",
+    "toolchain_files": attr.label(
+        allow_single_file = True,
+        doc = "The toolchain files archive.",
         mandatory = True,
     ),
     "wrapper_sh_template": attr.label(
@@ -162,66 +278,73 @@ gcc_toolchain = repository_rule(
     ),
 )
 
-def _render_tool_paths(rctx, repository_name, toolchain_files_repository_name, binary_prefix):
+def _render_tool_paths(rctx, path_prefix, binary_prefix):
     relative_tool_paths = {
-        "ar": "external/{repository_name}/bin/{binary_prefix}-linux-ar".format(
-            repository_name = toolchain_files_repository_name,
+        "ar": "{path_prefix}/bin/{binary_prefix}ar".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "as": "external/{repository_name}/bin/{binary_prefix}-linux-as".format(
-            repository_name = toolchain_files_repository_name,
+        "as": "{path_prefix}/bin/{binary_prefix}as".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "cpp": "external/{repository_name}/bin/{binary_prefix}-linux-cpp".format(
-            repository_name = toolchain_files_repository_name,
+        "cpp": "{path_prefix}/bin/{binary_prefix}cpp".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "g++": "external/{repository_name}/bin/{binary_prefix}-linux-g++".format(
-            repository_name = toolchain_files_repository_name,
+        "g++": "{path_prefix}/bin/{binary_prefix}g++".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "gcc": "external/{repository_name}/bin/{binary_prefix}-linux-gcc".format(
-            repository_name = toolchain_files_repository_name,
+        "gcc": "{path_prefix}/bin/{binary_prefix}gcc".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "gcov": "external/{repository_name}/bin/{binary_prefix}-linux-gcov".format(
-            repository_name = toolchain_files_repository_name,
+        "gcov": "{path_prefix}/bin/{binary_prefix}gcov".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "gfortran": "external/{repository_name}/bin/{binary_prefix}-linux-gfortran".format(
-            repository_name = toolchain_files_repository_name,
+        "gfortran": "{path_prefix}/bin/{binary_prefix}gfortran".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "ld": "external/{repository_name}/bin/{binary_prefix}-linux-ld".format(
-            repository_name = toolchain_files_repository_name,
+        "ld": "{path_prefix}/bin/{binary_prefix}ld".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "nm": "external/{repository_name}/bin/{binary_prefix}-linux-nm".format(
-            repository_name = toolchain_files_repository_name,
+        "nm": "{path_prefix}/bin/{binary_prefix}nm".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "objcopy": "external/{repository_name}/bin/{binary_prefix}-linux-objcopy".format(
-            repository_name = toolchain_files_repository_name,
+        "objcopy": "{path_prefix}/bin/{binary_prefix}objcopy".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "objdump": "external/{repository_name}/bin/{binary_prefix}-linux-objdump".format(
-            repository_name = toolchain_files_repository_name,
+        "objdump": "{path_prefix}/bin/{binary_prefix}objdump".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "strip": "external/{repository_name}/bin/{binary_prefix}-linux-strip".format(
-            repository_name = toolchain_files_repository_name,
+        "strip": "{path_prefix}/bin/{binary_prefix}strip".format(
+            path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
     }
 
     path_env = ":".join([
-        "${{EXECROOT}}/external/{}/bin".format(repository)
-        for repository in [repository_name, toolchain_files_repository_name]
+        path.format(
+            path_prefix = path_prefix,
+        )
+        for path in [
+            # xbin first so that wrappers are found first in PATH when called
+            # indirectly by other tools.
+            "${{EXECROOT}}/{path_prefix}/xbin",
+            "${{EXECROOT}}/{path_prefix}/bin",
+        ]
     ])
 
     tool_paths = {}
     for name, tool_path in relative_tool_paths.items():
-        wrapped_tool_path = paths.join("bin", name)
+        wrapped_tool_path = paths.join("xbin", name)
         rctx.template(
             wrapped_tool_path,
             rctx.attr.wrapper_sh_template,
@@ -234,75 +357,39 @@ def _render_tool_paths(rctx, repository_name, toolchain_files_repository_name, b
         tool_paths[name] = wrapped_tool_path
     return tool_paths
 
-_DEFAULT_GCC_VERSION = "10.3.0"
-
 def gcc_register_toolchain(
-    name,
-    target_arch,
-    gcc_version = _DEFAULT_GCC_VERSION,
-    **kwargs
-):
+        name,
+        target_arch,
+        **kwargs):
     """Declares a `gcc_toolchain` and calls `register_toolchain` for it.
 
     Args:
         name: The name passed to `gcc_toolchain`.
         target_arch: The target architecture of the toolchain.
-        gcc_version: The version of GCC used by the toolchain.
         **kwargs: The extra arguments passed to `gcc_toolchain`. See `gcc_toolchain` for more info.
     """
-    sysroot = kwargs.pop("sysroot", None)
-    if not sysroot:
-        sysroot_variant = kwargs.pop("sysroot_variant", target_arch)
-        sysroot_repository_name = "sysroot_{sysroot_variant}".format(sysroot_variant = sysroot_variant)
-        sysroot = Label("@{sysroot_repository_name}//:sysroot".format(
-            sysroot_repository_name = sysroot_repository_name,
-        ))
-        http_archive(
-            name = sysroot_repository_name,
-            build_file_content = _SYSROOT_BUILD_FILE_CONTENT,
-            sha256 = _SYSROOTS[sysroot_variant].sha256,
-            url = _SYSROOTS[sysroot_variant].url,
-        )
-
-    binary_prefix = kwargs.pop("binary_prefix", "arm" if target_arch == ARCHS.armv7 else target_arch)
-    # The following glob matches all the cases:
-    #   - aarch64-buildroot-linux-gnu
-    #   - arm-buildroot-linux-gnueabihf
-    #   - x86_64-buildroot-linux-gnu
-    platform_directory_glob_pattern = "*-buildroot-linux-gnu*"
-
-    toolchain_files_repository_name = "{name}_files".format(name = name)
-    http_archive(
-        name = toolchain_files_repository_name,
-        build_file_content = _TOOLCHAIN_FILES_BUILD_FILE_CONTENT.format(
-            binary_prefix = binary_prefix,
-            platform_directory_glob_pattern = platform_directory_glob_pattern,
-            sysroot_label = str(sysroot),
-        ),
-        patch_cmds = [
-            # The sysroot shipped with the bootlin toolchain should never be used.
-            "find . -type d -name 'sysroot' -exec rm -rf {} +",
-            # We also remove the libgfortran and libstdc++ that are outside the sysroot. They are
-            # provided by our custom-built sysroot.
-            "find . -type f -name 'libgfortran*' -exec rm \"{}\" \\;",
-            "find . -type f -name 'libstdc++*' -exec rm \"{}\" \\;",
-        ],
-        strip_prefix = kwargs.pop("strip_prefix", _TOOLCHAINS[gcc_version][target_arch].strip_prefix),
-        sha256 = kwargs.pop("sha256", _TOOLCHAINS[gcc_version][target_arch].sha256),
-        url = kwargs.pop("url", _TOOLCHAINS[gcc_version][target_arch].url),
-    )
+    binary_prefix = kwargs.pop("binary_prefix", None)
+    if binary_prefix == None:
+        if target_arch == ARCHS.aarch64:
+            binary_prefix = "aarch64-linux-"
+        elif target_arch == ARCHS.armv7:
+            binary_prefix = "arm-linux-gnueabihf-"
+        elif target_arch == ARCHS.x86_64:
+            binary_prefix = ""
+        else:
+            fail("Unsupported target architecture: {}".format(target_arch))
 
     gcc_toolchain(
         name = name,
         binary_prefix = binary_prefix,
-        extra_cflags = kwargs.pop("extra_cflags", cflags),
-        extra_cxxflags = kwargs.pop("extra_cxxflags", cxxflags),
-        extra_fflags = kwargs.pop("extra_fflags", fflags),
-        extra_ldflags = kwargs.pop("extra_ldflags", ldflags(target_arch, gcc_version)),
-        includes = kwargs.pop("includes", includes(target_arch, gcc_version)),
-        sysroot = str(sysroot),
+        extra_cflags = kwargs.pop("extra_cflags", []),
+        extra_cxxflags = kwargs.pop("extra_cxxflags", []),
+        extra_fflags = kwargs.pop("extra_fflags", []),
+        extra_ldflags = kwargs.pop("extra_ldflags", []),
+        includes = kwargs.pop("includes", []),
+        fincludes = kwargs.pop("fincludes", []),
         target_arch = target_arch,
-        toolchain_files_repository_name = toolchain_files_repository_name,
+        toolchain_files = _TOOLCHAINS[target_arch],
         **kwargs
     )
 
@@ -315,234 +402,11 @@ ARCHS = struct(
     x86_64 = "x86_64",
 )
 
-_SYSROOTS = {
-    "aarch64": struct(
-        sha256 = "6c1b53e2fa3b895fec34f630f8aec41a9a75e9527d7c5f6d859aa9f186edf4a7",
-        url = "https://github.com/f0rmiga/gcc-toolchain/releases/download/sysroot-29042024/sysroot-base-aarch64.tar.xz",
-    ),
-    "armv7": struct(
-        sha256 = "f974f5ad7385cdfa41085389511a528837689e4eae8a9ed3aa528256e760ebd7",
-        url = "https://github.com/f0rmiga/gcc-toolchain/releases/download/sysroot-29042024/sysroot-base-armv7.tar.xz",
-    ),
-    "x86_64": struct(
-        sha256 = "70e38e7b5ffc67fe599f761b04ab30b41b66f264b19bba1504902198a2cd046a",
-        url = "https://github.com/f0rmiga/gcc-toolchain/releases/download/sysroot-29042024/sysroot-base-x86_64.tar.xz",
-    ),
-    "x86_64-X11": struct(
-        sha256 = "806023b77643c311892c46b474d10bf4c536671eb8714a008b4e5d8c1b7a7176",
-        url = "https://github.com/f0rmiga/gcc-toolchain/releases/download/sysroot-29042024/sysroot-X11-x86_64.tar.xz",
-    ),
-}
-
 _TOOLCHAINS = {
-    "10.3.0": {
-        "aarch64": struct(
-            sha256 = "dec070196608124fa14c3f192364c5b5b057d7f34651ad58ebb8fc87959c97f7",
-            strip_prefix = "aarch64--glibc--stable-2021.11-1",
-            url = "https://toolchains.bootlin.com/downloads/releases/toolchains/aarch64/tarballs/aarch64--glibc--stable-2021.11-1.tar.bz2",
-        ),
-        "armv7": struct(
-            sha256 = "6d10f356811429f1bddc23a174932c35127ab6c6f3b738b768f0c29c3bf92f10",
-            strip_prefix = "armv7-eabihf--glibc--stable-2021.11-1",
-            url = "https://toolchains.bootlin.com/downloads/releases/toolchains/armv7-eabihf/tarballs/armv7-eabihf--glibc--stable-2021.11-1.tar.bz2",
-        ),
-        "x86_64": struct(
-            sha256 = "6fe812add925493ea0841365f1fb7ca17fd9224bab61a731063f7f12f3a621b0",
-            strip_prefix = "x86-64--glibc--stable-2021.11-5",
-            url = "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/x86-64--glibc--stable-2021.11-5.tar.bz2",
-        ),
-    },
+    "aarch64": Label("//sysroot:gcc-toolchain-aarch64.tar.xz"),
+    "armv7": Label("//sysroot:gcc-toolchain-armv7.tar.xz"),
+    "x86_64": Label("//sysroot:gcc-toolchain-x86_64.tar.xz"),
 }
-
-_SYSROOT_BUILD_FILE_CONTENT = """\
-filegroup(
-    name = "sysroot",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)
-
-cc_library(
-    name = "libstdcxx",
-    srcs = glob(
-        include = ["**/libstdc++.so*"],
-        exclude = ["**/*.py"],
-    ),
-    visibility = ["//visibility:public"],
-)
-
-sanitizers = ["asan", "lsan", "tsan", "ubsan"]
-
-exports_files(glob([
-    "**/lib{}.so*".format(san)
-    for san in sanitizers
-]))
-
-[filegroup(
-    name = "lib{}_files".format(san),
-    srcs = glob(["**/lib{}.so*".format(san)]),
-    visibility = ["//visibility:public"],
-) for san in sanitizers]
-
-[cc_library(
-    name = "lib{}".format(san),
-    srcs = glob(["**/lib{}.so*".format(san)]),
-    visibility = ["//visibility:public"],
-) for san in sanitizers]
-"""
-
-_TOOLCHAIN_FILES_BUILD_FILE_CONTENT = """\
-# Export all binary files:
-exports_files(
-    glob(["bin/**"]),
-    visibility = ["//visibility:public"],
-)
-
-# GCC
-
-sysroot_label = "{sysroot_label}"
-
-filegroup(
-    name = "compiler_files",
-    srcs = [
-        ":as",
-        ":gcc",
-        ":gfortran",
-        ":include",
-    ] + ([sysroot_label] if sysroot_label else []),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "linker_files",
-    srcs = [
-        ":ar",
-        ":gcc",
-        ":ld",
-        ":ld.bfd",
-        ":lib",
-    ] + ([sysroot_label] if sysroot_label else []),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "include",
-    srcs = glob([
-        "lib/gcc/{platform_directory_glob_pattern}/*/include/**",
-        "lib/gcc/{platform_directory_glob_pattern}/*/include-fixed/**",
-        "{platform_directory_glob_pattern}/include/**",
-        "{platform_directory_glob_pattern}/sysroot/usr/include/**",
-        "{platform_directory_glob_pattern}/include/c++/*/**",
-        "{platform_directory_glob_pattern}/include/c++/*/{platform_directory_glob_pattern}/**",
-        "{platform_directory_glob_pattern}/include/c++/*/backward/**",
-    ]),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "lib",
-    srcs = glob(
-        include = [
-            "lib*/**",
-            "{platform_directory_glob_pattern}/lib*/**",
-            "**/*.so",
-        ],
-        exclude = ["lib*/**/*python*/**"],
-    ),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "gcc",
-    srcs = [
-        "bin/{binary_prefix}-linux-cpp.br_real",
-        "bin/{binary_prefix}-linux-cpp",
-        "bin/{binary_prefix}-linux-g++.br_real",
-        "bin/{binary_prefix}-linux-g++",
-        "bin/{binary_prefix}-linux-gcc.br_real",
-        "bin/{binary_prefix}-linux-gcc",
-    ] + glob([
-        "**/cc1plus",
-        "**/cc1",
-        # These shared objects are needed at runtime by GCC when linked dynamically to them.
-        "lib/libgmp.so*",
-        "lib/libmpc.so*",
-        "lib/libmpfr.so*",
-    ]),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "gfortran",
-    srcs = [
-        "bin/{binary_prefix}-linux-gfortran",
-        "bin/{binary_prefix}-linux-gfortran.br_real",
-    ],
-    visibility = ["//visibility:public"],
-)
-
-# Binutils
-
-filegroup(
-    name = "ar_files",
-    srcs = [":ar"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "as_files",
-    srcs = [":as"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "dwp_files",
-    srcs = [],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "objcopy_files",
-    srcs = [":objcopy"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "strip_files",
-    srcs = [":strip"],
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
-    name = "coverage_files",
-    srcs = [":gcov"],
-    visibility = ["//visibility:public"],
-)
-
-[
-    filegroup(
-        name = bin,
-        srcs = [
-            "bin/{binary_prefix}-linux-" + bin,
-        ] + glob([
-            "bin/{binary_prefix}-buildroot-*-" + bin,
-        ]),
-        visibility = ["//visibility:public"],
-    )
-    for bin in [
-        "ar",
-        "as",
-        "gcov",
-        "ld",
-        "ld.bfd",
-        "nm",
-        "objcopy",
-        "objdump",
-        "ranlib",
-        "readelf",
-        "strip",
-    ]
-]
-"""
 
 _TOOLCHAIN_BUILD_FILE_CONTENT = """\
 load("@rules_cc//cc:defs.bzl", "cc_toolchain")
@@ -551,8 +415,6 @@ load("@{gcc_toolchain_workspace_name}//toolchain/fortran:defs.bzl", "fortran_too
 load("//:tool_paths.bzl", "tool_paths")
 
 package(default_visibility = ["//visibility:public"])
-
-sysroot = "{sysroot}"
 
 toolchain(
     name = "fortran_toolchain",
@@ -600,13 +462,11 @@ cc_toolchain(
 
 cc_toolchain_config(
     name = "cc_toolchain_config",
-    builtin_sysroot = sysroot,
     cxx_builtin_include_directories = {cxx_builtin_include_directories},
     extra_cflags = {extra_cflags},
     extra_cxxflags = {extra_cxxflags},
     extra_fflags = {extra_fflags},
-    extra_ldflags ={extra_ldflags},
-    includes = {includes},
+    extra_ldflags = {extra_ldflags},
     tool_paths = tool_paths,
 )
 
@@ -627,119 +487,218 @@ filegroup(
 filegroup(
     name = "compiler_files",
     srcs = [
-        "@{toolchain_files_repository_name}//:compiler_files",
-        ":as",
+        ":as_files",
         ":gcc",
-        ":gfortran",
+        ":include",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "linker_files",
     srcs = [
-        "@{toolchain_files_repository_name}//:linker_files",
         ":ar",
         ":gcc",
+        ":lib",
+        ":ld_files",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ld_files",
+    srcs = [
         ":ld",
+        ":ld.bfd",
+        "xbin/ld",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "ar_files",
-    srcs = [
-        "@{toolchain_files_repository_name}//:ar_files",
-        ":ar",
-    ],
+    name = "include",
+    srcs = glob([
+        # C includes
+        "lib/gcc/{include_prefix}*/include/**",
+        "lib/gcc/{include_prefix}*/include-fixed/**",
+        "{include_prefix}include/**",
+        "sysroot/usr/include/**",
+
+        # C++ includes
+        "{include_prefix}include/c++/*/**",
+        "include/c++/*/**",
+        "{include_prefix}include/c++/*/backward/**",
+        "include/c++/*/backward/**",
+
+        # Fortran includes
+        "lib/gcc/{include_prefix}*/finclude/**",
+    ]),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "as_files",
-    srcs = [
-        "@{toolchain_files_repository_name}//:as_files",
-        ":as",
-    ],
-)
-
-filegroup(
-    name = "dwp_files",
-    srcs = ["@{toolchain_files_repository_name}//:dwp_files"],
-)
-
-filegroup(
-    name = "objcopy_files",
-    srcs = [
-        "@{toolchain_files_repository_name}//:objcopy_files",
-        ":objcopy",
-    ],
-)
-
-filegroup(
-    name = "strip_files",
-    srcs = [
-        "@{toolchain_files_repository_name}//:strip_files",
-        ":strip",
-    ],
-)
-
-filegroup(
-    name = "coverage_files",
-    srcs = [
-        "@{toolchain_files_repository_name}//:coverage_files",
-        ":gcov",
-    ],
+    name = "lib",
+    srcs = glob(
+        include = [
+            "**/*.so",
+            "**/*.so.*",
+            "**/*.a",
+            "**/*.la",
+            "**/*.o",
+            "**/*.lo",
+        ],
+        exclude = ["lib*/**/*python*/**"],
+    ),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "gcc",
     srcs = [
-        "bin/cpp",
-        "bin/g++",
-        "bin/gcc",
+        "bin/{binary_prefix}cpp",
+        "bin/{binary_prefix}g++",
+        "bin/{binary_prefix}gcc",
+        "bin/{binary_prefix}gfortran",
+        "xbin/cpp",
+        "xbin/g++",
+        "xbin/gcc",
+        "xbin/gfortran",
+    ] + glob([
+        "**/libexec/gcc/**/cc1plus",
+        "**/libexec/gcc/**/cc1",
+        "**/libexec/gcc/**/f951",
+        # These shared objects are needed at runtime by GCC when linked dynamically to them.
+        "lib/libgmp.so*",
+        "lib/libmpc.so*",
+        "lib/libmpfr.so*",
+        # Fortran spec files.
+        "**/lib*/libgfortran.spec",
+        "**/lib*/libgomp.spec",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+# Binutils
+
+filegroup(
+    name = "ar_files",
+    srcs = [
+        ":ar",
+        "xbin/ar",
     ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "gcov",
-    srcs = ["bin/gcov"],
+    name = "as_files",
+    srcs = [
+        ":as",
+        "xbin/as",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "gfortran",
-    srcs = ["bin/gfortran"],
+    name = "dwp_files",
+    srcs = [],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "ld",
-    srcs = ["bin/ld"],
+    name = "objcopy_files",
+    srcs = [
+        ":objcopy",
+        "xbin/objcopy",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "ar",
-    srcs = ["bin/ar"],
+    name = "strip_files",
+    srcs = [
+        ":strip",
+        "xbin/strip",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "as",
-    srcs = ["bin/as"],
+    name = "coverage_files",
+    srcs = [
+        ":gcov",
+        "xbin/gcov",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+[
+    filegroup(
+        name = bin,
+        srcs = [
+            "bin/{binary_prefix}" + bin,
+        ],
+        visibility = ["//visibility:public"],
+    )
+    for bin in [
+        "ar",
+        "as",
+        "gcov",
+        "ld",
+        "ld.bfd",
+        "nm",
+        "objcopy",
+        "objdump",
+        "ranlib",
+        "readelf",
+        "strip",
+    ]
+]
+
+cc_library(
+    name = "libstdcxx",
+    srcs = glob(
+        include = ["**/libstdc++.so*"],
+        exclude = ["**/*.py"],
+    ),
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "libstdcxx_static",
+    srcs = glob(["**/libstdc++.a"]),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "nm",
-    srcs = ["bin/nm"],
+    name = "libasan",
+    srcs = glob([
+        "lib*/libasan.so",
+    ]),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "objcopy",
-    srcs = ["bin/objcopy"],
+    name = "liblsan",
+    srcs = glob([
+        "lib*/liblsan.so",
+    ]),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "objdump",
-    srcs = ["bin/objdump"],
+    name = "libtsan",
+    srcs = glob([
+        "lib*/libtsan.so",
+        "lib*/lib64/libtsan.so",
+    ]),
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
-    name = "strip",
-    srcs = ["bin/strip"],
+    name = "libubsan",
+    srcs = glob([
+        "lib*/libubsan.so",
+    ]),
+    visibility = ["//visibility:public"],
 )
 """

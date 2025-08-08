@@ -50,7 +50,8 @@ platform(
     ],
     exec_properties = {
         "OSFamily": "Linux",
-        "container-image": "docker://public.ecr.aws/docker/library/python@sha256:247105bbbe7f7afc7c12ac893be65b5a32951c1d0276392dc2bf09861ba288a6",
+        # The following container-image is a pinned version of public.ecr.aws/docker/library/python:3.10-bookworm.
+        "container-image": "docker://public.ecr.aws/docker/library/python@sha256:6ff000548a4fa34c1be02624836e75e212d4ead8227b4d4381c3ae998933a922",
     },
     visibility = ["//visibility:public"],
 )

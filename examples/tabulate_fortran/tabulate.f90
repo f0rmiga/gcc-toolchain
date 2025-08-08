@@ -17,16 +17,27 @@
 
 program tabulate
     use user_functions
+    use omp_lib
 
     implicit none
     real    :: x, xbegin, xend
     integer :: i, steps
+    integer :: num_threads
+
+    num_threads = omp_get_max_threads()
+    write(*,*) 'Running with ', num_threads, ' OpenMP threads'
 
     write(*,*) 'Please enter the range (begin, end) and the number of steps:'
     read(*,*)  xbegin, xend, steps
 
+    write(*,*) 'X        F(X)      Thread'
+    
+    !$omp parallel do private(x) schedule(static)
     do i = 0, steps
         x = xbegin + i * (xend - xbegin) / steps
-        write(*,'(2f10.4)') x, f(x)
+        !$omp critical
+        write(*,'(2f10.4, i6)') x, f(x), omp_get_thread_num()
+        !$omp end critical
     end do
+    !$omp end parallel do
 end program tabulate

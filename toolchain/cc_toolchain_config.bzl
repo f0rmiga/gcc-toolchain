@@ -88,13 +88,11 @@ lto_index_actions = [
 
 def _impl(ctx):
     cxx_builtin_include_directories = ctx.attr.cxx_builtin_include_directories
-    builtin_sysroot = ctx.attr.builtin_sysroot
     tool_paths = ctx.attr.tool_paths
     extra_cflags = ctx.attr.extra_cflags
     extra_cxxflags = ctx.attr.extra_cxxflags
     extra_fflags = ctx.attr.extra_fflags
     extra_ldflags = ctx.attr.extra_ldflags
-    includes = ctx.attr.includes
 
     action_configs = []
 
@@ -103,9 +101,6 @@ def _impl(ctx):
         enabled = True,
         tools = [tool(path = tool_paths.get("objcopy"))],
     ))
-
-    no_libstdcxx_feature = feature(name = "no_libstdcxx")
-    static_libstdcxx_feature = feature(name = "static_libstdcxx")
 
     default_link_flags_feature = feature(
         name = "default_link_flags",
@@ -119,37 +114,10 @@ def _impl(ctx):
                             "-Wl,-z,relro,-z,now",
                             "-pass-exit-codes",
                             "-lm",
+                            "-ldl",
+                            "-lrt",
+                            "-pthread",
                         ],
-                    ),
-                ],
-            ),
-            flag_set(
-                actions = all_link_actions,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-lstdc++"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        not_features = [
-                            "no_libstdcxx",
-                            "static_libstdcxx",
-                        ],
-                    ),
-                ],
-            ),
-            flag_set(
-                actions = all_link_actions,
-                flag_groups = [
-                    flag_group(
-                        flags = ["-l:libstdc++.a"],
-                    ),
-                ],
-                with_features = [
-                    with_feature_set(
-                        not_features = ["no_libstdcxx"],
-                        features = ["static_libstdcxx"],
                     ),
                 ],
             ),
@@ -301,7 +269,7 @@ def _impl(ctx):
             ),
             flag_set(
                 actions = all_cpp_compile_actions + [ACTION_NAMES.lto_backend],
-                flag_groups = [flag_group(flags = ["-std=c++0x"])],
+                flag_groups = [flag_group(flags = ["-std=c++17"])],
             ),
         ],
     )
@@ -482,20 +450,6 @@ def _impl(ctx):
         ] if len(extra_fflags) > 0 else [],
     )
 
-    includes_feature = feature(
-        name = "includes",
-        enabled = True,
-        flag_sets = [
-            flag_set(
-                actions = all_compile_actions + [FORTRAN_ACTION_NAMES.fortran_compile],
-                flag_groups = [flag_group(flags = [
-                    "-isystem{}".format(include)
-                    for include in includes
-                ])],
-            ),
-        ] if len(includes) > 0 else [],
-    )
-
     extra_ldflags_feature = feature(
         name = "extra_ldflags",
         enabled = True,
@@ -541,8 +495,6 @@ def _impl(ctx):
         default_compile_flags_feature,
         include_paths_feature,
         library_search_directories_feature,
-        no_libstdcxx_feature,
-        static_libstdcxx_feature,
         default_link_flags_feature,
         supports_dynamic_linker_feature,
         supports_pic_feature,
@@ -557,7 +509,6 @@ def _impl(ctx):
         extra_cxxflags_feature,
         extra_fflags_feature,
         extra_ldflags_feature,
-        includes_feature,
     ]
 
     return [
@@ -566,7 +517,6 @@ def _impl(ctx):
             abi_version = "local",
             action_configs = action_configs,
             artifact_name_patterns = [],
-            builtin_sysroot = builtin_sysroot,
             cc_target_os = None,
             compiler = "gcc",
             ctx = ctx,
@@ -588,13 +538,11 @@ def _impl(ctx):
 cc_toolchain_config = rule(
     implementation = _impl,
     attrs = {
-        "builtin_sysroot": attr.string(mandatory = True),
         "cxx_builtin_include_directories": attr.string_list(mandatory = True),
         "extra_cflags": attr.string_list(mandatory = True),
         "extra_cxxflags": attr.string_list(mandatory = True),
         "extra_fflags": attr.string_list(mandatory = True),
         "extra_ldflags": attr.string_list(mandatory = True),
-        "includes": attr.string_list(mandatory = True),
         "tool_paths": attr.string_dict(mandatory = True),
     },
     provides = [CcToolchainConfigInfo],

@@ -15,6 +15,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("//rules_cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
 cc_binary(
     name = "asan",
     srcs = ["asan.cc"],
@@ -25,13 +27,12 @@ sh_test(
     srcs = ["sanitizer_test.sh"],
     data = [
         ":asan",
-        "@sysroot_x86_64-X11//:libasan",
-        "@sysroot_x86_64-X11//:lib64/libasan.so",
+        "@gcc_toolchain_x86_64//:libasan",
     ],
     env = {
         "BINARY": "$(rootpath :asan)",
         "EXPECTED_MESSAGE": "ERROR: AddressSanitizer: heap-use-after-free",
-        "INTERNAL_LD_PRELOAD": "$(rootpath @sysroot_x86_64-X11//:lib64/libasan.so)",
+        "INTERNAL_LD_PRELOAD": "$(rootpath @gcc_toolchain_x86_64//:libasan)",
     },
     tags = ["manual"],
 )
@@ -47,13 +48,12 @@ sh_test(
     srcs = ["sanitizer_test.sh"],
     data = [
         ":lsan",
-        "@sysroot_x86_64-X11//:liblsan",
-        "@sysroot_x86_64-X11//:lib64/liblsan.so",
+        "@gcc_toolchain_x86_64//:liblsan",
     ],
     env = {
         "BINARY": "$(rootpath :lsan)",
         "EXPECTED_MESSAGE": "ERROR: LeakSanitizer: detected memory leaks",
-        "INTERNAL_LD_PRELOAD": "$(rootpath @sysroot_x86_64-X11//:lib64/liblsan.so)",
+        "INTERNAL_LD_PRELOAD": "$(rootpath @gcc_toolchain_x86_64//:liblsan)",
     },
     tags = ["manual"],
 )
@@ -61,7 +61,6 @@ sh_test(
 cc_binary(
     name = "tsan",
     srcs = ["tsan.cc"],
-    linkopts = ["-pthread"],
 )
 
 sh_test(
@@ -69,13 +68,12 @@ sh_test(
     srcs = ["sanitizer_test.sh"],
     data = [
         ":tsan",
-        "@sysroot_x86_64-X11//:libtsan",
-        "@sysroot_x86_64-X11//:lib64/libtsan.so",
+        "@gcc_toolchain_x86_64//:libtsan",
     ],
     env = {
         "BINARY": "$(rootpath :tsan)",
         "EXPECTED_MESSAGE": "WARNING: ThreadSanitizer: data race",
-        "INTERNAL_LD_PRELOAD": "$(rootpath @sysroot_x86_64-X11//:lib64/libtsan.so)",
+        "INTERNAL_LD_PRELOAD": "$(rootpath @gcc_toolchain_x86_64//:libtsan)",
     },
     tags = ["manual"],
 )
@@ -83,7 +81,6 @@ sh_test(
 cc_binary(
     name = "ubsan",
     srcs = ["ubsan.c"],
-    features = ["no_libstdcxx"],
 )
 
 sh_test(
@@ -91,13 +88,12 @@ sh_test(
     srcs = ["sanitizer_test.sh"],
     data = [
         ":ubsan",
-        "@sysroot_x86_64-X11//:libubsan",
-        "@sysroot_x86_64-X11//:lib64/libubsan.so",
+        "@gcc_toolchain_x86_64//:libubsan",
     ],
     env = {
         "BINARY": "$(rootpath :ubsan)",
         "EXPECTED_MESSAGE": "runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'",
-        "INTERNAL_LD_PRELOAD": "$(rootpath @sysroot_x86_64-X11//:lib64/libubsan.so)",
+        "INTERNAL_LD_PRELOAD": "$(rootpath @gcc_toolchain_x86_64//:libubsan)",
     },
     tags = ["manual"],
 )

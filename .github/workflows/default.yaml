@@ -20,12 +20,18 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-20.04
           - ubuntu-22.04
+          - ubuntu-24.04
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: bazelbuild/setup-bazelisk@v2
+        with:
+          lfs: true
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
       - name: Test
         run: |
           ./.github/workflows/configurebb.sh
@@ -42,7 +48,13 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: bazelbuild/setup-bazelisk@v2
+        with:
+          lfs: true
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
       - name: Test
         run: |
           ./.github/workflows/configurebb.sh
@@ -60,7 +72,13 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: bazelbuild/setup-bazelisk@v2
+        with:
+          lfs: true
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
       - name: Test ${{ matrix.sanitizer }}
         run: |
           ./.github/workflows/configurebb.sh
@@ -71,7 +89,13 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - uses: bazelbuild/setup-bazelisk@v2
+        with:
+          lfs: true
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
       - name: Test Coverage
         run: |
           ./.github/workflows/configurebb.sh
@@ -83,12 +107,18 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-20.04
+          - ubuntu-22.04
           - macos-11
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: bazelbuild/setup-bazelisk@v2
+        with:
+          lfs: true
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
       - name: Test with RBE
         run: |
           ./.github/workflows/configurebb.sh
