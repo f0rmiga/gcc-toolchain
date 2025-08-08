@@ -167,8 +167,6 @@ RUN --mount=source=configure.sh,target=/usr/bin/configure.sh configure.sh \
         --with-headers=/var/install/kernel/usr/include \
         --with-tls \
         libc_cv_slibdir=/lib \
-        CFLAGS="-O2 -falign-functions=32" \
-        LDFLAGS="-Wl,-z,max-page-size=0x1000" \
         || (cat config.log && exit 1)
 RUN make all --jobs $(nproc)
 RUN make DESTDIR=/var/install/glibc install
@@ -179,6 +177,7 @@ WORKDIR /build/gcc/build
 COPY --from=kernel /var/install/kernel /var/install/gcc/sysroot
 COPY --from=glibc /var/install/glibc /var/install/gcc/sysroot
 RUN --mount=source=configure.sh,target=/usr/bin/configure.sh IS_GCC_BUILD=1 configure.sh \
+        --disable-bootstrap \
         --enable-default-pie \
         --enable-languages=c,c++,fortran,lto \
         --disable-multilib \
@@ -187,14 +186,10 @@ RUN --mount=source=configure.sh,target=/usr/bin/configure.sh IS_GCC_BUILD=1 conf
         --with-linker-hash-style=gnu \
         --with-build-sysroot=/var/install/gcc/sysroot \
         --with-sysroot=/RELOCATABLE_SYSROOT \
-        CFLAGS="-O2 -falign-functions=32" \
-        CXXFLAGS="-O2 -falign-functions=32" \
-        LDFLAGS="-Wl,-z,max-page-size=0x1000" \
         || (cat config.log && exit 1)
 RUN grep -rl '/RELOCATABLE_SYSROOT' . | xargs sed -i 's|/RELOCATABLE_SYSROOT|$(exec_prefix)/sysroot|g'
 RUN make --jobs $(nproc) all-gcc
 RUN make install-gcc
-RUN rm -v "/opt/gcc/${ARCH}/bin/"*{gcc,g++,cpp}
 ENV PATH="/var/install/gcc/bin:${PATH}"
 RUN make --jobs $(nproc)
 RUN make install
@@ -216,8 +211,6 @@ RUN --mount=source=configure.sh,target=/usr/bin/configure.sh IS_GCC_BUILD=1 conf
         --prefix=/var/install/binutils \
         --with-build-sysroot=/var/install/gcc/sysroot \
         --with-lib-path=/var/install/glibc/usr/lib \
-        CFLAGS="-O2 -falign-functions=32" \
-        LDFLAGS="-Wl,-z,max-page-size=0x1000" \
         || (cat config.log && exit 1)
 RUN make --jobs $(nproc)
 RUN make install
@@ -344,6 +337,15 @@ RUN --mount=source=dedup,target=/usr/bin/dedup dedup /var/builds/toolchain
 # We patch the shared libraries to set the rpath to $ORIGIN, so that during runtime the
 # libraries are found in the same directory as the executable.
 COPY --from=patchelf_download /downloads/patchelf /var/install/patchelf
-RUN find /var \
+RUN find /var/builds/toolchain \
         -name '*.so*' \
         -exec /var/install/patchelf/bin/patchelf --set-rpath '$ORIGIN/' {} \;
+
+RUN find /var/builds/toolchain/bin -type f \
+        -exec strip \
+            --strip-all \
+            --remove-section=.comment \
+            --remove-section=.note \
+            --remove-section=.eh_frame \
+            --remove-section=.eh_frame_hdr \
+            {} \;
