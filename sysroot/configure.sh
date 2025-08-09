@@ -83,4 +83,17 @@ export STRIP="${toolchain_prefix}-strip"
 
 args+=("${@}")
 
+readonly common_flags=(
+    -O2
+    -falign-functions=32
+    -ffunction-sections
+    -fdata-sections
+)
+
+args+=(
+    CFLAGS="${common_flags[*]}"
+    CXXFLAGS="${common_flags[*]}"
+    LDFLAGS="-Wl,-z,max-page-size=0x1000 -Wl,--strip-all -Wl,--as-needed"
+)
+
 ../configure "${args[@]}" 1> >(tee configure.stdout) 2> >(>&2 tee configure.stderr)
