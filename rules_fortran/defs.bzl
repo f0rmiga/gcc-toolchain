@@ -293,7 +293,7 @@ def _compile(
         struct(
             source_file = source_file,
             output_file = actions.declare_file(
-                paths.replace_extension(source_file.basename, ".o"),
+                paths.replace_extension(source_file.path, ".o"),
             ),
             module_files = [
                 actions.declare_file(module_file)
@@ -306,7 +306,7 @@ def _compile(
     ] + [
         struct(
             source_file = source_file,
-            output_file = actions.declare_file(paths.replace_extension(source_file.basename, ".o")),
+            output_file = actions.declare_file(paths.replace_extension(source_file.path, ".o")),
             module_files = [],
         )
         for source_file in srcs_files
