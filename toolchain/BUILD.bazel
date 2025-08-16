@@ -30,11 +30,12 @@ exports_files(
 bzl_library(
     name = "defs",
     srcs = ["defs.bzl"],
+    visibility = ["//visibility:public"],
     deps = [
+        "@aspect_bazel_lib//lib:utils",
         "@bazel_skylib//lib:dicts",
         "@bazel_skylib//lib:paths",
         "@bazel_tools//tools/build_defs/repo:http.bzl",
         "@bazel_tools//tools/build_defs/repo:utils.bzl",
     ],
-    visibility = ["//visibility:public"],
 )

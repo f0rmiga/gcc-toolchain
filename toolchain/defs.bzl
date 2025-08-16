@@ -18,6 +18,7 @@
 """This module provides the definitions for registering a GCC toolchain for C and C++.
 """
 
+load("@aspect_bazel_lib//lib:utils.bzl", "is_bzlmod_enabled")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
@@ -37,6 +38,14 @@ def _gcc_toolchain_impl(rctx):
             flag.replace("%workspace%", toolchain_root)
             for flag in flags
         ]
+
+    def _format_builtins(builtins):
+        # In bzlmod, external dependencies have their own canonical subdirectories, so we can't rely on %workspace%.
+        # Instead, we want to resolve paths relative to the root of the module where the toolchain is installed.
+        # We might actually want to always resolve to `toolchain_root`, regardless of whether we're on bzlmod
+        if is_bzlmod_enabled():
+            return [d.replace("%workspace%", toolchain_root) for d in builtins]
+        return builtins
 
     target_arch = rctx.attr.target_arch
 
@@ -205,7 +214,7 @@ def _gcc_toolchain_impl(rctx):
         include_prefix = include_prefix,
 
         # Includes
-        cxx_builtin_include_directories = builtin_include_directories,
+        cxx_builtin_include_directories = _format_builtins(builtin_include_directories),
 
         # Flags
         extra_cflags = _format_flags(extra_cflags),
@@ -430,11 +439,14 @@ def _render_tool_paths(rctx, path_prefix, binary_prefix):
         tool_paths[name] = wrapped_tool_path
     return tool_paths
 
-def gcc_register_toolchain(
+def gcc_declare_toolchain(
         name,
         target_arch,
         **kwargs):
-    """Declares a `gcc_toolchain` and calls `register_toolchain` for it.
+    """Declares a `gcc_toolchain`.
+
+    You should use `gcc_register_toolchain` unless you need to register toolchains manually,
+    e.g. if you are consuming this repository as a Bzlmod dependency.
 
     Args:
         name: The name passed to `gcc_toolchain`.
@@ -465,6 +477,18 @@ def gcc_register_toolchain(
         **kwargs
     )
 
+def gcc_register_toolchain(
+        name,
+        target_arch,
+        **kwargs):
+    """Declares a `gcc_toolchain` and calls `register_toolchain` for it.
+
+    Args:
+        name: The name passed to `gcc_toolchain`.
+        target_arch: The target architecture of the toolchain.
+        **kwargs: The extra arguments passed to `gcc_toolchain`. See `gcc_toolchain` for more info.
+    """
+    gcc_declare_toolchain(name, target_arch, **kwargs)
     native.register_toolchains("@{}//:cc_toolchain".format(name))
     native.register_toolchains("@{}//:fortran_toolchain".format(name))
 

@@ -55,3 +55,7 @@ EOF
 """
 
 LAPACK_PATCHES = [_create_make_inc]
+
+# Canonical repository name of the @lapack dependency.
+# Documentation: https://bazel.build/external/module#repository_names_and_strict_deps
+lapack_repo_name = Label("@lapack").repo_name
