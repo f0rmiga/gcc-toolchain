@@ -22,9 +22,10 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
 def _gcc_toolchain_impl(rctx):
+    versions = json.decode(rctx.attr.gcc_versions)
     rctx.download_and_extract(
-        url = VERSIONS[rctx.attr.gcc_version][rctx.attr.target_arch]["url"],
-        sha256 = VERSIONS[rctx.attr.gcc_version][rctx.attr.target_arch]["sha256"],
+        url = versions[rctx.attr.gcc_version][rctx.attr.target_arch]["url"],
+        sha256 = versions[rctx.attr.gcc_version][rctx.attr.target_arch]["sha256"],
     )
 
     absolute_toolchain_root = str(rctx.path("."))
@@ -241,8 +242,70 @@ _FEATURE_ATTRS = {
         default = "gcc_toolchain",
     ),
     "gcc_version": attr.string(
-        default = "14.2.0",
+        default = "14.3.0",
         doc = "The version of GCC.",
+    ),
+    "gcc_versions": attr.string(
+        default = json.encode({
+            "12.5.0": {
+                "aarch64": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-aarch64.tar.xz",
+                    "sha256": "7b0e25133a98d44b648a925ba11f64a3adc470e87668af80ce2c3af389ebe9be",
+                },
+                "armv7": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-armv7.tar.xz",
+                    "sha256": "a0ef76c8cc517b3d76dd2f09b1a371975b2ff1082e2f9372ed79af01b9292934",
+                },
+                "x86_64": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-x86_64.tar.xz",
+                    "sha256": "51076e175839b434bb2dc0006c0096916df585e8c44666d35b0e3ce821d535db",
+                },
+            },
+            "13.4.0": {
+                "aarch64": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-aarch64.tar.xz",
+                    "sha256": "770cf6bf62bdf78763de526d3a9f5cae4c19f1a3aca0ef8f18b05f1a46d1ffaf",
+                },
+                "armv7": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-armv7.tar.xz",
+                    "sha256": "1b2739b5003c5a3f0ab7c4cc7fb95cc99c0e933982512de7255c2bd9ced757ad",
+                },
+                "x86_64": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-x86_64.tar.xz",
+                    "sha256": "d96071c1b98499afd7b7b56ebd69ad414020edf66e982004acffe7df8aaf7e02",
+                },
+            },
+            "14.3.0": {
+                "aarch64": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-14.3.0-aarch64.tar.xz",
+                    "sha256": "74b1f0072769f8865b62897ab962f6fce174115dab2e6596765bb4e700ffe0d1",
+                },
+                "armv7": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-14.3.0-armv7.tar.xz",
+                    "sha256": "0c20a130f424ce83dd4eb2a4ec8fbcd0c0ddc5f42f0b4660bcd0108cb8c0fb21",
+                },
+                "x86_64": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-14.3.0-x86_64.tar.xz",
+                    "sha256": "0b365e5da451f5c7adc594f967885d7181ff6d187d6089a4bcf36f954bf3ccf9",
+                },
+            },
+            "15.2.0": {
+                "aarch64": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-15.2.0-aarch64.tar.xz",
+                    "sha256": "e1ae45038d350b297bea4ac10f095a98e2218971a8a37b8ab95f3faad2ec69f8",
+                },
+                "armv7": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-15.2.0-armv7.tar.xz",
+                    "sha256": "fda64b3ee1c3d7ddcb28378a1b131eadc5d3e3ff1cfab2aab71da7a3f899b601",
+                },
+                "x86_64": {
+                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-15.2.0-x86_64.tar.xz",
+                    "sha256": "50dd28021365e7443853d5e77bc94ab1d1c947ad48fd91cbec44dbdfa61412c9",
+                },
+            },
+        }),
+        doc = "A JSON dictionary of GCC versions to their download URLs and SHA256 hashes." +
+              " The structure is {<gcc_version>: {<target_arch>: {url: <url>, sha256: <sha256>}}}.",
     ),
     "includes": attr.string_list(
         doc = "Extra includes for compiling C and C++." +
@@ -404,23 +467,6 @@ def gcc_register_toolchain(
 
     native.register_toolchains("@{}//:cc_toolchain".format(name))
     native.register_toolchains("@{}//:fortran_toolchain".format(name))
-
-VERSIONS = {
-    "14.2.0": {
-        "aarch64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/14.2.0_17%2F08%2F2025/gcc-toolchain-14.2.0-aarch64.tar.xz",
-            "sha256": "30e49f3c542e2d49e8c46c7546e4fa9c15f47c5a88e8391be0c544678065e7d7",
-        },
-        "armv7": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/14.2.0_17%2F08%2F2025/gcc-toolchain-14.2.0-armv7.tar.xz",
-            "sha256": "7b1edb9b81a19c588327607b4adb57b65a9ef68350fe769513a05a93df168023",
-        },
-        "x86_64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/14.2.0_17%2F08%2F2025/gcc-toolchain-14.2.0-x86_64.tar.xz",
-            "sha256": "fdbd3841a7f25af4f5f7cd24b1757c5040b4a6ac52cdfb5785a83358a7b8e655",
-        },
-    },
-}
 
 ARCHS = struct(
     aarch64 = "aarch64",
