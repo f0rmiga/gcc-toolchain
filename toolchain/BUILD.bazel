@@ -29,7 +29,10 @@ exports_files(
 
 bzl_library(
     name = "defs",
-    srcs = ["defs.bzl"],
+    srcs = [
+        "defs.bzl",
+        "module_extensions.bzl",
+    ],
     visibility = ["//visibility:public"],
     deps = [
         "@aspect_bazel_lib//lib:utils",

@@ -12,37 +12,29 @@ bazel_dep(name = "rules_cc", version = "0.2.0")
 
 # Local Toolchains
 # ================
-gcc_toolchains = use_extension("//toolchain:module_extensions.bzl", "gcc_toolchains")
-
-# Unfortunately, we can't load `ARCHS` directly here.
-# But the attributes in `gcc_register_toolchain.register_toolchain` are gated to only contain values from ARCHS
-all_architectures = [
-    "aarch64",
-    "armv7",
-    "x86_64",
-]
+gcc_toolchains = use_extension("//toolchain:module_extensions.bzl", "gcc_toolchains", dev_dependency = True)
 
 [
-    gcc_toolchains.toolchain(
-        name = "gcc_toolchain_{}".format(arch),
-        target_arch = arch,
-    )
-    for arch in all_architectures
-]
-
-[
-    use_repo(gcc_toolchains, "gcc_toolchain_{}".format(arch))
-    for arch in all_architectures
-]
-
-[
-    register_toolchains(
-        "@gcc_toolchain_{}//:cc_toolchain".format(arch),
-        "@gcc_toolchain_{}//:fortran_toolchain".format(arch),
-        # register toolchains as dev dependencies so that we don't pollute the toolchain resolution of consumers.
-        dev_dependency = True,
-    )
-    for arch in all_architectures
+    [
+        gcc_toolchains.toolchain(
+            name = "gcc_toolchain_{}".format(arch),
+            target_arch = arch,
+        ),
+        use_repo(gcc_toolchains, "gcc_toolchain_{}".format(arch)),
+        register_toolchains(
+            "@gcc_toolchain_{}//:cc_toolchain".format(arch),
+            "@gcc_toolchain_{}//:fortran_toolchain".format(arch),
+            # register toolchains as dev dependencies so that we don't pollute the toolchain resolution of consumers.
+            dev_dependency = True,
+        ),
+    ]
+    # Unfortunately, we can't load `ARCHS` directly here.
+    # But the attributes in `gcc_register_toolchain.register_toolchain` are gated to only contain values from ARCHS
+    for arch in [
+        "aarch64",
+        "armv7",
+        "x86_64",
+    ]
 ]
 
 # Dev Dependencies (for examples/)
