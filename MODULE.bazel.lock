@@ -139,7 +139,7 @@
   "moduleExtensions": {
     "//toolchain:module_extensions.bzl%gcc_toolchains": {
       "general": {
-        "bzlTransitiveDigest": "ouDGxKptkXnOb786d7e6Gkva3oTz+3f+y4gagEClz+A=",
+        "bzlTransitiveDigest": "pRD/g8eArfGRhACyMGWL4MnhS9LpVdoEM1g20uodAHU=",
         "usagesDigest": "BB4+oegHw+Cs1Zl4mOU5OsabPHL8mQ14u6NQ4mWAwU4=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -157,7 +157,7 @@
               "includes": [],
               "fincludes": [],
               "target_arch": "aarch64",
-              "toolchain_files": "@@//sysroot:gcc-toolchain-aarch64.tar.xz"
+              "gcc_version": "14.3.0"
             }
           },
           "gcc_toolchain_armv7": {
@@ -172,7 +172,7 @@
               "includes": [],
               "fincludes": [],
               "target_arch": "armv7",
-              "toolchain_files": "@@//sysroot:gcc-toolchain-armv7.tar.xz"
+              "gcc_version": "14.3.0"
             }
           },
           "gcc_toolchain_x86_64": {
@@ -187,7 +187,7 @@
               "includes": [],
               "fincludes": [],
               "target_arch": "x86_64",
-              "toolchain_files": "@@//sysroot:gcc-toolchain-x86_64.tar.xz"
+              "gcc_version": "14.3.0"
             }
           }
         },
