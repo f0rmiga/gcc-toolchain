@@ -1,3 +1,0 @@
-*.tar.xz
-
-!gcc-toolchain-*.tar.xz
