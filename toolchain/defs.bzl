@@ -366,7 +366,7 @@ gcc_toolchain = repository_rule(
 
 ATTRS_SHARED_WITH_MODULE_EXTENSION = {
     attr_name: _FEATURE_ATTRS[attr_name]
-    for attr_name in ["gcc_version", "gcc_versions"]
+    for attr_name in ["gcc_version", "gcc_versions", "extra_cflags", "extra_cxxflags", "extra_ldflags", "extra_fflags"]
 }
 
 def _render_tool_paths(rctx, path_prefix, binary_prefix):
