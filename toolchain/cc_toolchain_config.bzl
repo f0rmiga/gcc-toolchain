@@ -18,6 +18,7 @@
 """This module provides the cc_toolchain_config rule.
 """
 
+load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load(
     "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
     "action_config",
@@ -28,7 +29,6 @@ load(
     "tool_path",
     "with_feature_set",
 )
-load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
 load("//toolchain/fortran:action_names.bzl", FORTRAN_ACTION_NAMES = "ACTION_NAMES")
 
 all_compile_actions = [
@@ -93,6 +93,7 @@ def _impl(ctx):
     extra_cxxflags = ctx.attr.extra_cxxflags
     extra_fflags = ctx.attr.extra_fflags
     extra_ldflags = ctx.attr.extra_ldflags
+    extra_asmflags = ctx.attr.extra_asmflags
 
     action_configs = []
 
@@ -461,6 +462,17 @@ def _impl(ctx):
         ] if len(extra_ldflags) > 0 else [],
     )
 
+    extra_asmflags_feature = feature(
+        name = "extra_asmflags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = [ACTION_NAMES.preprocess_assemble],
+                flag_groups = [flag_group(flags = extra_asmflags)],
+            ),
+        ] if len(extra_asmflags) > 0 else [],
+    )
+
     sysroot_feature = feature(
         name = "sysroot",
         enabled = True,
@@ -509,6 +521,7 @@ def _impl(ctx):
         extra_cxxflags_feature,
         extra_fflags_feature,
         extra_ldflags_feature,
+        extra_asmflags_feature,
     ]
 
     return [
@@ -543,6 +556,7 @@ cc_toolchain_config = rule(
         "extra_cxxflags": attr.string_list(mandatory = True),
         "extra_fflags": attr.string_list(mandatory = True),
         "extra_ldflags": attr.string_list(mandatory = True),
+        "extra_asmflags": attr.string_list(mandatory = True),
         "tool_paths": attr.string_dict(mandatory = True),
     },
     provides = [CcToolchainConfigInfo],

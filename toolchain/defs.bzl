@@ -205,6 +205,17 @@ def _gcc_toolchain_impl(rctx):
     ]
     extra_ldflags.extend(rctx.attr.extra_ldflags)
 
+    extra_asmflags = []
+    extra_asmflags.extend([
+        "-isystem{}".format(include)
+        for include in c_builtin_includes
+    ])
+    extra_asmflags.extend([
+        "-I{}".format(include)
+        for include in rctx.attr.includes
+    ])
+    extra_asmflags.extend(rctx.attr.extra_asmflags)
+
     rctx.file("BUILD.bazel", _TOOLCHAIN_BUILD_FILE_CONTENT.format(
         gcc_toolchain_workspace_name = rctx.attr.gcc_toolchain_workspace_name,
         target_compatible_with = target_compatible_with,
@@ -220,6 +231,7 @@ def _gcc_toolchain_impl(rctx):
         extra_cxxflags = _format_flags(extra_cxxflags),
         extra_fflags = _format_flags(extra_fflags),
         extra_ldflags = _format_flags(extra_ldflags),
+        extra_asmflags = _format_flags(extra_asmflags),
     ))
 
 AVAILABLE_GCC_VERSIONS = {
@@ -306,6 +318,10 @@ _FEATURE_ATTRS = {
               " See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.",
         default = [],
     ),
+    "extra_asmflags": attr.string_list(
+        doc = "Extra flags for the assembly preprocessor.",
+        default = [],
+    ),
     "gcc_toolchain_workspace_name": attr.string(
         doc = "The name given to the gcc-toolchain repository, if the default was not used.",
         default = "gcc_toolchain",
@@ -365,7 +381,7 @@ gcc_toolchain = repository_rule(
 
 ATTRS_SHARED_WITH_MODULE_EXTENSION = {
     attr_name: _FEATURE_ATTRS[attr_name]
-    for attr_name in ["gcc_version", "gcc_versions", "extra_cflags", "extra_cxxflags", "extra_ldflags", "extra_fflags"]
+    for attr_name in ["gcc_version", "gcc_versions", "extra_cflags", "extra_cxxflags", "extra_ldflags", "extra_fflags", "extra_asmflags"]
 }
 
 def _render_tool_paths(rctx, path_prefix, binary_prefix):
@@ -479,6 +495,7 @@ def gcc_declare_toolchain(
         extra_cxxflags = kwargs.pop("extra_cxxflags", []),
         extra_fflags = kwargs.pop("extra_fflags", []),
         extra_ldflags = kwargs.pop("extra_ldflags", []),
+        extra_asmflags = kwargs.pop("extra_asmflags", []),
         includes = kwargs.pop("includes", []),
         fincludes = kwargs.pop("fincludes", []),
         target_arch = target_arch,
@@ -565,6 +582,7 @@ cc_toolchain_config(
     extra_cxxflags = {extra_cxxflags},
     extra_fflags = {extra_fflags},
     extra_ldflags = {extra_ldflags},
+    extra_asmflags = {extra_asmflags},
     tool_paths = tool_paths,
 )
 
