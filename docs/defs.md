@@ -9,8 +9,8 @@ This module provides the definitions for registering a GCC toolchain for C and C
 
 <pre>
 gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-binary_prefix">binary_prefix</a>, <a href="#gcc_toolchain-extra_cflags">extra_cflags</a>, <a href="#gcc_toolchain-extra_cxxflags">extra_cxxflags</a>, <a href="#gcc_toolchain-extra_fflags">extra_fflags</a>, <a href="#gcc_toolchain-extra_ldflags">extra_ldflags</a>,
-              <a href="#gcc_toolchain-fincludes">fincludes</a>, <a href="#gcc_toolchain-gcc_toolchain_workspace_name">gcc_toolchain_workspace_name</a>, <a href="#gcc_toolchain-includes">includes</a>, <a href="#gcc_toolchain-repo_mapping">repo_mapping</a>, <a href="#gcc_toolchain-target_arch">target_arch</a>,
-              <a href="#gcc_toolchain-target_compatible_with">target_compatible_with</a>, <a href="#gcc_toolchain-target_settings">target_settings</a>, <a href="#gcc_toolchain-toolchain_files">toolchain_files</a>)
+              <a href="#gcc_toolchain-fincludes">fincludes</a>, <a href="#gcc_toolchain-gcc_toolchain_workspace_name">gcc_toolchain_workspace_name</a>, <a href="#gcc_toolchain-gcc_version">gcc_version</a>, <a href="#gcc_toolchain-includes">includes</a>, <a href="#gcc_toolchain-repo_mapping">repo_mapping</a>,
+              <a href="#gcc_toolchain-target_arch">target_arch</a>, <a href="#gcc_toolchain-target_compatible_with">target_compatible_with</a>, <a href="#gcc_toolchain-target_settings">target_settings</a>)
 </pre>
 
 
@@ -28,12 +28,12 @@ gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-bi
 | <a id="gcc_toolchain-extra_ldflags"></a>extra_ldflags |  Extra flags for linking. %workspace% is rendered to the toolchain root path. See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.   | List of strings | optional | <code>[]</code> |
 | <a id="gcc_toolchain-fincludes"></a>fincludes |  Extra includes for compiling Fortran. %workspace% is rendered to the toolchain root path.   | List of strings | optional | <code>[]</code> |
 | <a id="gcc_toolchain-gcc_toolchain_workspace_name"></a>gcc_toolchain_workspace_name |  The name given to the gcc-toolchain repository, if the default was not used.   | String | optional | <code>"gcc_toolchain"</code> |
+| <a id="gcc_toolchain-gcc_version"></a>gcc_version |  The version of GCC.   | String | optional | <code>"14.2.0"</code> |
 | <a id="gcc_toolchain-includes"></a>includes |  Extra includes for compiling C and C++. %workspace% is rendered to the toolchain root path. See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.   | List of strings | optional | <code>[]</code> |
 | <a id="gcc_toolchain-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.&lt;p&gt;For example, an entry <code>"@foo": "@bar"</code> declares that, for any time this repository depends on <code>@foo</code> (such as a dependency on <code>@foo//some:target</code>, it should actually resolve that dependency within globally-declared <code>@bar</code> (<code>@bar//some:target</code>).   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | required |  |
 | <a id="gcc_toolchain-target_arch"></a>target_arch |  The target architecture this toolchain produces. E.g. x86_64.   | String | required |  |
 | <a id="gcc_toolchain-target_compatible_with"></a>target_compatible_with |  contraint_values passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.   | List of strings | optional | <code>["@platforms//os:linux", "@platforms//cpu:{target_arch}"]</code> |
 | <a id="gcc_toolchain-target_settings"></a>target_settings |  config_settings passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.   | List of strings | optional | <code>[]</code> |
-| <a id="gcc_toolchain-toolchain_files"></a>toolchain_files |  The toolchain files archive.   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
 
 
 <a id="gcc_register_toolchain"></a>

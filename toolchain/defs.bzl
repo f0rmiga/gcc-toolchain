@@ -22,7 +22,10 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
 def _gcc_toolchain_impl(rctx):
-    rctx.extract(archive = rctx.attr.toolchain_files)
+    rctx.download_and_extract(
+        url = VERSIONS[rctx.attr.gcc_version][rctx.attr.target_arch]["url"],
+        sha256 = VERSIONS[rctx.attr.gcc_version][rctx.attr.target_arch]["sha256"],
+    )
 
     absolute_toolchain_root = str(rctx.path("."))
     execroot = paths.normalize(paths.join(absolute_toolchain_root, "..", ".."))
@@ -50,11 +53,12 @@ def _gcc_toolchain_impl(rctx):
 
     c_builtin_includes = [
         include.format(
+            gcc_version = rctx.attr.gcc_version,
             include_prefix = include_prefix,
         )
         for include in [
-            "%workspace%/lib/gcc/{include_prefix}14.2.0/include",
-            "%workspace%/lib/gcc/{include_prefix}14.2.0/include-fixed",
+            "%workspace%/lib/gcc/{include_prefix}{gcc_version}/include",
+            "%workspace%/lib/gcc/{include_prefix}{gcc_version}/include-fixed",
         ] + ([
             "%workspace%/{include_prefix}include",
         ] if target_arch != ARCHS.x86_64 else []) + [
@@ -66,32 +70,35 @@ def _gcc_toolchain_impl(rctx):
     if target_arch == ARCHS.x86_64:
         cxx_builtin_includes.extend([
             include.format(
+                gcc_version = rctx.attr.gcc_version,
                 include_prefix = include_prefix,
             )
             for include in [
-                "%workspace%/include/c++/14.2.0",
-                "%workspace%/include/c++/14.2.0/{include_prefix}",
-                "%workspace%/include/c++/14.2.0/backward",
+                "%workspace%/include/c++/{gcc_version}",
+                "%workspace%/include/c++/{gcc_version}/{include_prefix}",
+                "%workspace%/include/c++/{gcc_version}/backward",
             ]
         ])
     else:
         cxx_builtin_includes.extend([
             include.format(
+                gcc_version = rctx.attr.gcc_version,
                 include_prefix = include_prefix,
             )
             for include in [
-                "%workspace%/{include_prefix}include/c++/14.2.0",
-                "%workspace%/{include_prefix}include/c++/14.2.0/{include_prefix}",
-                "%workspace%/{include_prefix}include/c++/14.2.0/backward",
+                "%workspace%/{include_prefix}include/c++/{gcc_version}",
+                "%workspace%/{include_prefix}include/c++/{gcc_version}/{include_prefix}",
+                "%workspace%/{include_prefix}include/c++/{gcc_version}/backward",
             ]
         ])
 
     f_builtin_includes = [
         include.format(
+            gcc_version = rctx.attr.gcc_version,
             include_prefix = include_prefix,
         )
         for include in [
-            "%workspace%/lib/gcc/{include_prefix}14.2.0/finclude",
+            "%workspace%/lib/gcc/{include_prefix}{gcc_version}/finclude",
         ]
     ]
 
@@ -233,6 +240,10 @@ _FEATURE_ATTRS = {
         doc = "The name given to the gcc-toolchain repository, if the default was not used.",
         default = "gcc_toolchain",
     ),
+    "gcc_version": attr.string(
+        default = "14.2.0",
+        doc = "The version of GCC.",
+    ),
     "includes": attr.string_list(
         doc = "Extra includes for compiling C and C++." +
               " %workspace% is rendered to the toolchain root path." +
@@ -260,11 +271,6 @@ _FEATURE_ATTRS = {
         default = [],
         doc = "config_settings passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.",
         mandatory = False,
-    ),
-    "toolchain_files": attr.label(
-        allow_single_file = True,
-        doc = "The toolchain files archive.",
-        mandatory = True,
     ),
 }
 
@@ -393,24 +399,34 @@ def gcc_register_toolchain(
         includes = kwargs.pop("includes", []),
         fincludes = kwargs.pop("fincludes", []),
         target_arch = target_arch,
-        toolchain_files = _TOOLCHAINS[target_arch],
         **kwargs
     )
 
     native.register_toolchains("@{}//:cc_toolchain".format(name))
     native.register_toolchains("@{}//:fortran_toolchain".format(name))
 
+VERSIONS = {
+    "14.2.0": {
+        "aarch64": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/14.2.0_17%2F08%2F2025/gcc-toolchain-14.2.0-aarch64.tar.xz",
+            "sha256": "30e49f3c542e2d49e8c46c7546e4fa9c15f47c5a88e8391be0c544678065e7d7",
+        },
+        "armv7": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/14.2.0_17%2F08%2F2025/gcc-toolchain-14.2.0-armv7.tar.xz",
+            "sha256": "7b1edb9b81a19c588327607b4adb57b65a9ef68350fe769513a05a93df168023",
+        },
+        "x86_64": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/14.2.0_17%2F08%2F2025/gcc-toolchain-14.2.0-x86_64.tar.xz",
+            "sha256": "fdbd3841a7f25af4f5f7cd24b1757c5040b4a6ac52cdfb5785a83358a7b8e655",
+        },
+    },
+}
+
 ARCHS = struct(
     aarch64 = "aarch64",
     armv7 = "armv7",
     x86_64 = "x86_64",
 )
-
-_TOOLCHAINS = {
-    "aarch64": Label("//sysroot:gcc-toolchain-aarch64.tar.xz"),
-    "armv7": Label("//sysroot:gcc-toolchain-armv7.tar.xz"),
-    "x86_64": Label("//sysroot:gcc-toolchain-x86_64.tar.xz"),
-}
 
 _TOOLCHAIN_BUILD_FILE_CONTENT = """\
 load("@rules_cc//cc:defs.bzl", "cc_toolchain")
