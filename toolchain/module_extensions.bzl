@@ -21,7 +21,7 @@ def _gcc_register_toolchain_module_extension(mctx):
                 extra_fflags = declare.extra_fflags,
             )
 
-    # Since we know that for each gcc toolchain tar we'll generate the same files, we mark the rule as reproducible.
+    # Since we know that for each gcc toolchain repository we'll generate the same files, we mark the rule as reproducible.
     # Docs:
     #  - https://bazel.build/rules/lib/builtins/module_ctx#extension_metadata
     #  - https://bazel.build/external/extension#specify_reproducibility
