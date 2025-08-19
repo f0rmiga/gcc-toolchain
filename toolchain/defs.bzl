@@ -598,7 +598,7 @@ filegroup(
 
         # Fortran includes
         "lib/gcc/{include_prefix}*/finclude/**",
-    ]),
+    ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
@@ -614,6 +614,7 @@ filegroup(
             "**/*.lo",
         ],
         exclude = ["lib*/**/*python*/**"],
+        allow_empty = True,
     ),
     visibility = ["//visibility:public"],
 )
@@ -640,7 +641,7 @@ filegroup(
         # Fortran spec files.
         "**/lib*/libgfortran.spec",
         "**/lib*/libgomp.spec",
-    ]),
+    ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
@@ -739,7 +740,7 @@ filegroup(
     name = "libasan",
     srcs = glob([
         "lib*/libasan.so",
-    ]),
+    ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
@@ -747,7 +748,7 @@ filegroup(
     name = "liblsan",
     srcs = glob([
         "lib*/liblsan.so",
-    ]),
+    ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
@@ -756,7 +757,7 @@ filegroup(
     srcs = glob([
         "lib*/libtsan.so",
         "lib*/lib64/libtsan.so",
-    ]),
+    ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 
@@ -764,7 +765,7 @@ filegroup(
     name = "libubsan",
     srcs = glob([
         "lib*/libubsan.so",
-    ]),
+    ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
 """
