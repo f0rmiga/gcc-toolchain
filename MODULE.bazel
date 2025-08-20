@@ -24,12 +24,12 @@ gcc_toolchains = use_extension("//toolchain:module_extensions.bzl", "gcc_toolcha
         register_toolchains(
             "@gcc_toolchain_{}//:cc_toolchain".format(arch),
             "@gcc_toolchain_{}//:fortran_toolchain".format(arch),
-            # register toolchains as dev dependencies so that we don't pollute the toolchain resolution of consumers.
+            # Register toolchains as dev dependencies so that we don't pollute the toolchain resolution of consumers.
             dev_dependency = True,
         ),
     ]
     # Unfortunately, we can't load `ARCHS` directly here.
-    # But the attributes in `gcc_register_toolchain.register_toolchain` are gated to only contain values from ARCHS
+    # But the attributes in `gcc_toolchains.toolchain` are gated to only contain values from ARCHS.
     for arch in [
         "aarch64",
         "armv7",

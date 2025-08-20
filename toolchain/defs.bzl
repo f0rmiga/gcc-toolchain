@@ -42,7 +42,6 @@ def _gcc_toolchain_impl(rctx):
     def _format_builtins(builtins):
         # In bzlmod, external dependencies have their own canonical subdirectories, so we can't rely on %workspace%.
         # Instead, we want to resolve paths relative to the root of the module where the toolchain is installed.
-        # We might actually want to always resolve to `toolchain_root`, regardless of whether we're on bzlmod
         if is_bzlmod_enabled():
             return [d.replace("%workspace%", toolchain_root) for d in builtins]
         return builtins
