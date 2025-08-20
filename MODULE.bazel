@@ -1,7 +1,4 @@
-module(
-    name = "gcc_toolchain",
-    version = "0.8.0",
-)
+module(name = "gcc_toolchain")
 
 # Dependencies
 # ============
