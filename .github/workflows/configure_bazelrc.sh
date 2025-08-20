@@ -9,3 +9,7 @@ if [ "${BUILDBUDDY_API_KEY:-}" ]; then
   echo "build --remote_cache=grpcs://remote.buildbuddy.io"
   echo "build --remote_header=x-buildbuddy-api-key=$BUILDBUDDY_API_KEY" > "$HOME/.bazelrc"
 fi
+
+# Configure flags for bzlmod
+echo "common:bzlmod --enable_bzlmod" >> "$HOME/.bazelrc"
+echo "common:workspace --noenable_bzlmod" >> "$HOME/.bazelrc"
