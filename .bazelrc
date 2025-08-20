@@ -17,10 +17,6 @@
 
 common --noenable_bzlmod
 
-# Used on CI to test against bzlmod
-common:workspace --noenable_bzlmod
-common:bzlmod --enable_bzlmod
-
 build --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
 build --incompatible_strict_action_env=true
 build --incompatible_enable_cc_toolchain_resolution
