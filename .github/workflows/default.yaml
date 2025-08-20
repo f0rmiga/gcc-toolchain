@@ -34,10 +34,8 @@ jobs:
           repository-cache: true
       - name: Test
         run: |
-          ./.github/workflows/configurebb.sh
-          bazel test --config ci //...
-        env:
-          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
+          bazel test //...
   compilation_modes:
     strategy:
       matrix:
@@ -57,10 +55,8 @@ jobs:
           repository-cache: true
       - name: Test
         run: |
-          ./.github/workflows/configurebb.sh
-          bazel test --config ci --compilation_mode ${{ matrix.compilation_mode }} //...
-        env:
-          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
+          bazel test --compilation_mode ${{ matrix.compilation_mode }} //...
   sanitizers:
     strategy:
       matrix:
@@ -81,10 +77,8 @@ jobs:
           repository-cache: true
       - name: Test ${{ matrix.sanitizer }}
         run: |
-          ./.github/workflows/configurebb.sh
-          bazel test --config ci --config ${{ matrix.sanitizer }} //tests/sanitizers:${{ matrix.sanitizer }}_test
-        env:
-          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
+          bazel test --config ${{ matrix.sanitizer }} //tests/sanitizers:${{ matrix.sanitizer }}_test
   coverage:
     runs-on: ubuntu-22.04
     steps:
@@ -98,10 +92,8 @@ jobs:
           repository-cache: true
       - name: Test Coverage
         run: |
-          ./.github/workflows/configurebb.sh
-          bazel coverage --config ci //examples/hello_world_cpp:hello_world_cpp_test
-        env:
-          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
+          bazel coverage //examples/hello_world_cpp:hello_world_cpp_test
   rbe:
     strategy:
       matrix:
@@ -120,7 +112,5 @@ jobs:
           repository-cache: true
       - name: Test with RBE
         run: |
-          ./.github/workflows/configurebb.sh
-          bazel test --config ci --config rbe //...
-        env:
-          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+          ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
+          bazel test --config rbe //...

@@ -1,7 +1,7 @@
 # Copyright (c) Joby Aviation 2022
 # Original authors: Thulio Ferraz Assis (thulio@aspect.dev), Aspect.dev
 #
-# Copyright (c) Thulio Ferraz Assis 2024
+# Copyright (c) Thulio Ferraz Assis 2024-2025
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,6 +23,11 @@ build --incompatible_enable_cc_toolchain_resolution
 
 test --sandbox_default_allow_network=false
 test --test_output=errors
+
+# Remote cache
+build --remote_download_toplevel
+build --remote_timeout=3600
+build --remote_cache=grpcs://remote.buildbuddy.io
 
 build:debug --verbose_failures --sandbox_debug --toolchain_resolution_debug
 
@@ -46,24 +51,6 @@ build:ubsan --features ubsan
 build:ubsan --strip never
 build:ubsan --action_env UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 
-build:ci --keep_going
-
-# Generic remote cache
-build:ci --remote_download_toplevel
-build:ci --remote_timeout=3600
-build:ci --remote_upload_local_results
-
-# Generic remote build execution
-build:rbe --host_platform=//platforms:x86_64_linux_remote
-build:rbe --extra_execution_platforms=//platforms:x86_64_linux_remote
-build:rbe --cpu k8
-build:rbe --crosstool_top=@gcc_toolchain_x86_64//:_cc_toolchain
-build:rbe --strategy=remote
-build:rbe --genrule_strategy=remote
-build:rbe --spawn_strategy=remote
-build:rbe --jobs=32
-
-# BuildBuddy remote exec
-build:rbe --remote_executor=grpcs://remote.buildbuddy.io
-
 try-import %workspace%/.bazelrc.user
+try-import %workspace%/.bazelrc.rbe
+try-import %workspace%/.bazelrc.ci
