@@ -36,8 +36,8 @@ gcc_toolchains = use_extension("//toolchain:module_extensions.bzl", "gcc_toolcha
 
 # Dev Dependencies (for examples/)
 # ===============================
-bazel_dep(name = "rules_foreign_cc", version = "0.15.0", dev_dependency = True)
 bazel_dep(name = "rules_proto", version = "7.1.0", dev_dependency = True)
+bazel_dep(name = "rules_foreign_cc", version = "0.15.0", dev_dependency = True)
 bazel_dep(name = "protobuf", version = "29.3", dev_dependency = True, repo_name = "com_google_protobuf")
 single_version_override(
     module_name = "protobuf",
@@ -48,73 +48,10 @@ single_version_override(
     version = "29.3",
 )
 
-http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-    name = "avl",
-    build_file = "//:examples/avl/avl.BUILD.bazel",
-    sha256 = "6d62e563578b79795a84958cfe4e221a4c9847fbeb4a821d45bc049934fc6a90",
-    strip_prefix = "Avl",
-    url = "https://web.mit.edu/drela/Public/web/avl/avl3.40b.tgz",
-)
-
-_ALL_SRCS = """\
-filegroup(
-    name = "srcs",
-    srcs = glob(
-        include = ["**"],
-        exclude = ["**/* *"],
-    ),
-    visibility = ["//visibility:public"],
-)
-"""
-
-_LAPAK_PATCH = """\
-cat > make.inc <<EOF
-####################################################################
-#  LAPACK make include file.                                       #
-####################################################################
-
-SHELL = $0
-
-CC ?=
-
-FC ?=
-FFLAGS ?=
-FFLAGS_DRV ?=
-FFLAGS_NOOPT ?=
-
-LDFLAGS ?=
-
-AR ?=
-ARFLAGS = cr
-RANLIB = echo
-
-BLASLIB ?=
-CBLASLIB ?=
-LAPACKLIB ?=
-TMGLIB ?=
-LAPACKELIB ?=
-
-DOCSDIR ?=
-
-TIMER ?=
-EOF
-"""
-
-http_archive(
-    name = "lapack",
-    build_file_content = _ALL_SRCS,
-    patch_cmds = [_LAPAK_PATCH],
-    sha256 = "eac9570f8e0ad6f30ce4b963f4f033f0f643e7c3912fc9ee6cd99120675ad48b",
-    strip_prefix = "lapack-3.12.0",
-    url = "https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.12.0.tar.gz",
-)
-
-http_archive(
-    name = "openssl",
-    build_file_content = _ALL_SRCS,
-    sha256 = "40dceb51a4f6a5275bde0e6bf20ef4b91bfc32ed57c0552e2e8e15463372b17a",
-    strip_prefix = "openssl-1.1.1n",
-    url = "https://www.openssl.org/source/openssl-1.1.1n.tar.gz",
+non_bazel_dependencies = use_extension("//:internal.bzl", "non_bazel_dependencies")
+use_repo(
+    non_bazel_dependencies,
+    "avl",
+    "lapack",
+    "openssl",
 )
