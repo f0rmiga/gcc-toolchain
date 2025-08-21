@@ -37,6 +37,30 @@ gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-bi
 | <a id="gcc_toolchain-target_settings"></a>target_settings |  config_settings passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.   | List of strings | optional | <code>[]</code> |
 
 
+<a id="gcc_declare_toolchain"></a>
+
+## gcc_declare_toolchain
+
+<pre>
+gcc_declare_toolchain(<a href="#gcc_declare_toolchain-name">name</a>, <a href="#gcc_declare_toolchain-target_arch">target_arch</a>, <a href="#gcc_declare_toolchain-kwargs">kwargs</a>)
+</pre>
+
+Declares a `gcc_toolchain`.
+
+You should use `gcc_register_toolchain` unless you need to register toolchains manually,
+e.g. if you are consuming this repository as a Bzlmod dependency.
+
+
+**PARAMETERS**
+
+
+| Name  | Description | Default Value |
+| :------------- | :------------- | :------------- |
+| <a id="gcc_declare_toolchain-name"></a>name |  The name passed to <code>gcc_toolchain</code>.   |  none |
+| <a id="gcc_declare_toolchain-target_arch"></a>target_arch |  The target architecture of the toolchain.   |  none |
+| <a id="gcc_declare_toolchain-kwargs"></a>kwargs |  The extra arguments passed to <code>gcc_toolchain</code>. See <code>gcc_toolchain</code> for more info.   |  none |
+
+
 <a id="gcc_register_toolchain"></a>
 
 ## gcc_register_toolchain

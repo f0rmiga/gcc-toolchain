@@ -18,8 +18,35 @@
 """Internal dependencies the users don't need."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 load("//examples/lapack:patches.bzl", "LAPACK_PATCHES")
+
+def _openssl():
+    http_archive(
+        name = "openssl",
+        build_file_content = _ALL_SRCS,
+        sha256 = "40dceb51a4f6a5275bde0e6bf20ef4b91bfc32ed57c0552e2e8e15463372b17a",
+        strip_prefix = "openssl-1.1.1n",
+        url = "https://www.openssl.org/source/openssl-1.1.1n.tar.gz",
+    )
+
+def _lapack():
+    http_archive(
+        name = "lapack",
+        build_file_content = _ALL_SRCS,
+        patch_cmds = LAPACK_PATCHES,
+        sha256 = "eac9570f8e0ad6f30ce4b963f4f033f0f643e7c3912fc9ee6cd99120675ad48b",
+        strip_prefix = "lapack-3.12.0",
+        url = "https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.12.0.tar.gz",
+    )
+
+def _avl():
+    http_archive(
+        name = "avl",
+        build_file = "@//:examples/avl/avl.BUILD.bazel",
+        sha256 = "6d62e563578b79795a84958cfe4e221a4c9847fbeb4a821d45bc049934fc6a90",
+        strip_prefix = "Avl",
+        url = "https://web.mit.edu/drela/Public/web/avl/avl3.40b.tgz",
+    )
 
 # buildifier: disable=function-docstring
 def internal_dependencies():
@@ -53,30 +80,8 @@ def internal_dependencies():
         url = "https://github.com/bazel-contrib/rules_python/releases/download/1.4.1/rules_python-1.4.1.tar.gz",
     )
 
-    http_archive(
-        name = "openssl",
-        build_file_content = _ALL_SRCS,
-        sha256 = "40dceb51a4f6a5275bde0e6bf20ef4b91bfc32ed57c0552e2e8e15463372b17a",
-        strip_prefix = "openssl-1.1.1n",
-        url = "https://www.openssl.org/source/openssl-1.1.1n.tar.gz",
-    )
-
-    http_archive(
-        name = "lapack",
-        build_file_content = _ALL_SRCS,
-        patch_cmds = LAPACK_PATCHES,
-        sha256 = "eac9570f8e0ad6f30ce4b963f4f033f0f643e7c3912fc9ee6cd99120675ad48b",
-        strip_prefix = "lapack-3.12.0",
-        url = "https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.12.0.tar.gz",
-    )
-
-    http_archive(
-        name = "avl",
-        build_file = "@//:examples/avl/avl.BUILD.bazel",
-        sha256 = "6d62e563578b79795a84958cfe4e221a4c9847fbeb4a821d45bc049934fc6a90",
-        strip_prefix = "Avl",
-        url = "https://web.mit.edu/drela/Public/web/avl/avl3.40b.tgz",
-    )
+    _openssl()
+    _lapack()
 
     http_archive(
         name = "com_google_protobuf",
@@ -86,6 +91,8 @@ def internal_dependencies():
         strip_prefix = "protobuf-29.3",
         url = "https://github.com/protocolbuffers/protobuf/releases/download/v29.3/protobuf-29.3.tar.gz",
     )
+
+    _avl()
 
     http_archive(
         name = "rules_pkg",
@@ -103,3 +110,12 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 """
+
+def _non_bazel_dependencies_ext_impl(mctx):
+    _openssl()
+    _lapack()
+    _avl()
+
+non_bazel_dependencies = module_extension(
+    implementation = _non_bazel_dependencies_ext_impl,
+)

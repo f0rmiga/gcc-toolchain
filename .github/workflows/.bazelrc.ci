@@ -16,3 +16,6 @@
 
 common --keep_going
 common --remote_upload_local_results
+
+common:bzlmod --enable_bzlmod
+common:workspace --noenable_bzlmod

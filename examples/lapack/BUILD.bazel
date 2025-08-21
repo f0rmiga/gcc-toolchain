@@ -16,6 +16,7 @@
 # limitations under the License.
 
 load("@rules_foreign_cc//foreign_cc:make.bzl", "make")
+load(":patches.bzl", "lapack_repo_name")
 
 _libs = [
     "liblapack.a",
@@ -43,7 +44,10 @@ make(
     lib_source = "@lapack//:srcs",
     out_static_libs = _libs,
     postfix_script = "\n".join([
-        "mv $$EXT_BUILD_ROOT/external/lapack/{0} $$INSTALLDIR/lib/{0}".format(lib)
+        "mv $$EXT_BUILD_ROOT/external/{0}/{1} $$INSTALLDIR/lib/{1}".format(
+            lapack_repo_name,
+            lib,
+        )
         for lib in _libs
     ]),
     targets = [

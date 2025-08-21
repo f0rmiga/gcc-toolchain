@@ -18,6 +18,7 @@
 """This module provides the definitions for registering a GCC toolchain for C and C++.
 """
 
+load("@aspect_bazel_lib//lib:utils.bzl", "is_bzlmod_enabled")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
@@ -37,6 +38,13 @@ def _gcc_toolchain_impl(rctx):
             flag.replace("%workspace%", toolchain_root)
             for flag in flags
         ]
+
+    def _format_builtins(builtins):
+        # In bzlmod, external dependencies have their own canonical subdirectories, so we can't rely on %workspace%.
+        # Instead, we want to resolve paths relative to the root of the module where the toolchain is installed.
+        if is_bzlmod_enabled():
+            return [d.replace("%workspace%", toolchain_root) for d in builtins]
+        return builtins
 
     target_arch = rctx.attr.target_arch
 
@@ -205,7 +213,7 @@ def _gcc_toolchain_impl(rctx):
         include_prefix = include_prefix,
 
         # Includes
-        cxx_builtin_include_directories = builtin_include_directories,
+        cxx_builtin_include_directories = _format_builtins(builtin_include_directories),
 
         # Flags
         extra_cflags = _format_flags(extra_cflags),
@@ -213,6 +221,67 @@ def _gcc_toolchain_impl(rctx):
         extra_fflags = _format_flags(extra_fflags),
         extra_ldflags = _format_flags(extra_ldflags),
     ))
+
+AVAILABLE_GCC_VERSIONS = {
+    "12.5.0": {
+        "aarch64": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-aarch64.tar.xz",
+            "sha256": "7b0e25133a98d44b648a925ba11f64a3adc470e87668af80ce2c3af389ebe9be",
+        },
+        "armv7": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-armv7.tar.xz",
+            "sha256": "a0ef76c8cc517b3d76dd2f09b1a371975b2ff1082e2f9372ed79af01b9292934",
+        },
+        "x86_64": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-x86_64.tar.xz",
+            "sha256": "51076e175839b434bb2dc0006c0096916df585e8c44666d35b0e3ce821d535db",
+        },
+    },
+    "13.4.0": {
+        "aarch64": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-aarch64.tar.xz",
+            "sha256": "770cf6bf62bdf78763de526d3a9f5cae4c19f1a3aca0ef8f18b05f1a46d1ffaf",
+        },
+        "armv7": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-armv7.tar.xz",
+            "sha256": "1b2739b5003c5a3f0ab7c4cc7fb95cc99c0e933982512de7255c2bd9ced757ad",
+        },
+        "x86_64": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-x86_64.tar.xz",
+            "sha256": "d96071c1b98499afd7b7b56ebd69ad414020edf66e982004acffe7df8aaf7e02",
+        },
+    },
+    "14.3.0": {
+        "aarch64": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-14.3.0-aarch64.tar.xz",
+            "sha256": "74b1f0072769f8865b62897ab962f6fce174115dab2e6596765bb4e700ffe0d1",
+        },
+        "armv7": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-14.3.0-armv7.tar.xz",
+            "sha256": "0c20a130f424ce83dd4eb2a4ec8fbcd0c0ddc5f42f0b4660bcd0108cb8c0fb21",
+        },
+        "x86_64": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-14.3.0-x86_64.tar.xz",
+            "sha256": "0b365e5da451f5c7adc594f967885d7181ff6d187d6089a4bcf36f954bf3ccf9",
+        },
+    },
+    "15.2.0": {
+        "aarch64": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-15.2.0-aarch64.tar.xz",
+            "sha256": "e1ae45038d350b297bea4ac10f095a98e2218971a8a37b8ab95f3faad2ec69f8",
+        },
+        "armv7": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-15.2.0-armv7.tar.xz",
+            "sha256": "fda64b3ee1c3d7ddcb28378a1b131eadc5d3e3ff1cfab2aab71da7a3f899b601",
+        },
+        "x86_64": {
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-15.2.0-x86_64.tar.xz",
+            "sha256": "50dd28021365e7443853d5e77bc94ab1d1c947ad48fd91cbec44dbdfa61412c9",
+        },
+    },
+}
+
+DEFAULT_GCC_VERSION = "14.3.0"
 
 _FEATURE_ATTRS = {
     "binary_prefix": attr.string(
@@ -242,68 +311,11 @@ _FEATURE_ATTRS = {
         default = "gcc_toolchain",
     ),
     "gcc_version": attr.string(
-        default = "14.3.0",
+        default = DEFAULT_GCC_VERSION,
         doc = "The version of GCC.",
     ),
     "gcc_versions": attr.string(
-        default = json.encode({
-            "12.5.0": {
-                "aarch64": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-aarch64.tar.xz",
-                    "sha256": "7b0e25133a98d44b648a925ba11f64a3adc470e87668af80ce2c3af389ebe9be",
-                },
-                "armv7": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-armv7.tar.xz",
-                    "sha256": "a0ef76c8cc517b3d76dd2f09b1a371975b2ff1082e2f9372ed79af01b9292934",
-                },
-                "x86_64": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-x86_64.tar.xz",
-                    "sha256": "51076e175839b434bb2dc0006c0096916df585e8c44666d35b0e3ce821d535db",
-                },
-            },
-            "13.4.0": {
-                "aarch64": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-aarch64.tar.xz",
-                    "sha256": "770cf6bf62bdf78763de526d3a9f5cae4c19f1a3aca0ef8f18b05f1a46d1ffaf",
-                },
-                "armv7": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-armv7.tar.xz",
-                    "sha256": "1b2739b5003c5a3f0ab7c4cc7fb95cc99c0e933982512de7255c2bd9ced757ad",
-                },
-                "x86_64": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-x86_64.tar.xz",
-                    "sha256": "d96071c1b98499afd7b7b56ebd69ad414020edf66e982004acffe7df8aaf7e02",
-                },
-            },
-            "14.3.0": {
-                "aarch64": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-14.3.0-aarch64.tar.xz",
-                    "sha256": "74b1f0072769f8865b62897ab962f6fce174115dab2e6596765bb4e700ffe0d1",
-                },
-                "armv7": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-14.3.0-armv7.tar.xz",
-                    "sha256": "0c20a130f424ce83dd4eb2a4ec8fbcd0c0ddc5f42f0b4660bcd0108cb8c0fb21",
-                },
-                "x86_64": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-14.3.0-x86_64.tar.xz",
-                    "sha256": "0b365e5da451f5c7adc594f967885d7181ff6d187d6089a4bcf36f954bf3ccf9",
-                },
-            },
-            "15.2.0": {
-                "aarch64": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-15.2.0-aarch64.tar.xz",
-                    "sha256": "e1ae45038d350b297bea4ac10f095a98e2218971a8a37b8ab95f3faad2ec69f8",
-                },
-                "armv7": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-15.2.0-armv7.tar.xz",
-                    "sha256": "fda64b3ee1c3d7ddcb28378a1b131eadc5d3e3ff1cfab2aab71da7a3f899b601",
-                },
-                "x86_64": {
-                    "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-15.2.0-x86_64.tar.xz",
-                    "sha256": "50dd28021365e7443853d5e77bc94ab1d1c947ad48fd91cbec44dbdfa61412c9",
-                },
-            },
-        }),
+        default = json.encode(AVAILABLE_GCC_VERSIONS),
         doc = "A JSON dictionary of GCC versions to their download URLs and SHA256 hashes." +
               " The structure is {<gcc_version>: {<target_arch>: {url: <url>, sha256: <sha256>}}}.",
     ),
@@ -350,6 +362,11 @@ gcc_toolchain = repository_rule(
         _PRIVATE_ATTRS,
     ),
 )
+
+ATTRS_SHARED_WITH_MODULE_EXTENSION = {
+    attr_name: _FEATURE_ATTRS[attr_name]
+    for attr_name in ["gcc_version", "gcc_versions", "extra_cflags", "extra_cxxflags", "extra_ldflags", "extra_fflags"]
+}
 
 def _render_tool_paths(rctx, path_prefix, binary_prefix):
     relative_tool_paths = {
@@ -430,11 +447,14 @@ def _render_tool_paths(rctx, path_prefix, binary_prefix):
         tool_paths[name] = wrapped_tool_path
     return tool_paths
 
-def gcc_register_toolchain(
+def gcc_declare_toolchain(
         name,
         target_arch,
         **kwargs):
-    """Declares a `gcc_toolchain` and calls `register_toolchain` for it.
+    """Declares a `gcc_toolchain`.
+
+    You should use `gcc_register_toolchain` unless you need to register toolchains manually,
+    e.g. if you are consuming this repository as a Bzlmod dependency.
 
     Args:
         name: The name passed to `gcc_toolchain`.
@@ -465,6 +485,18 @@ def gcc_register_toolchain(
         **kwargs
     )
 
+def gcc_register_toolchain(
+        name,
+        target_arch,
+        **kwargs):
+    """Declares a `gcc_toolchain` and calls `register_toolchain` for it.
+
+    Args:
+        name: The name passed to `gcc_toolchain`.
+        target_arch: The target architecture of the toolchain.
+        **kwargs: The extra arguments passed to `gcc_toolchain`. See `gcc_toolchain` for more info.
+    """
+    gcc_declare_toolchain(name, target_arch, **kwargs)
     native.register_toolchains("@{}//:cc_toolchain".format(name))
     native.register_toolchains("@{}//:fortran_toolchain".format(name))
 
