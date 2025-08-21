@@ -1,0 +1,31 @@
+bazel_dep(name = "bazel_skylib", version = "1.8.1")
+bazel_dep(name = "aspect_bazel_lib", version = "1.40.2")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.2.0")
+bazel_dep(name = "gcc_toolchain")
+local_path_override(
+    module_name = "gcc_toolchain",
+    path = "../../",
+)
+
+gcc_toolchains = use_extension("@gcc_toolchain//toolchain:module_extensions.bzl", "gcc_toolchains", dev_dependency = True)
+
+[
+    [
+        gcc_toolchains.toolchain(
+            name = "gcc_toolchain_{}".format(arch),
+            target_arch = arch,
+        ),
+        use_repo(gcc_toolchains, "gcc_toolchain_{}".format(arch)),
+        register_toolchains(
+            "@gcc_toolchain_{}//:cc_toolchain".format(arch),
+            "@gcc_toolchain_{}//:fortran_toolchain".format(arch),
+            dev_dependency = True,
+        ),
+    ]
+    for arch in [
+        "aarch64",
+        "armv7",
+        "x86_64",
+    ]
+]
