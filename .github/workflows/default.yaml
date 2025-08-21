@@ -89,6 +89,11 @@ jobs:
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
           bazel test --config ${{ matrix.sanitizer }} --config ${{ matrix.bzlmod_config }} //tests/sanitizers:${{ matrix.sanitizer }}_test
   coverage:
+    strategy:
+      matrix:
+        bzlmod_config:
+          - bzlmod
+          - workspace
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -102,7 +107,7 @@ jobs:
       - name: Test Coverage
         run: |
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
-          bazel coverage //examples/hello_world_cpp:hello_world_cpp_test
+          bazel coverage --config ${{ matrix.bzlmod_config }} //examples/hello_world_cpp:hello_world_cpp_test
   rbe:
     strategy:
       matrix:
