@@ -1,0 +1,4 @@
+# Bzlmod example
+
+This is an e2e test that will be run when we publish to the BCR, via `.bcr/presubmit.yaml`.
+It also doubles as release documentation, in `.github/workflows/release_prep.sh`

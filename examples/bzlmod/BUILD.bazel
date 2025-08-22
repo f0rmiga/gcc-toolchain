@@ -1,0 +1,28 @@
+load("@aspect_bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+
+build_test(
+    name = "hello_world_c_build_test",
+    targets = [
+        ":hello_world_c",
+        ":hello_world_c_linux_aarch64",
+        ":hello_world_c_linux_armv7",
+    ],
+)
+
+cc_binary(
+    name = "hello_world_c",
+    srcs = ["main.c"],
+)
+
+platform_transition_filegroup(
+    name = "hello_world_c_linux_aarch64",
+    srcs = [":hello_world_c"],
+    target_platform = "@gcc_toolchain//platforms:aarch64_linux",
+)
+
+platform_transition_filegroup(
+    name = "hello_world_c_linux_armv7",
+    srcs = [":hello_world_c"],
+    target_platform = "@gcc_toolchain//platforms:armv7_linux",
+)
