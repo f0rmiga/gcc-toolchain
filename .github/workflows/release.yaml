@@ -1,11 +1,9 @@
-# Create a new release on a pushed tag
-# Mostly taken from https://github.com/bazel-contrib/rules-template/blob/main/.github/workflows/release.yaml
+# Based on https://github.com/bazel-contrib/rules-template/blob/main/.github/workflows/release.yaml.
 name: Release
 on:
-  # For now, only trigger when pushing a new tag, or manually from the GitHub UI.
   push:
     tags:
-      - "v*.*.*"
+      - "*.*.*"
   workflow_dispatch:
     inputs:
       tag_name:

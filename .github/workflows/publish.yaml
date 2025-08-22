@@ -1,9 +1,7 @@
-# Publish new releases to Bazel Central Registry.
-# Mostly taken from https://github.com/bazel-contrib/rules-template/blob/main/.github/workflows/publish.yaml
+# Publish new releases to Bazel Central Registry (BCR).
+# Based on https://github.com/bazel-contrib/rules-template/blob/main/.github/workflows/publish.yaml.
 name: Publish to BCR
 on:
-  # Run the publish workflow after a successful release
-  # Will be triggered from the release.yaml workflow
   workflow_call:
     inputs:
       tag_name:
@@ -12,7 +10,6 @@ on:
     secrets:
       publish_token:
         required: true
-  # Or we can run it manually through the GH UI
   workflow_dispatch:
     inputs:
       tag_name:
@@ -25,11 +22,11 @@ jobs:
     with:
       tag_name: ${{ inputs.tag_name }}
       # GitHub repository which is a fork of the upstream where the Pull Request will be opened.
-      registry_fork: blorente/bazel-central-registry
+      registry_fork: f0rmiga/bazel-central-registry
     permissions:
       attestations: write
       contents: write
       id-token: write
     secrets:
-      # Necessary to push to the BCR fork, and to open a pull request against a registry
+      # Necessary to push to the BCR fork, and to open a pull request against a registry.
       publish_token: ${{ secrets.publish_token || secrets.BCR_PUBLISH_TOKEN }}

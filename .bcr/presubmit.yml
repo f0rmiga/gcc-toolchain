@@ -1,5 +1,3 @@
-# This is a smoke test that will be run when we publish to the BCR.
-# Reference: https://github.com/bazelbuild/bazel-central-registry/blob/main/docs/README.md#test-module
 bcr_test_module:
   module_path: examples/bzlmod
   matrix:
