@@ -1,0 +1,26 @@
+# Based on https://github.com/bazel-contrib/rules-template/blob/main/.github/workflows/release.yaml.
+name: Release
+on:
+  push:
+    tags:
+      - "*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: git tag to release. The tag must exist.
+        required: true
+        type: string
+jobs:
+  release:
+    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.2.2
+    with:
+      release_files: gcc-toolchain-*.tar.gz
+      prerelease: true
+      tag_name: ${{ inputs.tag_name || github.ref_name }}
+  publish:
+    needs: release
+    uses: ./.github/workflows/publish.yaml
+    with:
+      tag_name: ${{ inputs.tag_name || github.ref_name }}
+    secrets:
+      publish_token: ${{ secrets.publish_token || secrets.BCR_PUBLISH_TOKEN }}

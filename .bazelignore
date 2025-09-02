@@ -1,0 +1,6 @@
+# This is an e2e example of how to use the toolchain with bzlmod,
+# it should be ignored in all contexts besides releasing a new version to bzlmod.
+# This is used in `.bcr/presubmit.yaml`.
+#
+# Reference: https://github.com/bazelbuild/bazel-central-registry/blob/main/docs/README.md#test-module
+examples/bzlmod
