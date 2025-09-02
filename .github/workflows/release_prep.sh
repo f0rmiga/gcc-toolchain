@@ -11,7 +11,7 @@ readonly TAG=$1
 # The prefix is chosen to match what GitHub generates for source archives.
 # This guarantees that users can easily switch from a released artifact to a source archive
 # with minimal differences in their code (e.g. strip_prefix remains the same).
-PREFIX="gcc-toolchain-${TAG}"
+readonly PREFIX="gcc-toolchain-${TAG}"
 ARCHIVE="gcc-toolchain-${TAG}.tar.gz"
 
 # NB: configuration for 'git archive' is in /.gitattributes
