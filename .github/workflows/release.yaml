@@ -18,6 +18,8 @@ jobs:
       prerelease: true
       tag_name: ${{ inputs.tag_name || github.ref_name }}
     permissions:
+      attestations: write
+      contents: write
       id-token: write
   publish:
     needs: release
