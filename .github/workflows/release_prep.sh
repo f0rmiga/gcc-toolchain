@@ -17,6 +17,7 @@ readonly ARCHIVE="gcc-toolchain-${TAG}.tar.gz"
 # NB: configuration for 'git archive' is in /.gitattributes
 git archive --format=tar --prefix="${PREFIX}/" "${TAG}" | gzip > "${ARCHIVE}"
 SHA=$(shasum -a 256 "${ARCHIVE}" | awk '{print $1}')
+readonly SHA
 
 cat <<EOF
 Please refer to the [README](/README.md) for usage instructions, and to [examples/](/examples) for usage examples.
