@@ -389,59 +389,6 @@ def _get_compiler(fortran_toolchain, feature_configuration, fopts = []):
     )
     return (compiler, compile_flags)
 
-def _link(
-        actions,
-        deps,
-        feature_configuration,
-        fortran_toolchain,
-        linkopts,
-        linkshared,
-        linkstatic,
-        objects,
-        output_name):
-    (linker, link_flags) = _get_linker(fortran_toolchain, feature_configuration, linkopts)
-    shared_objects = []
-    archives = []
-    for dep in deps:
-        if CcInfo in dep:
-            for linker_input in dep[CcInfo].linking_context.linker_inputs.to_list():
-                for library in linker_input.libraries:
-                    if library.static_library:
-                        archives.append(library.static_library)
-                    elif library.dynamic_library:
-                        shared_objects.append(library.dynamic_library)
-        if linkstatic and hasattr(dep.output_groups, "archive"):
-            archives.append(dep.output_groups.archive.to_list()[0])
-        elif not linkstatic and hasattr(dep.output_groups, "dynamic_library"):
-            shared_objects.append(dep.output_groups.dynamic_library.to_list()[0])
-    search_libraries_flags = [
-        "-L{}".format(paths.dirname(shared_object.path))
-        for shared_object in shared_objects
-    ]
-    link_libraries_flags = [
-        "-l:{}".format(paths.basename(shared_object.short_path))
-        for shared_object in shared_objects
-    ]
-    output = actions.declare_file(output_name + (".so" if linkshared else ""))
-    args = actions.args()
-    if linkshared:
-        args.add("-shared")
-    args.add_all(link_flags)
-    args.add_all(linkopts)
-    args.add_all(search_libraries_flags)
-    args.add_all(link_libraries_flags)
-    args.add_all(objects)
-    args.add_all(archives)
-    args.add("-o", output)
-    actions.run(
-        arguments = [args],
-        executable = linker,
-        inputs = depset(objects + shared_objects + archives),
-        outputs = [output],
-        tools = fortran_toolchain.all_files,
-    )
-    return output
-
 def _get_linker(fortran_toolchain, feature_configuration, linkopts = []):
     link_variables = cc_common.create_link_variables(
         cc_toolchain = fortran_toolchain,
@@ -458,30 +405,6 @@ def _get_linker(fortran_toolchain, feature_configuration, linkopts = []):
         feature_configuration = feature_configuration,
     )
     return (linker, link_flags)
-
-def _archive(
-        actions,
-        feature_configuration,
-        fortran_toolchain,
-        objects,
-        output_name):
-    archiver = cc_common.get_tool_for_action(
-        action_name = ACTION_NAMES.fortran_archive,
-        feature_configuration = feature_configuration,
-    )
-    output = actions.declare_file("lib{}.a".format(output_name))
-    args = actions.args()
-    args.add("-crs")
-    args.add(output)
-    args.add_all(objects)
-    actions.run(
-        arguments = [args],
-        executable = archiver,
-        inputs = depset(objects),
-        outputs = [output],
-        tools = fortran_toolchain.all_files,
-    )
-    return output
 
 def _current_fortran_toolchain_impl(ctx):
     (fortran_toolchain, feature_configuration) = _get_configuration(ctx)
