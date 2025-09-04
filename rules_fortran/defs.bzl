@@ -122,13 +122,19 @@ def _fortran_binary_impl(ctx):
     args.add_all(compilation_outputs.objects)
     args.add_all(link_flags)
     args.add_all(ctx.attr.linkopts)
+    def pick_library(library):
+        if library.pic_static_library:
+            return library.pic_static_library
+        if library.static_library:
+            return library.static_library
+        return library.dynamic_library
     deps_files = [
-        library.static_library if library.static_library else library.dynamic_library
+        pick_library(library)
         for dep in ctx.attr.deps
         if CcInfo in dep
         for linker_input in dep[CcInfo].linking_context.linker_inputs.to_list()
         for library in linker_input.libraries
-        if library.static_library or library.dynamic_library
+        if library.static_library or library.pic_static_library or library.dynamic_library
     ]
     args.add_all([
         "-L{}".format(dep_file.dirname)
