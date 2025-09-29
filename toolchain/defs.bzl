@@ -18,12 +18,12 @@
 """This module provides the definitions for registering a GCC toolchain for C and C++.
 """
 
-load("@aspect_bazel_lib//lib:utils.bzl", "is_bzlmod_enabled")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 
 def _gcc_toolchain_impl(rctx):
     versions = json.decode(rctx.attr.gcc_versions)
+    is_bzlmod_module = rctx.attr.private_is_bzlmod_module
     rctx.download_and_extract(
         url = versions[rctx.attr.gcc_version][rctx.attr.target_arch]["url"],
         sha256 = versions[rctx.attr.gcc_version][rctx.attr.target_arch]["sha256"],
@@ -42,7 +42,7 @@ def _gcc_toolchain_impl(rctx):
     def _format_builtins(builtins):
         # In bzlmod, external dependencies have their own canonical subdirectories, so we can't rely on %workspace%.
         # Instead, we want to resolve paths relative to the root of the module where the toolchain is installed.
-        if is_bzlmod_enabled():
+        if is_bzlmod_module:
             return [d.replace("%workspace%", toolchain_root) for d in builtins]
         return builtins
 
@@ -368,6 +368,10 @@ _FEATURE_ATTRS = {
 _PRIVATE_ATTRS = {
     "_wrapper_sh_template": attr.label(
         default = Label("//toolchain:wrapper.sh.tpl"),
+    ),
+    "private_is_bzlmod_module": attr.bool(
+        default = False,
+        doc = "Whether this repository rule is instantiate in a Bzlmod module. This is a workaround for https://github.com/bazel-contrib/bazel-lib/issues/1183, please don't use it directly.",
     ),
 }
 
