@@ -101,15 +101,16 @@ def _gcc_toolchain_impl(rctx):
             ]
         ])
 
-    f_builtin_includes = [
-        include.format(
-            gcc_version = rctx.attr.gcc_version,
-            include_prefix = include_prefix,
-        )
-        for include in [
-            "%workspace%/lib/gcc/{include_prefix}{gcc_version}/finclude",
+    if rctx.attr.is_fortran_enabled:
+        f_builtin_includes = [
+            include.format(
+                gcc_version = rctx.attr.gcc_version,
+                include_prefix = include_prefix,
+            )
+            for include in [
+                "%workspace%/lib/gcc/{include_prefix}{gcc_version}/finclude",
+            ]
         ]
-    ]
 
     target_compatible_with = [
         v.format(target_arch = target_arch)
@@ -124,7 +125,8 @@ def _gcc_toolchain_impl(rctx):
     builtin_include_directories = []
     builtin_include_directories.extend(c_builtin_includes)
     builtin_include_directories.extend(cxx_builtin_includes)
-    builtin_include_directories.extend(f_builtin_includes)
+    if rctx.attr.is_fortran_enabled:
+        builtin_include_directories.extend(f_builtin_includes)
     builtin_include_directories.extend(rctx.attr.includes)
     builtin_include_directories.extend(rctx.attr.fincludes)
 
@@ -163,24 +165,21 @@ def _gcc_toolchain_impl(rctx):
     ])
     extra_cxxflags.extend(rctx.attr.extra_cxxflags)
 
-    extra_fflags = [
-        "-nostdinc",
-        "-B%workspace%/bin",
-        "-B%workspace%/xbin",
-    ]
-    extra_fflags.extend([
-        "-I{}".format(include)
-        for include in f_builtin_includes
-    ])
-    extra_fflags.extend([
-        "-I{}".format(include)
-        for include in c_builtin_includes
-    ])
-    extra_fflags.extend([
-        "-I{}".format(finclude)
-        for finclude in rctx.attr.fincludes
-    ])
-    extra_fflags.extend(rctx.attr.extra_fflags)
+    if rctx.attr.is_fortran_enabled:
+        extra_fflags = [
+            "-nostdinc",
+            "-B%workspace%/bin",
+            "-B%workspace%/xbin",
+        ]
+        extra_fflags.extend([
+            "-I{}".format(include)
+            for include in f_builtin_includes
+        ])
+        extra_fflags.extend([
+            "-I{}".format(finclude)
+            for finclude in rctx.attr.fincludes
+        ])
+        extra_fflags.extend(rctx.attr.extra_fflags)
 
     extra_ldflags = [
         lib.format(
@@ -229,7 +228,7 @@ def _gcc_toolchain_impl(rctx):
         # Flags
         extra_cflags = _format_flags(extra_cflags),
         extra_cxxflags = _format_flags(extra_cxxflags),
-        extra_fflags = _format_flags(extra_fflags),
+        extra_fflags = _format_flags(extra_fflags) if rctx.attr.is_fortran_enabled else [],
         extra_ldflags = _format_flags(extra_ldflags),
         extra_asmflags = _format_flags(extra_asmflags),
     ))
@@ -299,6 +298,10 @@ _FEATURE_ATTRS = {
     "binary_prefix": attr.string(
         doc = "An explicit prefix used by each binary in bin/.",
         mandatory = True,
+    ),
+    "is_fortran_enabled": attr.bool(
+        doc = "Whether to enable Fortran toolchain configuration.",
+        default = True,
     ),
     "extra_cflags": attr.string_list(
         doc = "Extra flags for compiling C.",
@@ -410,10 +413,6 @@ def _render_tool_paths(rctx, path_prefix, binary_prefix):
             path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "gfortran": "{path_prefix}/bin/{binary_prefix}gfortran".format(
-            path_prefix = path_prefix,
-            binary_prefix = binary_prefix,
-        ),
         "ld": "{path_prefix}/bin/{binary_prefix}ld".format(
             path_prefix = path_prefix,
             binary_prefix = binary_prefix,
@@ -435,6 +434,12 @@ def _render_tool_paths(rctx, path_prefix, binary_prefix):
             binary_prefix = binary_prefix,
         ),
     }
+
+    if is_fortran_enabled:
+        relative_tool_paths["gfortran"] = "{path_prefix}/bin/{binary_prefix}gfortran".format(
+            path_prefix = path_prefix,
+            binary_prefix = binary_prefix,
+        )
 
     path_env = ":".join([
         path.format(
