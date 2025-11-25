@@ -119,6 +119,7 @@ def _gcc_toolchain_impl(rctx):
         v.format(target_arch = target_arch)
         for v in rctx.attr.target_compatible_with
     ]
+    target_compatible_with.extend([str(c) for c in rctx.attr.extra_target_compatible_with])
 
     target_settings = [
         v.format(target_arch = target_arch)
@@ -460,6 +461,10 @@ _FEATURE_ATTRS = {
         doc = "constraint_values passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.",
         mandatory = False,
     ),
+    "extra_target_compatible_with": attr.label_list(
+        doc = "Additional constraint_values passed to target_compatible_with of the toolchain.",
+        mandatory = False,
+    ),
     "target_settings": attr.string_list(
         default = [],
         doc = "config_settings passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.",
@@ -483,7 +488,18 @@ gcc_toolchain = repository_rule(
 
 ATTRS_SHARED_WITH_MODULE_EXTENSION = {
     attr_name: _FEATURE_ATTRS[attr_name]
-    for attr_name in ["gcc_version", "gcc_versions", "enable_fortran", "extra_cflags", "extra_cxxflags", "extra_ldflags", "extra_fflags", "extra_asmflags", "supports_param_files"]
+    for attr_name in [
+        "gcc_version",
+        "gcc_versions",
+        "enable_fortran",
+        "extra_cflags",
+        "extra_cxxflags",
+        "extra_ldflags",
+        "extra_fflags",
+        "extra_asmflags",
+        "extra_target_compatible_with",
+        "supports_param_files",
+    ]
 }
 
 def _render_tool_paths(rctx, path_prefix, binary_prefix):
@@ -598,6 +614,7 @@ def gcc_declare_toolchain(
         extra_fflags = kwargs.pop("extra_fflags", []),
         extra_ldflags = kwargs.pop("extra_ldflags", []),
         extra_asmflags = kwargs.pop("extra_asmflags", []),
+        extra_target_compatible_with = kwargs.pop("extra_target_compatible_with", []),
         includes = kwargs.pop("includes", []),
         fincludes = kwargs.pop("fincludes", []),
         target_arch = target_arch,
