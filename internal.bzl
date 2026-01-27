@@ -42,7 +42,7 @@ def _lapack():
 def _avl():
     http_archive(
         name = "avl",
-        build_file = "@//:examples/avl/avl.BUILD.bazel",
+        build_file = "@gcc_toolchain//:examples/avl/avl.BUILD.bazel",
         sha256 = "6d62e563578b79795a84958cfe4e221a4c9847fbeb4a821d45bc049934fc6a90",
         strip_prefix = "Avl",
         url = "https://web.mit.edu/drela/Public/web/avl/avl3.40b.tgz",

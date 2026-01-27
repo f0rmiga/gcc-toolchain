@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@rules_cc//cc:defs.bzl", rules_cc_cc_binary = "cc_binary", rules_cc_cc_library = "cc_library", rules_cc_cc_test = "cc_test")
+
 def cc_library(name, static_libstdcxx = False, **kwargs):
     deps = kwargs.pop("deps", [])
     deps += select({
@@ -19,7 +21,7 @@ def cc_library(name, static_libstdcxx = False, **kwargs):
         "@platforms//cpu:armv7": ["@gcc_toolchain_armv7//:libstdcxx{}".format("_static" if static_libstdcxx else "")],
         "@platforms//cpu:x86_64": ["@gcc_toolchain_x86_64//:libstdcxx{}".format("_static" if static_libstdcxx else "")],
     })
-    native.cc_library(
+    rules_cc_cc_library(
         name = name,
         deps = deps,
         **kwargs
@@ -32,7 +34,7 @@ def cc_binary(name, static_libstdcxx = False, **kwargs):
         "@platforms//cpu:armv7": ["@gcc_toolchain_armv7//:libstdcxx{}".format("_static" if static_libstdcxx else "")],
         "@platforms//cpu:x86_64": ["@gcc_toolchain_x86_64//:libstdcxx{}".format("_static" if static_libstdcxx else "")],
     })
-    native.cc_binary(
+    rules_cc_cc_binary(
         name = name,
         deps = deps,
         **kwargs
@@ -45,7 +47,7 @@ def cc_test(name, static_libstdcxx = False, **kwargs):
         "@platforms//cpu:armv7": ["@gcc_toolchain_armv7//:libstdcxx{}".format("_static" if static_libstdcxx else "")],
         "@platforms//cpu:x86_64": ["@gcc_toolchain_x86_64//:libstdcxx{}".format("_static" if static_libstdcxx else "")],
     })
-    native.cc_test(
+    rules_cc_cc_test(
         name = name,
         deps = deps,
         **kwargs
