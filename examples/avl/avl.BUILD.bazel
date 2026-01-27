@@ -16,6 +16,7 @@
 # limitations under the License.
 
 load("@//rules_fortran:defs.bzl", "fortran_binary", "fortran_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 cc_library(
     name = "xwin",

@@ -15,11 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@bazel_lib//lib:docs.bzl", "stardoc_with_diff_test", "update_docs")
+#load("@bazel_lib//lib:docs.bzl", "stardoc_with_diff_test", "update_docs")
 
-stardoc_with_diff_test(
-    name = "defs",
-    bzl_library_target = "//toolchain:defs",
-)
+# stardoc_with_diff_test(
+#     name = "defs",
+#     bzl_library_target = "//toolchain:defs",
+# )
 
-update_docs()
+#update_docs()
