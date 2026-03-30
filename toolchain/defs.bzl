@@ -18,7 +18,7 @@
 """This module provides the definitions for registering a GCC toolchain for C and C++.
 """
 
-load("@aspect_bazel_lib//lib:utils.bzl", "is_bzlmod_enabled")
+load("@bazel_lib//lib:utils.bzl", "is_bzlmod_enabled")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 

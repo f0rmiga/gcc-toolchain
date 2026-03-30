@@ -35,7 +35,7 @@ bzl_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "@aspect_bazel_lib//lib:utils",
+        "@bazel_lib//lib:utils",
         "@bazel_skylib//lib:dicts",
         "@bazel_skylib//lib:paths",
         "@bazel_tools//tools/build_defs/repo:cache.bzl",
