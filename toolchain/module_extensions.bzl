@@ -15,6 +15,7 @@ def _gcc_register_toolchain_module_extension(mctx):
                 target_arch = declare.target_arch,
                 gcc_version = declare.gcc_version,
                 gcc_versions = declare.gcc_versions,
+                enable_fortran = declare.enable_fortran,
                 extra_cflags = declare.extra_cflags,
                 extra_cxxflags = declare.extra_cxxflags,
                 extra_ldflags = declare.extra_ldflags,
