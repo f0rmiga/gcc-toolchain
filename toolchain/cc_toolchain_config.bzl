@@ -18,9 +18,9 @@
 """This module provides the cc_toolchain_config rule.
 """
 
-load("@bazel_tools//tools/build_defs/cc:action_names.bzl", "ACTION_NAMES")
+load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES")
 load(
-    "@bazel_tools//tools/cpp:cc_toolchain_config_lib.bzl",
+    "@rules_cc//cc:cc_toolchain_config_lib.bzl",
     "action_config",
     "feature",
     "flag_group",
@@ -30,6 +30,8 @@ load(
     "with_feature_set",
 )
 load("//toolchain/fortran:action_names.bzl", FORTRAN_ACTION_NAMES = "ACTION_NAMES")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/toolchains:cc_toolchain_config_info.bzl", "CcToolchainConfigInfo")
 
 base_compile_actions = [
     ACTION_NAMES.c_compile,

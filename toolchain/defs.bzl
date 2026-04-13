@@ -593,7 +593,7 @@ ARCHS = struct(
 )
 
 _TOOLCHAIN_BUILD_FILE_CONTENT = """\
-load("@rules_cc//cc:defs.bzl", "cc_toolchain")
+load("@rules_cc//cc:defs.bzl", "cc_toolchain", "cc_library")
 load("@{gcc_toolchain_workspace_name}//toolchain:cc_toolchain_config.bzl", "cc_toolchain_config")
 {fortran_load}
 load("//:tool_paths.bzl", "tool_paths")
@@ -611,7 +611,7 @@ toolchain(
     target_compatible_with = {target_compatible_with},
     target_settings = {target_settings},
     toolchain = ":_cc_toolchain",
-    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
+    toolchain_type = "@rules_cc//cc:toolchain_type",
 )
 
 cc_toolchain(
