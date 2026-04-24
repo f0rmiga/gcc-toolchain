@@ -841,7 +841,7 @@ cc_library(
 filegroup(
     name = "libasan",
     srcs = glob([
-        "lib*/libasan.so",
+        "**/lib*/libasan.so",
     ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
@@ -849,7 +849,7 @@ filegroup(
 filegroup(
     name = "liblsan",
     srcs = glob([
-        "lib*/liblsan.so",
+        "**/lib*/liblsan.so",
     ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
@@ -857,8 +857,7 @@ filegroup(
 filegroup(
     name = "libtsan",
     srcs = glob([
-        "lib*/libtsan.so",
-        "lib*/lib64/libtsan.so",
+        "**/lib*/libtsan.so",
     ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
@@ -866,7 +865,7 @@ filegroup(
 filegroup(
     name = "libubsan",
     srcs = glob([
-        "lib*/libubsan.so",
+        "**/lib*/libubsan.so",
     ], allow_empty=True),
     visibility = ["//visibility:public"],
 )
