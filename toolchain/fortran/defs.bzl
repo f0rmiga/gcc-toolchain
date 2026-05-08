@@ -18,6 +18,8 @@
 """This module provides the Fortran toolchain definitions.
 """
 
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+
 def _fortran_toolchain_impl(ctx):
     # NOTE: This toolchain forwards the cc_toolchain definitions. Extra providers could be
     # implemented here without breaking the API.

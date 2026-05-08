@@ -1,5 +1,39 @@
-diff --git a/BUILD.bazel b/BUILD.bazel
-index 32b26cbdc..3b6026976 100644
+diff -u --new-file -r a/bazel/tests/testdata/BUILD b/bazel/tests/testdata/BUILD
+--- a/bazel/tests/testdata/BUILD
++++ b/bazel/tests/testdata/BUILD
+@@ -1,5 +1,5 @@
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//bazel:proto_library.bzl", "proto_library")
+ load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
+ 
+diff -u --new-file -r a/benchmarks/BUILD b/benchmarks/BUILD
+--- a/benchmarks/BUILD
++++ b/benchmarks/BUILD
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("@rules_python//python:defs.bzl", "py_binary")
+ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+ load("//bazel:proto_library.bzl", "proto_library")
+diff -u --new-file -r a/benchmarks/build_defs.bzl b/benchmarks/build_defs.bzl
+--- a/benchmarks/build_defs.bzl
++++ b/benchmarks/build_defs.bzl
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
+ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+ load("//bazel:proto_library.bzl", "proto_library")
+ 
+diff -u --new-file -r a/BUILD.bazel b/BUILD.bazel
 --- a/BUILD.bazel
 +++ b/BUILD.bazel
 @@ -1,6 +1,6 @@
@@ -8,15 +42,165 @@ index 32b26cbdc..3b6026976 100644
 -load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 +load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary", "cc_library")
  load("@rules_license//rules:license.bzl", "license")
- load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
  load("//bazel:cc_proto_library.bzl", "cc_proto_library")
-diff --git a/MODULE.bazel b/MODULE.bazel
-index cbe66f826..31fd30b9d 100644
+ load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
+diff -u --new-file -r a/conformance/BUILD b/conformance/BUILD
+--- a/conformance/BUILD
++++ b/conformance/BUILD
+@@ -7,9 +7,10 @@
+ 
+ # Protobuf conformance tests.
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
+-load("@rules_cc//cc:defs.bzl", "cc_binary", "objc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
++load("@rules_cc//cc:defs.bzl", "objc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
+ load("@rules_java//java:defs.bzl", "java_binary")
+ load("@rules_python//python:py_binary.bzl", "py_binary")
+ load("@rules_ruby//ruby:defs.bzl", "rb_binary")
+diff -u --new-file -r a/editions/BUILD b/editions/BUILD
+--- a/editions/BUILD
++++ b/editions/BUILD
+@@ -1,7 +1,7 @@
+ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+ load("@rules_shell//shell:sh_test.bzl", "sh_test")
+ load("//:protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library")
+diff -u --new-file -r a/examples/BUILD.bazel b/examples/BUILD.bazel
+--- a/examples/BUILD.bazel
++++ b/examples/BUILD.bazel
+@@ -10,7 +10,7 @@
+ load("@com_google_protobuf//bazel:java_proto_library.bzl", "java_proto_library")
+ load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
+ load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
+-load("@rules_cc//cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
+ load("@rules_java//java:java_binary.bzl", "java_binary")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("@rules_python//python:py_binary.bzl", "py_binary")
+diff -u --new-file -r a/hpb/backend/BUILD b/hpb/backend/BUILD
+--- a/hpb/backend/BUILD
++++ b/hpb/backend/BUILD
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ 
+ package(default_applicable_licenses = ["//:license"])
+ 
+diff -u --new-file -r a/hpb/backend/cpp/BUILD b/hpb/backend/cpp/BUILD
+--- a/hpb/backend/cpp/BUILD
++++ b/hpb/backend/cpp/BUILD
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ 
+ package(default_applicable_licenses = ["//:license"])
+ 
+diff -u --new-file -r a/hpb/backend/upb/BUILD b/hpb/backend/upb/BUILD
+--- a/hpb/backend/upb/BUILD
++++ b/hpb/backend/upb/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ 
+ package(default_applicable_licenses = ["//:license"])
+ 
+diff -u --new-file -r a/hpb/BUILD b/hpb/BUILD
+--- a/hpb/BUILD
++++ b/hpb/BUILD
+@@ -6,8 +6,8 @@
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ 
+ package(default_applicable_licenses = ["//:license"])
+ 
+diff -u --new-file -r a/hpb/internal/BUILD b/hpb/internal/BUILD
+--- a/hpb/internal/BUILD
++++ b/hpb/internal/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ 
+ package(default_applicable_licenses = ["//:license"])
+ 
+diff -u --new-file -r a/hpb_generator/BUILD b/hpb_generator/BUILD
+--- a/hpb_generator/BUILD
++++ b/hpb_generator/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
+ 
+ package(default_applicable_licenses = ["//:license"])
+diff -u --new-file -r a/hpb_generator/tests/BUILD b/hpb_generator/tests/BUILD
+--- a/hpb_generator/tests/BUILD
++++ b/hpb_generator/tests/BUILD
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load(
+     "//bazel:cc_proto_library.bzl",
+     "cc_proto_library",
+diff -u --new-file -r a/lua/BUILD.bazel b/lua/BUILD.bazel
+--- a/lua/BUILD.bazel
++++ b/lua/BUILD.bazel
+@@ -5,9 +5,9 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//bazel:proto_library.bzl", "proto_library")
+ load(
+     "//lua:lua_proto_library.bzl",
+diff -u --new-file -r a/MODULE.bazel b/MODULE.bazel
 --- a/MODULE.bazel
 +++ b/MODULE.bazel
-@@ -180,3 +180,15 @@ bazel_dep(
-     version = "4.0.0",
-     dev_dependency = True,
+@@ -358,3 +358,15 @@
+     "nuget_python_x86-64_3.9.0",
+     "python-3.9.0",
  )
 +
 +# We load gcc_toolchain by the same name as we declare it in module().
@@ -30,34 +214,118 @@ index cbe66f826..31fd30b9d 100644
 +use_repo(gcc_toolchains, "gcc_toolchain_aarch64")
 +use_repo(gcc_toolchains, "gcc_toolchain_armv7")
 +use_repo(gcc_toolchains, "gcc_toolchain_x86_64")
-diff --git a/conformance/BUILD.bazel b/conformance/BUILD.bazel
-index 9d7938d75..e8db19453 100644
---- a/conformance/BUILD.bazel
-+++ b/conformance/BUILD.bazel
-@@ -1,6 +1,7 @@
- # Conformance testing for Protobuf.
+diff -u --new-file -r a/pkg/test/BUILD.bazel b/pkg/test/BUILD.bazel
+--- a/pkg/test/BUILD.bazel
++++ b/pkg/test/BUILD.bazel
+@@ -1,6 +1,6 @@
+ # Tests for CMake file list generation
  
--load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
-+load("@rules_cc//cc:defs.bzl", "objc_library")
-+load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary", "cc_library")
- load(
-     "@rules_pkg//pkg:mappings.bzl",
-     "pkg_filegroup",
-diff --git a/examples/BUILD.bazel b/examples/BUILD.bazel
-index 4b701c403..3f0c9acb7 100644
---- a/examples/BUILD.bazel
-+++ b/examples/BUILD.bazel
-@@ -9,7 +9,7 @@ load("@com_google_protobuf//bazel:java_lite_proto_library.bzl", "java_lite_proto
- load("@com_google_protobuf//bazel:java_proto_library.bzl", "java_proto_library")
- load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
- load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
--load("@rules_cc//cc:defs.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("@rules_shell//shell:sh_test.bzl", "sh_test")
+ load("//pkg:build_systems.bzl", "gen_file_lists")
+ load("//pkg:cc_dist_library.bzl", "cc_dist_library")
+diff -u --new-file -r a/python/build_targets.bzl b/python/build_targets.bzl
+--- a/python/build_targets.bzl
++++ b/python/build_targets.bzl
+@@ -8,8 +8,8 @@
+     //:well_known_types_py_pb2
+ """
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
 +load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
  load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
- load("@rules_python//python:py_binary.bzl", "py_binary")
+ load("@rules_python//python:defs.bzl", "py_library")
+ load("//:protobuf.bzl", "internal_py_proto_library")
+diff -u --new-file -r a/python/py_extension.bzl b/python/py_extension.bzl
+--- a/python/py_extension.bzl
++++ b/python/py_extension.bzl
+@@ -1,7 +1,7 @@
+ """Macro to support py_extension """
  
-diff --git a/src/google/protobuf/compiler/BUILD.bazel b/src/google/protobuf/compiler/BUILD.bazel
-index 5012ee793..cac054e7b 100644
+ load("@bazel_skylib//lib:selects.bzl", "selects")
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
+ load("@rules_python//python:py_library.bzl", "py_library")
+ 
+ def py_extension(name, srcs, copts, deps = [], **kwargs):
+diff -u --new-file -r a/ruby/ext/google/protobuf_c/BUILD.bazel b/ruby/ext/google/protobuf_c/BUILD.bazel
+--- a/ruby/ext/google/protobuf_c/BUILD.bazel
++++ b/ruby/ext/google/protobuf_c/BUILD.bazel
+@@ -1,5 +1,5 @@
+ load("@build_bazel_rules_apple//apple:apple_binary.bzl", "apple_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//upb/cmake:build_defs.bzl", "staleness_test")
+ 
+diff -u --new-file -r a/ruby/lib/google/BUILD.bazel b/ruby/lib/google/BUILD.bazel
+--- a/ruby/lib/google/BUILD.bazel
++++ b/ruby/lib/google/BUILD.bazel
+@@ -1,4 +1,4 @@
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
+ load("@rules_java//java:java_binary.bzl", "java_binary")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("@rules_ruby//ruby:defs.bzl", "rb_library")
+diff -u --new-file -r a/rust/cpp_kernel/BUILD b/rust/cpp_kernel/BUILD
+--- a/rust/cpp_kernel/BUILD
++++ b/rust/cpp_kernel/BUILD
+@@ -1,6 +1,6 @@
+ # This package contains Rust protobuf runtime implementation built on top of the C++ backend.
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("@rules_rust//rust:defs.bzl", "rust_library")
+ 
+ cc_library(
+diff -u --new-file -r a/rust/test/cpp/interop/BUILD b/rust/test/cpp/interop/BUILD
+--- a/rust/test/cpp/interop/BUILD
++++ b/rust/test/cpp/interop/BUILD
+@@ -1,6 +1,6 @@
+ # This package contains tests exercising C++/Rust interop in the cpp kernel.
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("@rules_rust//rust:defs.bzl", "rust_test")
+ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+ load("//bazel:proto_library.bzl", "proto_library")
+diff -u --new-file -r a/rust/test/shared/utf8/BUILD b/rust/test/shared/utf8/BUILD
+--- a/rust/test/shared/utf8/BUILD
++++ b/rust/test/shared/utf8/BUILD
+@@ -1,4 +1,4 @@
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("@rules_rust//rust:defs.bzl", "rust_test")
+ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+ load("//bazel:proto_library.bzl", "proto_library")
+diff -u --new-file -r a/rust/upb/sys/BUILD b/rust/upb/sys/BUILD
+--- a/rust/upb/sys/BUILD
++++ b/rust/upb/sys/BUILD
+@@ -4,7 +4,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+ 
+diff -u --new-file -r a/src/google/protobuf/BUILD.bazel b/src/google/protobuf/BUILD.bazel
+--- a/src/google/protobuf/BUILD.bazel
++++ b/src/google/protobuf/BUILD.bazel
+@@ -2,7 +2,7 @@
+ # Protocol Buffers: C++ Runtime and common proto files
+ ################################################################################
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library", "cc_test")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+ load("//bazel:proto_library.bzl", "proto_library")
+diff -u --new-file -r a/src/google/protobuf/compiler/BUILD.bazel b/src/google/protobuf/compiler/BUILD.bazel
 --- a/src/google/protobuf/compiler/BUILD.bazel
 +++ b/src/google/protobuf/compiler/BUILD.bazel
 @@ -2,7 +2,7 @@
@@ -69,3 +337,560 @@ index 5012ee793..cac054e7b 100644
  load(
      "@rules_pkg//pkg:mappings.bzl",
      "pkg_attributes",
+diff -u --new-file -r a/src/google/protobuf/compiler/cpp/BUILD.bazel b/src/google/protobuf/compiler/cpp/BUILD.bazel
+--- a/src/google/protobuf/compiler/cpp/BUILD.bazel
++++ b/src/google/protobuf/compiler/cpp/BUILD.bazel
+@@ -2,8 +2,8 @@
+ # Protocol Buffers Compiler - C++ code generator
+ ################################################################################
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library", "cc_test")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+ load("//bazel:proto_library.bzl", "proto_library")
+diff -u --new-file -r a/src/google/protobuf/compiler/csharp/BUILD.bazel b/src/google/protobuf/compiler/csharp/BUILD.bazel
+--- a/src/google/protobuf/compiler/csharp/BUILD.bazel
++++ b/src/google/protobuf/compiler/csharp/BUILD.bazel
+@@ -2,7 +2,7 @@
+ # Protocol Buffers Compiler - C# code generator
+ ################################################################################
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library", "cc_test")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+diff -u --new-file -r a/src/google/protobuf/compiler/java/BUILD.bazel b/src/google/protobuf/compiler/java/BUILD.bazel
+--- a/src/google/protobuf/compiler/java/BUILD.bazel
++++ b/src/google/protobuf/compiler/java/BUILD.bazel
+@@ -2,7 +2,7 @@
+ # Protocol Buffers Compiler - Java code generator
+ ################################################################################
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library", "cc_test")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+diff -u --new-file -r a/src/google/protobuf/compiler/java/full/BUILD.bazel b/src/google/protobuf/compiler/java/full/BUILD.bazel
+--- a/src/google/protobuf/compiler/java/full/BUILD.bazel
++++ b/src/google/protobuf/compiler/java/full/BUILD.bazel
+@@ -1,7 +1,7 @@
+ # We use abbreviated target names in this directory to work around:
+ #     https://github.com/bazelbuild/bazel/issues/18683
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+ cc_library(
+diff -u --new-file -r a/src/google/protobuf/compiler/java/lite/BUILD.bazel b/src/google/protobuf/compiler/java/lite/BUILD.bazel
+--- a/src/google/protobuf/compiler/java/lite/BUILD.bazel
++++ b/src/google/protobuf/compiler/java/lite/BUILD.bazel
+@@ -1,4 +1,4 @@
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+ cc_library(
+diff -u --new-file -r a/src/google/protobuf/compiler/kotlin/BUILD.bazel b/src/google/protobuf/compiler/kotlin/BUILD.bazel
+--- a/src/google/protobuf/compiler/kotlin/BUILD.bazel
++++ b/src/google/protobuf/compiler/kotlin/BUILD.bazel
+@@ -1,4 +1,4 @@
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+ cc_library(
+diff -u --new-file -r a/src/google/protobuf/compiler/objectivec/BUILD.bazel b/src/google/protobuf/compiler/objectivec/BUILD.bazel
+--- a/src/google/protobuf/compiler/objectivec/BUILD.bazel
++++ b/src/google/protobuf/compiler/objectivec/BUILD.bazel
+@@ -2,7 +2,7 @@
+ # Protocol Buffers Compiler - ObjC code generator
+ ################################################################################
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library", "cc_test")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+diff -u --new-file -r a/src/google/protobuf/compiler/php/BUILD.bazel b/src/google/protobuf/compiler/php/BUILD.bazel
+--- a/src/google/protobuf/compiler/php/BUILD.bazel
++++ b/src/google/protobuf/compiler/php/BUILD.bazel
+@@ -2,8 +2,8 @@
+ # Protocol Buffers Compiler - PHP code generator
+ ################################################################################
+ 
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
+-load("@rules_cc//cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+diff -u --new-file -r a/src/google/protobuf/compiler/python/BUILD.bazel b/src/google/protobuf/compiler/python/BUILD.bazel
+--- a/src/google/protobuf/compiler/python/BUILD.bazel
++++ b/src/google/protobuf/compiler/python/BUILD.bazel
+@@ -2,7 +2,7 @@
+ # Protocol Buffers Compiler - Python code generator
+ ################################################################################
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library", "cc_test")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+diff -u --new-file -r a/src/google/protobuf/compiler/ruby/BUILD.bazel b/src/google/protobuf/compiler/ruby/BUILD.bazel
+--- a/src/google/protobuf/compiler/ruby/BUILD.bazel
++++ b/src/google/protobuf/compiler/ruby/BUILD.bazel
+@@ -2,7 +2,7 @@
+ # Protocol Buffers Compiler - Ruby code generator
+ ################################################################################
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library", "cc_test")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+diff -u --new-file -r a/src/google/protobuf/compiler/rust/accessors/BUILD.bazel b/src/google/protobuf/compiler/rust/accessors/BUILD.bazel
+--- a/src/google/protobuf/compiler/rust/accessors/BUILD.bazel
++++ b/src/google/protobuf/compiler/rust/accessors/BUILD.bazel
+@@ -2,7 +2,7 @@
+ # Protocol Buffers Compiler - Generation of accessors for individual fields.
+ ################################################################################
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+ cc_library(
+diff -u --new-file -r a/src/google/protobuf/compiler/rust/BUILD.bazel b/src/google/protobuf/compiler/rust/BUILD.bazel
+--- a/src/google/protobuf/compiler/rust/BUILD.bazel
++++ b/src/google/protobuf/compiler/rust/BUILD.bazel
+@@ -9,9 +9,9 @@
+ # Protocol Buffers Compiler - Rust code generator
+ ################################################################################
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
+-load("@rules_cc//cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ load(
+     "//upb_generator:bootstrap_compiler.bzl",
+diff -u --new-file -r a/src/google/protobuf/compiler/test_plugin_injection.bzl b/src/google/protobuf/compiler/test_plugin_injection.bzl
+--- a/src/google/protobuf/compiler/test_plugin_injection.bzl
++++ b/src/google/protobuf/compiler/test_plugin_injection.bzl
+@@ -28,7 +28,7 @@
+ # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+ # This works around https://github.com/bazelbuild/bazel/issues/19124 by using a generated header to
+diff -u --new-file -r a/src/google/protobuf/io/BUILD.bazel b/src/google/protobuf/io/BUILD.bazel
+--- a/src/google/protobuf/io/BUILD.bazel
++++ b/src/google/protobuf/io/BUILD.bazel
+@@ -1,6 +1,6 @@
+ # Protobuf IO library.
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library", "cc_test")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+diff -u --new-file -r a/src/google/protobuf/json/BUILD.bazel b/src/google/protobuf/json/BUILD.bazel
+--- a/src/google/protobuf/json/BUILD.bazel
++++ b/src/google/protobuf/json/BUILD.bazel
+@@ -1,4 +1,4 @@
+-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library", "cc_test")
+ load("//build_defs:cpp_opts.bzl", "COPTS")
+ 
+ package(
+diff -u --new-file -r a/src/google/protobuf/stubs/BUILD.bazel b/src/google/protobuf/stubs/BUILD.bazel
+--- a/src/google/protobuf/stubs/BUILD.bazel
++++ b/src/google/protobuf/stubs/BUILD.bazel
+@@ -1,7 +1,7 @@
+ # Protobuf stubs library.
+ #   These are utilities that mirror the behavior of internal Google code.
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library", "cc_test")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+ 
+diff -u --new-file -r a/src/google/protobuf/testing/BUILD.bazel b/src/google/protobuf/testing/BUILD.bazel
+--- a/src/google/protobuf/testing/BUILD.bazel
++++ b/src/google/protobuf/testing/BUILD.bazel
+@@ -1,7 +1,7 @@
+ # Protobuf testing support.
+ #   This package contains testonly utilities used in C++ unit tests.
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+ 
+diff -u --new-file -r a/src/google/protobuf/util/BUILD.bazel b/src/google/protobuf/util/BUILD.bazel
+--- a/src/google/protobuf/util/BUILD.bazel
++++ b/src/google/protobuf/util/BUILD.bazel
+@@ -2,7 +2,7 @@
+ # Protocol Buffers C++ Utilities
+ ################################################################################
+ 
+-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library", "cc_test")
+ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
+ load("//bazel:cc_proto_library.bzl", "cc_proto_library")
+ load("//bazel:proto_library.bzl", "proto_library")
+diff -u --new-file -r a/third_party/utf8_range/BUILD.bazel b/third_party/utf8_range/BUILD.bazel
+--- a/third_party/utf8_range/BUILD.bazel
++++ b/third_party/utf8_range/BUILD.bazel
+@@ -4,8 +4,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://opensource.org/licenses/MIT.
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("@rules_license//rules:license.bzl", "license")
+ 
+ package(
+diff -u --new-file -r a/upb/base/BUILD b/upb/base/BUILD
+--- a/upb/base/BUILD
++++ b/upb/base/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+ 
+ package(default_applicable_licenses = ["//:license"])
+diff -u --new-file -r a/upb/BUILD b/upb/BUILD
+--- a/upb/BUILD
++++ b/upb/BUILD
+@@ -6,7 +6,7 @@
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("@rules_python//python:defs.bzl", "py_binary")
+ load("//bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
+ load("//upb/bazel:amalgamation.bzl", "upb_amalgamation")
+diff -u --new-file -r a/upb/conformance/BUILD b/upb/conformance/BUILD
+--- a/upb/conformance/BUILD
++++ b/upb/conformance/BUILD
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
+ load("@rules_shell//shell:sh_test.bzl", "sh_test")
+ load(
+     "//bazel:upb_proto_library.bzl",
+diff -u --new-file -r a/upb/hash/BUILD b/upb/hash/BUILD
+--- a/upb/hash/BUILD
++++ b/upb/hash/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+ 
+ package(default_applicable_licenses = ["//:license"])
+diff -u --new-file -r a/upb/io/BUILD b/upb/io/BUILD
+--- a/upb/io/BUILD
++++ b/upb/io/BUILD
+@@ -1,5 +1,5 @@
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ 
+ package(default_applicable_licenses = ["//:license"])
+ 
+diff -u --new-file -r a/upb/json/BUILD b/upb/json/BUILD
+--- a/upb/json/BUILD
++++ b/upb/json/BUILD
+@@ -1,7 +1,7 @@
+ # TODO: describe this package.
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//bazel:proto_library.bzl", "proto_library")
+ load(
+     "//bazel:upb_proto_library.bzl",
+diff -u --new-file -r a/upb/lex/BUILD b/upb/lex/BUILD
+--- a/upb/lex/BUILD
++++ b/upb/lex/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+ 
+ package(default_applicable_licenses = ["//:license"])
+diff -u --new-file -r a/upb/mem/BUILD b/upb/mem/BUILD
+--- a/upb/mem/BUILD
++++ b/upb/mem/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+ 
+ package(default_applicable_licenses = ["//:license"])
+diff -u --new-file -r a/upb/message/BUILD b/upb/message/BUILD
+--- a/upb/message/BUILD
++++ b/upb/message/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//bazel:proto_library.bzl", "proto_library")
+ load(
+     "//bazel:upb_minitable_proto_library.bzl",
+diff -u --new-file -r a/upb/mini_descriptor/BUILD b/upb/mini_descriptor/BUILD
+--- a/upb/mini_descriptor/BUILD
++++ b/upb/mini_descriptor/BUILD
+@@ -1,5 +1,5 @@
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load(
+     "//upb/bazel:build_defs.bzl",
+     "UPB_DEFAULT_COPTS",
+diff -u --new-file -r a/upb/mini_table/BUILD b/upb/mini_table/BUILD
+--- a/upb/mini_table/BUILD
++++ b/upb/mini_table/BUILD
+@@ -5,9 +5,9 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//bazel:proto_library.bzl", "proto_library")
+ load(
+     "//bazel:upb_minitable_proto_library.bzl",
+diff -u --new-file -r a/upb/port/BUILD b/upb/port/BUILD
+--- a/upb/port/BUILD
++++ b/upb/port/BUILD
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+ 
+ package(default_applicable_licenses = ["//:license"])
+diff -u --new-file -r a/upb/reflection/BUILD b/upb/reflection/BUILD
+--- a/upb/reflection/BUILD
++++ b/upb/reflection/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load(
+     "//editions:defaults.bzl",
+     "compile_edition_defaults",
+diff -u --new-file -r a/upb/test/BUILD b/upb/test/BUILD
+--- a/upb/test/BUILD
++++ b/upb/test/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//bazel:proto_library.bzl", "proto_library")
+ load(
+     "//bazel:upb_minitable_proto_library.bzl",
+diff -u --new-file -r a/upb/text/BUILD b/upb/text/BUILD
+--- a/upb/text/BUILD
++++ b/upb/text/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+ 
+ package(default_applicable_licenses = ["//:license"])
+diff -u --new-file -r a/upb/util/BUILD b/upb/util/BUILD
+--- a/upb/util/BUILD
++++ b/upb/util/BUILD
+@@ -1,5 +1,5 @@
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//bazel:proto_library.bzl", "proto_library")
+ load(
+     "//bazel:upb_proto_library.bzl",
+diff -u --new-file -r a/upb/wire/BUILD b/upb/wire/BUILD
+--- a/upb/wire/BUILD
++++ b/upb/wire/BUILD
+@@ -5,9 +5,9 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_CPPOPTS")
+ 
+ package(default_applicable_licenses = ["//:license"])
+diff -u --new-file -r a/upb/wire/decode_fast/BUILD b/upb/wire/decode_fast/BUILD
+--- a/upb/wire/decode_fast/BUILD
++++ b/upb/wire/decode_fast/BUILD
+@@ -5,9 +5,9 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
+-load("@rules_cc//cc:cc_test.bzl", "cc_test")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_test")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_COPTS")
+ 
+ package(default_applicable_licenses = ["//:license"])
+diff -u --new-file -r a/upb/wire/test_util/BUILD b/upb/wire/test_util/BUILD
+--- a/upb/wire/test_util/BUILD
++++ b/upb/wire/test_util/BUILD
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
+ 
+ package(default_applicable_licenses = ["//:license"])
+diff -u --new-file -r a/upb_generator/bootstrap_compiler.bzl b/upb_generator/bootstrap_compiler.bzl
+--- a/upb_generator/bootstrap_compiler.bzl
++++ b/upb_generator/bootstrap_compiler.bzl
+@@ -1,7 +1,7 @@
+ """Macros that implement bootstrapping for the upb code generator."""
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load(
+     "//bazel:upb_minitable_proto_library.bzl",
+     "upb_minitable_proto_library",
+diff -u --new-file -r a/upb_generator/BUILD b/upb_generator/BUILD
+--- a/upb_generator/BUILD
++++ b/upb_generator/BUILD
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
+ load(
+     "//upb_generator:bootstrap_compiler.bzl",
+diff -u --new-file -r a/upb_generator/c/BUILD b/upb_generator/c/BUILD
+--- a/upb_generator/c/BUILD
++++ b/upb_generator/c/BUILD
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
+ load(
+     "//upb/bazel:build_defs.bzl",
+diff -u --new-file -r a/upb_generator/common/BUILD b/upb_generator/common/BUILD
+--- a/upb_generator/common/BUILD
++++ b/upb_generator/common/BUILD
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ 
+ package(default_applicable_licenses = ["//:license"])
+ 
+diff -u --new-file -r a/upb_generator/minitable/BUILD b/upb_generator/minitable/BUILD
+--- a/upb_generator/minitable/BUILD
++++ b/upb_generator/minitable/BUILD
+@@ -5,7 +5,7 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
+ load(
+diff -u --new-file -r a/upb_generator/reflection/BUILD b/upb_generator/reflection/BUILD
+--- a/upb_generator/reflection/BUILD
++++ b/upb_generator/reflection/BUILD
+@@ -5,8 +5,8 @@
+ # license that can be found in the LICENSE file or at
+ # https://developers.google.com/open-source/licenses/bsd
+ 
+-load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+-load("@rules_cc//cc:cc_library.bzl", "cc_library")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_binary")
++load("@gcc_toolchain//rules_cc:defs.bzl", "cc_library")
+ load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
+ load("//upb/bazel:build_defs.bzl", "UPB_DEFAULT_CPPOPTS")
+ 
