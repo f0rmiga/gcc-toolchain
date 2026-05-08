@@ -20,6 +20,8 @@
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//toolchain/fortran:action_names.bzl", "ACTION_NAMES")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
 FortranInfo = provider(
     "Information from a Fortran rule.",
