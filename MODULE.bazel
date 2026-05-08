@@ -46,6 +46,14 @@ single_version_override(
 )
 
 bazel_dep(name = "protobuf", version = "33.4", dev_dependency = True, repo_name = "com_google_protobuf")
+single_version_override(
+    module_name = "protobuf",
+    patch_strip = 1,
+    patches = [
+        "//third_party/patches:com_google_protobuf.bzlmod.patch",
+    ],
+    version = "33.4",
+)
 
 non_bazel_dependencies = use_extension("//:internal.bzl", "non_bazel_dependencies")
 use_repo(
