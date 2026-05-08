@@ -108,6 +108,28 @@ jobs:
         run: |
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
           bazel coverage --config ${{ matrix.bzlmod_config }} //examples/hello_world_cpp:hello_world_cpp_test
+  bazel9:
+    strategy:
+      matrix:
+        bzlmod_config:
+          - bzlmod
+          - workspace
+    runs-on: ubuntu-22.04
+    env:
+      USE_BAZEL_VERSION: 9.1.0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}-bazel9
+          repository-cache: true
+      - name: Test
+        run: |
+          ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
+          bazel test --config ${{ matrix.bzlmod_config }} -- //... -//docs/...
   rbe:
     strategy:
       matrix:
