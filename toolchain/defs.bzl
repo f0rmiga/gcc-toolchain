@@ -236,6 +236,9 @@ def _gcc_toolchain_impl(rctx):
         extra_ldflags = _format_flags(extra_ldflags),
         extra_asmflags = _format_flags(extra_asmflags),
 
+        # cc_toolchain attributes
+        supports_param_files = 1 if rctx.attr.supports_param_files else 0,
+
         # Fortran, if enabled
         **_fortran_vars(
             rctx.attr.enable_fortran,
@@ -389,6 +392,14 @@ _FEATURE_ATTRS = {
         doc = "Extra flags for the assembly preprocessor.",
         default = [],
     ),
+    "supports_param_files": attr.bool(
+        doc = "Set `supports_param_files = 1` on the generated `cc_toolchain`," +
+              " which lets Bazel pass linker arguments via an `@params` file." +
+              " Enable this when link command lines for large targets overflow `ARG_MAX`" +
+              " (e.g. `collect2: posix_spawn: Argument list too long`)." +
+              " Off by default to preserve historical behavior.",
+        default = False,
+    ),
     "gcc_toolchain_workspace_name": attr.string(
         doc = "The name given to the gcc-toolchain repository, if the default was not used.",
         default = "gcc_toolchain",
@@ -448,7 +459,7 @@ gcc_toolchain = repository_rule(
 
 ATTRS_SHARED_WITH_MODULE_EXTENSION = {
     attr_name: _FEATURE_ATTRS[attr_name]
-    for attr_name in ["gcc_version", "gcc_versions", "enable_fortran", "extra_cflags", "extra_cxxflags", "extra_ldflags", "extra_fflags", "extra_asmflags"]
+    for attr_name in ["gcc_version", "gcc_versions", "enable_fortran", "extra_cflags", "extra_cxxflags", "extra_ldflags", "extra_fflags", "extra_asmflags", "supports_param_files"]
 }
 
 def _render_tool_paths(rctx, path_prefix, binary_prefix):
@@ -625,7 +636,7 @@ cc_toolchain(
     objcopy_files = ":objcopy_files",
     strip_files = ":strip_files",
     coverage_files = ":coverage_files",
-    supports_param_files = 0,
+    supports_param_files = {supports_param_files},
     toolchain_config = ":cc_toolchain_config",
     toolchain_identifier = "gcc-toolchain",
 )

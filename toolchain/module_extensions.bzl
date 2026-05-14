@@ -20,6 +20,7 @@ def _gcc_register_toolchain_module_extension(mctx):
                 extra_cxxflags = declare.extra_cxxflags,
                 extra_ldflags = declare.extra_ldflags,
                 extra_fflags = declare.extra_fflags,
+                supports_param_files = declare.supports_param_files,
             )
 
     # Since we know that for each gcc toolchain repository we'll generate the same files, we mark the rule as reproducible.
