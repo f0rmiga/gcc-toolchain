@@ -233,7 +233,7 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = fortran_extend(base_cpp_compile_actions, FORTRAN_ACTION_NAMES.fortran_compile),
+                actions = fortran_extend(base_compile_actions, FORTRAN_ACTION_NAMES.fortran_compile),
                 flag_groups = [
                     flag_group(
                         flags = [
@@ -247,7 +247,7 @@ def _impl(ctx):
                 ],
             ),
             flag_set(
-                actions = fortran_extend(base_cpp_compile_actions, FORTRAN_ACTION_NAMES.fortran_compile),
+                actions = fortran_extend(base_compile_actions, FORTRAN_ACTION_NAMES.fortran_compile),
                 flag_groups = [
                     flag_group(
                         flags = [
@@ -259,12 +259,12 @@ def _impl(ctx):
                 with_features = [with_feature_set(features = ["opt"])],
             ),
             flag_set(
-                actions = fortran_extend(base_cpp_compile_actions, FORTRAN_ACTION_NAMES.fortran_compile),
+                actions = fortran_extend(base_compile_actions, FORTRAN_ACTION_NAMES.fortran_compile),
                 flag_groups = [flag_group(flags = ["-g"])],
                 with_features = [with_feature_set(features = ["dbg"])],
             ),
             flag_set(
-                actions = fortran_extend(base_cpp_compile_actions, FORTRAN_ACTION_NAMES.fortran_compile),
+                actions = fortran_extend(base_compile_actions, FORTRAN_ACTION_NAMES.fortran_compile),
                 flag_groups = [
                     flag_group(
                         flags = [
