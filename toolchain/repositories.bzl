@@ -37,9 +37,9 @@ def gcc_toolchain_dependencies():
     maybe(
         http_archive,
         name = "bazel_lib",
-        sha256 = "6fd3b1e1a38ca744f9664be4627ced80895c7d2ee353891c172f1ab61309c933",
-        strip_prefix = "bazel-lib-3.0.0",
-        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v3.0.0/bazel-lib-v3.0.0.tar.gz",
+        sha256 = "c6e2be1c7a30ef6de9d0e15cd3a4b6bc62fe156848117c0a1eeedf97561a4f6b",
+        strip_prefix = "bazel-lib-3.3.1",
+        url = "https://github.com/bazel-contrib/bazel-lib/releases/download/v3.3.1/bazel-lib-v3.3.1.tar.gz",
     )
 
     maybe(
