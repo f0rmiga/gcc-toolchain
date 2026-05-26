@@ -15,18 +15,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+load("@bazel_lib//lib:transitions.bzl", "platform_transition_filegroup")
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 
 build_test(
-    name = "hello_world_build_test",
+    name = "hello_world_asm_build_test",
     targets = [
-        ":hello_world",
+        ":hello_world_asm",
+        ":hello_world_asm_linux_aarch64",
+        ":hello_world_asm_linux_armv7",
     ],
 )
 
 cc_binary(
-    name = "hello_world",
-    srcs = ["main.s"],
-    target_compatible_with = ["@platforms//cpu:x86_64"],
+    name = "hello_world_asm",
+    srcs = select({
+        "@platforms//cpu:x86_64": ["main_x86_64.s"],
+        "@platforms//cpu:aarch64": ["main_aarch64.s"],
+        "@platforms//cpu:armv7": ["main_armv7.s"],
+    }),
+)
+
+platform_transition_filegroup(
+    name = "hello_world_asm_linux_aarch64",
+    srcs = [":hello_world_asm"],
+    target_platform = "//platforms:aarch64_linux",
+)
+
+platform_transition_filegroup(
+    name = "hello_world_asm_linux_armv7",
+    srcs = [":hello_world_asm"],
+    target_platform = "//platforms:armv7_linux",
 )
