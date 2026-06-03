@@ -12,6 +12,7 @@ performance and portability. You can find the comprehensive documentation under 
 - **Fortran Support**: Complete Fortran compilation, including OpenMP support.
 - **Sanitizers**: Built-in support for AddressSanitizer, LeakSanitizer, ThreadSanitizer,
   and UndefinedBehaviorSanitizer.
+- **Linker Choice**: Use the default GNU BFD linker or opt into LLVM's `lld` via the `linker-lld` feature.
 - **Remote Execution**: Ready for use with Bazel Remote Build Execution (RBE).
 
 ## Why Use a Hermetic Toolchain?

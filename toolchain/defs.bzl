@@ -184,6 +184,16 @@ def _gcc_toolchain_impl(rctx):
     ])
     extra_fflags.extend(rctx.attr.extra_fflags)
 
+    # Note: we deliberately do NOT add `-B`/`-L` flags for the sysroot lib dirs
+    # (`%workspace%/sysroot/lib`, `%workspace%/sysroot/usr/lib`). GCC already
+    # searches them via its built-in sysroot, so they are redundant. They are
+    # also harmful to `lld` (the `linker-lld` feature): these flags are relative,
+    # so in the sandbox they resolve against the action's cwd, and `lld` then
+    # finds glibc's `libm.so`/`libc.so` linker scripts via a path that is not
+    # under the absolute sysroot. Unlike BFD, `lld` then refuses to rewrite the
+    # absolute `GROUP(/lib/libm.so.6)` entries in those scripts and the link
+    # fails with `cannot open /lib/libm.so.6`. Relying on GCC's built-in sysroot
+    # keeps both linkers working.
     extra_ldflags = [
         lib.format(
             include_prefix = include_prefix,
@@ -195,14 +205,10 @@ def _gcc_toolchain_impl(rctx):
             "-B%workspace%/{include_prefix}lib",
             "-B%workspace%/lib64",
             "-B%workspace%/{include_prefix}lib64",
-            "-B%workspace%/sysroot/lib",
-            "-B%workspace%/sysroot/usr/lib",
             "-L%workspace%/lib",
             "-L%workspace%/{include_prefix}lib",
             "-L%workspace%/lib64",
             "-L%workspace%/{include_prefix}lib64",
-            "-L%workspace%/sysroot/lib",
-            "-L%workspace%/sysroot/usr/lib",
         ]
     ]
     extra_ldflags.extend(rctx.attr.extra_ldflags)
@@ -698,6 +704,7 @@ filegroup(
         ":gcc",
         ":lib",
         ":ld_files",
+        ":lld_files",
     ],
     visibility = ["//visibility:public"],
 )
@@ -709,6 +716,12 @@ filegroup(
         ":ld.bfd",
         "xbin/ld",
     ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "lld_files",
+    srcs = glob(["**/lld", "**/ld.lld"], allow_empty = True),
     visibility = ["//visibility:public"],
 )
 
