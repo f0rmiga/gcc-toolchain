@@ -331,44 +331,44 @@ AVAILABLE_GCC_VERSIONS = {
     },
     "14.3.0": {
         "aarch64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/22052026/gcc-toolchain-14.3.0-aarch64.tar.xz",
-            "sha256": "2f5ae3e8f8ece3c5aa4e37ef6798714f98d2ff31be8ffb4197ad618a102991b8",
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/03062026/gcc-toolchain-14.3.0-aarch64.tar.xz",
+            "sha256": "bd52629e9d8ee28fdd335477673d4c96a976199688db516cdfcf044ed01f6f63",
         },
         "armv7": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/22052026/gcc-toolchain-14.3.0-armv7.tar.xz",
-            "sha256": "9f2189e44d0c5c6bb76aebd6bfb7c93794f1396f1d131dcada67cfcb5b77e25d",
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/03062026/gcc-toolchain-14.3.0-armv7.tar.xz",
+            "sha256": "991d02da9522dae53397b6460ce21ab6f83635907ee4acb27c1109f09d5ea255",
         },
         "x86_64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/22052026/gcc-toolchain-14.3.0-x86_64.tar.xz",
-            "sha256": "367a39cd5ab3bfe6f8a50ed6dd6a0a29cae8f3258b2108e92daafa0edeaa7f28",
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/03062026/gcc-toolchain-14.3.0-x86_64.tar.xz",
+            "sha256": "d996471a3af71cc16f0a133280e62c89f16cbad06c7081c153f9c9d1271077cd",
         },
     },
     "15.2.0": {
         "aarch64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/22052026/gcc-toolchain-15.2.0-aarch64.tar.xz",
-            "sha256": "af4bc7d58195b1cad293f188b85c2b533d94f521fb239566abfc09c8e10658f3",
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/03062026/gcc-toolchain-15.2.0-aarch64.tar.xz",
+            "sha256": "71ab9dedb6104e0c862ed1441f6df3a3aebdacff83b0ccb769a0f688b3844c70",
         },
         "armv7": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/22052026/gcc-toolchain-15.2.0-armv7.tar.xz",
-            "sha256": "c9ecc566b666b635d5ac4e3fe1e69395e16207bd5fd5600cd2d3e7348b60a1f7",
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/03062026/gcc-toolchain-15.2.0-armv7.tar.xz",
+            "sha256": "60ecec2aff34c56325897a0a5fd021b76a57a0e4ce91d809734541d4678bb237",
         },
         "x86_64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/22052026/gcc-toolchain-15.2.0-x86_64.tar.xz",
-            "sha256": "eb47860df3e48e63d3e5da6d1a347afa05372db6cb1f7831242237699c709cb0",
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/03062026/gcc-toolchain-15.2.0-x86_64.tar.xz",
+            "sha256": "ed6a74810fe42979493f3b0ef188f1b7a388817f496f4c9cee3f7183415ab821",
         },
     },
     "16.1.0": {
         "aarch64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/22052026/gcc-toolchain-16.1.0-aarch64.tar.xz",
-            "sha256": "4c497aab8d2e590e588508fb96c49503ff6289a9c909ed971e7ec5e352a5320c",
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/03062026/gcc-toolchain-16.1.0-aarch64.tar.xz",
+            "sha256": "61e13923a1f94078673222c8f9afd396e60a374f65c30306d80e4637885ee94c",
         },
         "armv7": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/22052026/gcc-toolchain-16.1.0-armv7.tar.xz",
-            "sha256": "cd40771f177b4e7eef422866781f90ff32c100aa50c46062b000169ccee8af36",
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/03062026/gcc-toolchain-16.1.0-armv7.tar.xz",
+            "sha256": "abf10be798ccece9d1fedc94a20513f158bdfca7b94da9e693e189cd011d96aa",
         },
         "x86_64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/22052026/gcc-toolchain-16.1.0-x86_64.tar.xz",
-            "sha256": "0beda7f66dd39dfdf78520a857f95d97ab8c6af78bb50562302f308afc56cf30",
+            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/03062026/gcc-toolchain-16.1.0-x86_64.tar.xz",
+            "sha256": "129385b572379c7eb7a2dd233b42283e9da51308ee5226f0e1a1b4b95a38a988",
         },
     },
 }
