@@ -134,6 +134,34 @@ build --genrule_strategy=remote
 build --spawn_strategy=remote
 ```
 
+## Linking with lld
+
+By default the toolchain links with the GNU BFD linker (`ld`). The toolchain also ships LLVM's
+`lld`, which you can opt into through the `linker-lld` feature. `lld` is generally faster than BFD
+and is a drop-in replacement for most use cases.
+
+Enable it for an individual target with the `features` attribute:
+
+```bazel
+cc_binary(
+    name = "my_program",
+    srcs = ["main.c"],
+    features = ["linker-lld"],
+)
+```
+
+Or enable it for an entire build. Add the following to your `.bazelrc`:
+
+```shell
+build:lld --features linker-lld
+```
+
+Then build with:
+
+```shell
+bazel build --config lld //<your_binary>
+```
+
 ## Running sanitizers
 
 If you want to run automated tests with the sanitizers enabled, see how we do testing under

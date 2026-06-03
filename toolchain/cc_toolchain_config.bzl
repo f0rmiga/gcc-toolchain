@@ -139,6 +139,17 @@ def _impl(ctx):
         ],
     )
 
+    linker_lld_feature = feature(
+        name = "linker-lld",
+        enabled = False,
+        flag_sets = [
+            flag_set(
+                actions = fortran_extend(base_link_actions, FORTRAN_ACTION_NAMES.fortran_link_executable) + lto_index_actions,
+                flag_groups = [flag_group(flags = ["-fuse-ld=lld"])],
+            ),
+        ],
+    )
+
     unfiltered_compile_flags_feature = feature(
         name = "unfiltered_compile_flags",
         enabled = True,
@@ -519,6 +530,7 @@ def _impl(ctx):
             include_paths_feature,
             library_search_directories_feature,
             default_link_flags_feature,
+            linker_lld_feature,
             supports_dynamic_linker_feature,
             supports_pic_feature,
             objcopy_embed_flags_feature,

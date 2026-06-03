@@ -51,6 +51,10 @@ build:ubsan --features ubsan
 build:ubsan --strip never
 build:ubsan --action_env UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 
+# Link with LLVM's lld instead of the default BFD linker.
+# If you change these flags, please also update the documentation.
+build:lld --features linker-lld
+
 try-import %workspace%/.bazelrc.user
 try-import %workspace%/.bazelrc.rbe
 try-import %workspace%/.bazelrc.ci
