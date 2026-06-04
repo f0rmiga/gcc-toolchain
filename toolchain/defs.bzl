@@ -21,12 +21,16 @@
 load("@bazel_lib//lib:utils.bzl", "is_bzlmod_enabled")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "read_user_netrc", "use_netrc")
 
 def _gcc_toolchain_impl(rctx):
     versions = json.decode(rctx.attr.gcc_versions)
+    url = versions[rctx.attr.gcc_version][rctx.attr.target_arch]["url"]
+    sha256 = versions[rctx.attr.gcc_version][rctx.attr.target_arch]["sha256"]
     rctx.download_and_extract(
-        url = versions[rctx.attr.gcc_version][rctx.attr.target_arch]["url"],
-        sha256 = versions[rctx.attr.gcc_version][rctx.attr.target_arch]["sha256"],
+        url = url,
+        sha256 = sha256,
+        auth = use_netrc(read_user_netrc(rctx), [url], {}),
     )
 
     absolute_toolchain_root = str(rctx.path("."))
