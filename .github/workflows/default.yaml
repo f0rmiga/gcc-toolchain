@@ -71,9 +71,10 @@ jobs:
           - lsan
           - tsan
           - ubsan
-        bzlmod_config:
-          - bzlmod
-          - workspace
+        compilation_mode:
+          - fastbuild
+          - dbg
+          - opt
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -84,10 +85,10 @@ jobs:
           bazelisk-cache: true
           disk-cache: ${{ github.workflow }}
           repository-cache: true
-      - name: Test ${{ matrix.sanitizer }}
+      - name: Test ${{ matrix.sanitizer }} (${{ matrix.compilation_mode }})
         run: |
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
-          bazel test --config ${{ matrix.sanitizer }} --config ${{ matrix.bzlmod_config }} //tests/sanitizers:${{ matrix.sanitizer }}_test
+          bazel test --compilation_mode ${{ matrix.compilation_mode }} --config ${{ matrix.sanitizer }} //tests/sanitizers:${{ matrix.sanitizer }}_test
   coverage:
     strategy:
       matrix:
