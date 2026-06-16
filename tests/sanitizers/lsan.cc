@@ -17,11 +17,10 @@
 
 #include <stdlib.h>
 
-void *p;
-
-int main()
+int main(int argc, char **argv)
 {
-    p = malloc(7);
+    void *p = malloc(argc * 7);
+    __asm__ volatile("" : : "r"(p) : "memory");
     p = 0;
     return 0;
 }

@@ -291,7 +291,6 @@ def _impl(ctx):
             cflags = [
                 "-fsanitize=address",
                 "-DADDRESS_SANITIZER",
-                "-O0",
                 "-g",
                 "-fno-omit-frame-pointer",
             ],
@@ -303,7 +302,6 @@ def _impl(ctx):
             name = "lsan",
             cflags = [
                 "-fsanitize=leak",
-                "-O0",
                 "-g",
                 "-fno-omit-frame-pointer",
             ],
@@ -315,7 +313,6 @@ def _impl(ctx):
             name = "tsan",
             cflags = [
                 "-fsanitize=thread",
-                "-O1",
                 "-g",
                 "-fno-omit-frame-pointer",
             ],
@@ -513,7 +510,7 @@ def _impl(ctx):
         ],
     )
 
-    features = sanitizers_features + fortran_extend(
+    features = fortran_extend(
         [
             default_compile_flags_feature,
             include_paths_feature,
@@ -537,7 +534,7 @@ def _impl(ctx):
         static_libgfortran_feature,
         fortran_link_flags_feature,
         extra_fflags_feature,
-    )
+    ) + sanitizers_features
 
     return [
         cc_common.create_cc_toolchain_config_info(
@@ -581,7 +578,6 @@ cc_toolchain_config = rule(
 def _sanitizer_feature(sanitizer, fortran_extend):
     feature_sets = [with_feature_set(
         features = [sanitizer.name],
-        not_features = ["opt"],
     )]
     return feature(
         name = sanitizer.name,
