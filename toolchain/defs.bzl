@@ -457,7 +457,7 @@ _FEATURE_ATTRS = {
             "@platforms//os:linux",
             "@platforms//cpu:{target_arch}",
         ],
-        doc = "contraint_values passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.",
+        doc = "constraint_values passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.",
         mandatory = False,
     ),
     "target_settings": attr.string_list(
