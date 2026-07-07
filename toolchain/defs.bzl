@@ -462,7 +462,9 @@ _FEATURE_ATTRS = {
         mandatory = False,
     ),
     "extra_target_compatible_with": attr.label_list(
-        doc = "Additional constraint_values passed to target_compatible_with of the toolchain.",
+        doc = "Additional constraint_values appended to target_compatible_with of the toolchain," +
+              " on top of the values from the target_compatible_with attribute (including its defaults)." +
+              " Unlike target_compatible_with, {target_arch} is not rendered.",
         mandatory = False,
     ),
     "target_settings": attr.string_list(
