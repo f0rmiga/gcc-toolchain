@@ -220,6 +220,36 @@ def _impl(ctx):
         ],
     )
 
+    # Bazel enables the "coverage" feature on every action whenever code coverage is being
+    # collected, but rules_cc's legacy gcc_coverage_map_format feature only attaches --coverage to
+    # the C/C++ link actions. A fortran_binary that links coverage-instrumented C/C++ objects
+    # therefore fails to link with undefined references to __gcov_init, __gcov_exit and
+    # __gcov_merge_add, so the flag has to be mirrored onto the Fortran link action.
+    #
+    # Only the link action is covered. Instrumenting fortran-compile would additionally need
+    # rules_fortran to declare the .gcno outputs and report them through InstrumentedFilesInfo;
+    # without that, -ftest-coverage would emit undeclared outputs that Bazel discards, so the
+    # Fortran sources themselves stay uninstrumented.
+    fortran_coverage_feature = feature(
+        name = "fortran_coverage",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = [FORTRAN_ACTION_NAMES.fortran_link_executable],
+                flag_groups = [
+                    flag_group(
+                        flags = ["--coverage"],
+                    ),
+                ],
+                with_features = [
+                    with_feature_set(
+                        features = ["coverage"],
+                    ),
+                ],
+            ),
+        ],
+    )
+
     if enable_fortran:
         action_configs.append(action_config(
             action_name = FORTRAN_ACTION_NAMES.fortran_compile,
@@ -545,6 +575,7 @@ def _impl(ctx):
         fortran_compile_flags_feature,
         static_libgfortran_feature,
         fortran_link_flags_feature,
+        fortran_coverage_feature,
         extra_fflags_feature,
     ) + sanitizers_features
 

@@ -108,7 +108,7 @@ jobs:
       - name: Test Coverage
         run: |
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
-          bazel coverage --config ${{ matrix.bzlmod_config }} //examples/hello_world_cpp:hello_world_cpp_test
+          bazel coverage --config ${{ matrix.bzlmod_config }} //examples/hello_world_cpp:hello_world_cpp_test //tests/coverage/...
   bazel9:
     strategy:
       matrix:

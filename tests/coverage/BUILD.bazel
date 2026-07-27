@@ -1,0 +1,37 @@
+# Copyright (c) Thulio Ferraz Assis 2026
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("//rules_cc:defs.bzl", "cc_library")
+load("//rules_fortran:defs.bzl", "fortran_binary")
+
+cc_library(
+    name = "add_one",
+    srcs = ["add_one.c"],
+)
+
+fortran_binary(
+    name = "fortran_links_instrumented_c",
+    srcs = ["main.f90"],
+    deps = [":add_one"],
+)
+
+# Linking a coverage-instrumented C object into a Fortran executable only
+# succeeds if the fortran_coverage feature mirrors --coverage onto the
+# fortran-link-executable action. Run with --collect_code_coverage to exercise
+# that; without it this is an ordinary mixed Fortran/C link.
+build_test(
+    name = "fortran_coverage_link_test",
+    targets = [":fortran_links_instrumented_c"],
+)
