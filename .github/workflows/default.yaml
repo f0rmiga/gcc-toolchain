@@ -60,6 +60,30 @@ jobs:
         run: |
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
           bazel test --compilation_mode ${{ matrix.compilation_mode }} //...
+  gcc_versions:
+    strategy:
+      matrix:
+        gcc_version:
+          - 12.5.0
+          - 13.4.0
+          - 14.3.0
+          - 15.2.0
+          - 16.1.0
+          - 16.2.0
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+      - name: Test GCC ${{ matrix.gcc_version }}
+        run: |
+          ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
+          bazel test --//toolchain:gcc_version=${{ matrix.gcc_version }} //...
   sanitizers:
     strategy:
       matrix:

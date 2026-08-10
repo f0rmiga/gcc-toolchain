@@ -19,8 +19,7 @@ gcc_toolchains = use_extension("//toolchain:module_extensions.bzl", "gcc_toolcha
         ),
         use_repo(gcc_toolchains, "gcc_toolchain_{}".format(arch)),
         register_toolchains(
-            "@gcc_toolchain_{}//:cc_toolchain".format(arch),
-            "@gcc_toolchain_{}//:fortran_toolchain".format(arch),
+            "@gcc_toolchain_{}//:all".format(arch),
             # Register toolchains as dev dependencies so that we don't pollute the toolchain resolution of consumers.
             dev_dependency = True,
         ),

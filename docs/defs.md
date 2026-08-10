@@ -9,9 +9,8 @@ This module provides the definitions for registering a GCC toolchain for C and C
 
 <pre>
 gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-binary_prefix">binary_prefix</a>, <a href="#gcc_toolchain-enable_fortran">enable_fortran</a>, <a href="#gcc_toolchain-extra_asmflags">extra_asmflags</a>, <a href="#gcc_toolchain-extra_cflags">extra_cflags</a>, <a href="#gcc_toolchain-extra_cxxflags">extra_cxxflags</a>,
-              <a href="#gcc_toolchain-extra_fflags">extra_fflags</a>, <a href="#gcc_toolchain-extra_ldflags">extra_ldflags</a>, <a href="#gcc_toolchain-extra_target_compatible_with">extra_target_compatible_with</a>, <a href="#gcc_toolchain-fincludes">fincludes</a>,
-              <a href="#gcc_toolchain-gcc_toolchain_workspace_name">gcc_toolchain_workspace_name</a>, <a href="#gcc_toolchain-gcc_version">gcc_version</a>, <a href="#gcc_toolchain-gcc_versions">gcc_versions</a>, <a href="#gcc_toolchain-includes">includes</a>, <a href="#gcc_toolchain-repo_mapping">repo_mapping</a>,
-              <a href="#gcc_toolchain-supports_param_files">supports_param_files</a>, <a href="#gcc_toolchain-target_arch">target_arch</a>, <a href="#gcc_toolchain-target_compatible_with">target_compatible_with</a>, <a href="#gcc_toolchain-target_settings">target_settings</a>)
+              <a href="#gcc_toolchain-extra_fflags">extra_fflags</a>, <a href="#gcc_toolchain-extra_ldflags">extra_ldflags</a>, <a href="#gcc_toolchain-fincludes">fincludes</a>, <a href="#gcc_toolchain-gcc_toolchain_workspace_name">gcc_toolchain_workspace_name</a>, <a href="#gcc_toolchain-gcc_version">gcc_version</a>,
+              <a href="#gcc_toolchain-gcc_versions">gcc_versions</a>, <a href="#gcc_toolchain-includes">includes</a>, <a href="#gcc_toolchain-repo_mapping">repo_mapping</a>, <a href="#gcc_toolchain-supports_param_files">supports_param_files</a>, <a href="#gcc_toolchain-target_arch">target_arch</a>)
 </pre>
 
 
@@ -29,7 +28,6 @@ gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-bi
 | <a id="gcc_toolchain-extra_cxxflags"></a>extra_cxxflags |  Extra flags for compiling C++.   | List of strings | optional | <code>[]</code> |
 | <a id="gcc_toolchain-extra_fflags"></a>extra_fflags |  Extra flags for compiling Fortran, if enabled.   | List of strings | optional | <code>[]</code> |
 | <a id="gcc_toolchain-extra_ldflags"></a>extra_ldflags |  Extra flags for linking. %workspace% is rendered to the toolchain root path. See https://github.com/bazelbuild/bazel/blob/a48e246e/src/main/java/com/google/devtools/build/lib/rules/cpp/CcToolchainProviderHelper.java#L234-L254.   | List of strings | optional | <code>[]</code> |
-| <a id="gcc_toolchain-extra_target_compatible_with"></a>extra_target_compatible_with |  Additional constraint_values appended to target_compatible_with of the toolchain, on top of the values from the target_compatible_with attribute (including its defaults). Unlike target_compatible_with, {target_arch} is not rendered.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional | <code>[]</code> |
 | <a id="gcc_toolchain-fincludes"></a>fincludes |  Extra includes for compiling Fortran, if enabled. %workspace% is rendered to the toolchain root path.   | List of strings | optional | <code>[]</code> |
 | <a id="gcc_toolchain-gcc_toolchain_workspace_name"></a>gcc_toolchain_workspace_name |  The name given to the gcc-toolchain repository, if the default was not used.   | String | optional | <code>"gcc_toolchain"</code> |
 | <a id="gcc_toolchain-gcc_version"></a>gcc_version |  The version of GCC.   | String | optional | <code>"16.2.0"</code> |
@@ -38,8 +36,6 @@ gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-bi
 | <a id="gcc_toolchain-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.&lt;p&gt;For example, an entry <code>"@foo": "@bar"</code> declares that, for any time this repository depends on <code>@foo</code> (such as a dependency on <code>@foo//some:target</code>, it should actually resolve that dependency within globally-declared <code>@bar</code> (<code>@bar//some:target</code>).   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | required |  |
 | <a id="gcc_toolchain-supports_param_files"></a>supports_param_files |  Set <code>supports_param_files = 1</code> on the generated <code>cc_toolchain</code>, which lets Bazel pass linker arguments via an <code>@params</code> file. Enable this when link command lines for large targets overflow <code>ARG_MAX</code> (e.g. <code>collect2: posix_spawn: Argument list too long</code>). Off by default to preserve historical behavior.   | Boolean | optional | <code>False</code> |
 | <a id="gcc_toolchain-target_arch"></a>target_arch |  The target architecture this toolchain produces. E.g. x86_64.   | String | required |  |
-| <a id="gcc_toolchain-target_compatible_with"></a>target_compatible_with |  constraint_values passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.   | List of strings | optional | <code>["@platforms//os:linux", "@platforms//cpu:{target_arch}"]</code> |
-| <a id="gcc_toolchain-target_settings"></a>target_settings |  config_settings passed to target_compatible_with of the toolchain. {target_arch} is rendered to the target_arch attribute value.   | List of strings | optional | <code>[]</code> |
 
 
 <a id="gcc_declare_toolchain"></a>
@@ -50,7 +46,11 @@ gcc_toolchain(<a href="#gcc_toolchain-name">name</a>, <a href="#gcc_toolchain-bi
 gcc_declare_toolchain(<a href="#gcc_declare_toolchain-name">name</a>, <a href="#gcc_declare_toolchain-target_arch">target_arch</a>, <a href="#gcc_declare_toolchain-kwargs">kwargs</a>)
 </pre>
 
-Declares a `gcc_toolchain`.
+Declares a `gcc_toolchain` for every available GCC version.
+
+`name` is the hub repository holding the `toolchain` declarations. Each GCC version gets its
+own repository holding the `cc_toolchain`, fetched only when that version is selected through
+the `@gcc_toolchain//toolchain:gcc_version` flag.
 
 You should use `gcc_register_toolchain` unless you need to register toolchains manually,
 e.g. if you are consuming this repository as a Bzlmod dependency.
@@ -61,9 +61,9 @@ e.g. if you are consuming this repository as a Bzlmod dependency.
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="gcc_declare_toolchain-name"></a>name |  The name passed to <code>gcc_toolchain</code>.   |  none |
+| <a id="gcc_declare_toolchain-name"></a>name |  The name of the hub repository holding the toolchain declarations.   |  none |
 | <a id="gcc_declare_toolchain-target_arch"></a>target_arch |  The target architecture of the toolchain.   |  none |
-| <a id="gcc_declare_toolchain-kwargs"></a>kwargs |  The extra arguments passed to <code>gcc_toolchain</code>. See <code>gcc_toolchain</code> for more info.   |  none |
+| <a id="gcc_declare_toolchain-kwargs"></a>kwargs |  The extra arguments passed to <code>gcc_toolchain</code>. See <code>gcc_toolchain</code> for more info. The attributes of the <code>toolchain</code> declarations themselves are also accepted here, since they apply to the hub rather than to <code>gcc_toolchain</code>:<br><br><code>target_compatible_with</code>: constraint_values passed to <code>target_compatible_with</code> of the toolchain. <code>{target_arch}</code> is rendered to the <code>target_arch</code> argument value. Defaults to <code>["@platforms//os:linux", "@platforms//cpu:{target_arch}"]</code>.<br><br><code>extra_target_compatible_with</code>: Additional constraint_values appended to <code>target_compatible_with</code> of the toolchain, on top of the values from the <code>target_compatible_with</code> argument (including its defaults). Unlike <code>target_compatible_with</code>, <code>{target_arch}</code> is not rendered.<br><br><code>target_settings</code>: Additional config_settings passed to <code>target_settings</code> of the toolchain, on top of the GCC version selection. <code>{target_arch}</code> is rendered to the <code>target_arch</code> argument value.   |  none |
 
 
 <a id="gcc_register_toolchain"></a>
@@ -74,15 +74,18 @@ e.g. if you are consuming this repository as a Bzlmod dependency.
 gcc_register_toolchain(<a href="#gcc_register_toolchain-name">name</a>, <a href="#gcc_register_toolchain-target_arch">target_arch</a>, <a href="#gcc_register_toolchain-kwargs">kwargs</a>)
 </pre>
 
-Declares a `gcc_toolchain` and calls `register_toolchain` for it.
+Declares a `gcc_toolchain` for every available GCC version and registers all of them.
+
+Which one resolves is selected by the `@gcc_toolchain//toolchain:gcc_version` flag.
+
 
 **PARAMETERS**
 
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="gcc_register_toolchain-name"></a>name |  The name passed to <code>gcc_toolchain</code>.   |  none |
+| <a id="gcc_register_toolchain-name"></a>name |  The name of the hub repository holding the toolchain declarations.   |  none |
 | <a id="gcc_register_toolchain-target_arch"></a>target_arch |  The target architecture of the toolchain.   |  none |
-| <a id="gcc_register_toolchain-kwargs"></a>kwargs |  The extra arguments passed to <code>gcc_toolchain</code>. See <code>gcc_toolchain</code> for more info.   |  none |
+| <a id="gcc_register_toolchain-kwargs"></a>kwargs |  The extra arguments passed to <code>gcc_declare_toolchain</code>. See <code>gcc_declare_toolchain</code> for more info.   |  none |
 
 

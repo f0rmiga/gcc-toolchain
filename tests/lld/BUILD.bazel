@@ -12,15 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("//rules_cc:defs.bzl", "cc_binary")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
+load("//rules_cc:defs.bzl", "cc_binary")
 
 # This binary is always linked with lld via the target-level `linker-lld`
-# feature, which requires the toolchain archive to ship `ld.lld`.
+# feature, which requires the toolchain archive to ship `ld.lld`. GCC versions
+# older than 15.2.0 are built without lld, so the test is skipped for them.
 cc_binary(
     name = "hello_world_lld",
     srcs = ["main.c"],
     features = ["linker-lld"],
+    target_compatible_with = select({
+        "//toolchain:gcc_version_12_5_0": ["@platforms//:incompatible"],
+        "//toolchain:gcc_version_13_4_0": ["@platforms//:incompatible"],
+        "//toolchain:gcc_version_14_3_0": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 sh_test(

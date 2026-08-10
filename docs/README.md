@@ -45,6 +45,48 @@ gcc_register_toolchain(
 )
 ```
 
+## Selecting the GCC version
+
+Every GCC version listed in `AVAILABLE_GCC_VERSIONS` is registered as a toolchain, and the
+`@gcc_toolchain//toolchain:gcc_version` flag picks which one resolves:
+
+```shell
+bazel build --@gcc_toolchain//toolchain:gcc_version=15.2.0 //...
+```
+
+Leaving the flag unset uses the `gcc_version` the toolchain was declared with, which defaults to
+the newest available version. Only the selected version is downloaded — the others are declared but
+never fetched.
+
+Because it is an ordinary build flag, it can be bound to a `.bazelrc` config:
+
+```shell
+build:gcc15 --@gcc_toolchain//toolchain:gcc_version=15.2.0
+```
+
+To change which version is used while the flag is unset, set it when declaring the toolchain. An
+explicit `--@gcc_toolchain//toolchain:gcc_version` still overrides it:
+
+```bazel
+gcc_toolchains.toolchain(
+    name = "gcc_toolchain_x86_64",
+    gcc_version = "15.2.0",
+    target_arch = "x86_64",
+)
+```
+
+Each version also gets a `config_setting`, so build rules can branch on the selected compiler:
+
+```bazel
+copts = select({
+    "@gcc_toolchain//toolchain:gcc_version_12_5_0": ["-Wno-maybe-uninitialized"],
+    "//conditions:default": [],
+})
+```
+
+Note that these settings only match when the flag is set explicitly, so a `select()` over them
+needs a `//conditions:default` branch to cover the unset case.
+
 ## Language Support
 
 ### Pure C
