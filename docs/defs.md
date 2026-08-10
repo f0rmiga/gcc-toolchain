@@ -63,7 +63,7 @@ e.g. if you are consuming this repository as a Bzlmod dependency.
 | :------------- | :------------- | :------------- |
 | <a id="gcc_declare_toolchain-name"></a>name |  The name of the hub repository holding the toolchain declarations.   |  none |
 | <a id="gcc_declare_toolchain-target_arch"></a>target_arch |  The target architecture of the toolchain.   |  none |
-| <a id="gcc_declare_toolchain-kwargs"></a>kwargs |  The extra arguments passed to <code>gcc_toolchain</code>. See <code>gcc_toolchain</code> for more info.   |  none |
+| <a id="gcc_declare_toolchain-kwargs"></a>kwargs |  The extra arguments passed to <code>gcc_toolchain</code>. See <code>gcc_toolchain</code> for more info. The attributes of the <code>toolchain</code> declarations themselves are also accepted here, since they apply to the hub rather than to <code>gcc_toolchain</code>:<br><br><code>target_compatible_with</code>: constraint_values passed to <code>target_compatible_with</code> of the toolchain. <code>{target_arch}</code> is rendered to the <code>target_arch</code> argument value. Defaults to <code>["@platforms//os:linux", "@platforms//cpu:{target_arch}"]</code>.<br><br><code>extra_target_compatible_with</code>: Additional constraint_values appended to <code>target_compatible_with</code> of the toolchain, on top of the values from the <code>target_compatible_with</code> argument (including its defaults). Unlike <code>target_compatible_with</code>, <code>{target_arch}</code> is not rendered.<br><br><code>target_settings</code>: Additional config_settings passed to <code>target_settings</code> of the toolchain, on top of the GCC version selection. <code>{target_arch}</code> is rendered to the <code>target_arch</code> argument value.   |  none |
 
 
 <a id="gcc_register_toolchain"></a>
@@ -74,15 +74,18 @@ e.g. if you are consuming this repository as a Bzlmod dependency.
 gcc_register_toolchain(<a href="#gcc_register_toolchain-name">name</a>, <a href="#gcc_register_toolchain-target_arch">target_arch</a>, <a href="#gcc_register_toolchain-kwargs">kwargs</a>)
 </pre>
 
-Declares a `gcc_toolchain` and calls `register_toolchain` for it.
+Declares a `gcc_toolchain` for every available GCC version and registers all of them.
+
+Which one resolves is selected by the `@gcc_toolchain//toolchain:gcc_version` flag.
+
 
 **PARAMETERS**
 
 
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
-| <a id="gcc_register_toolchain-name"></a>name |  The name passed to <code>gcc_toolchain</code>.   |  none |
+| <a id="gcc_register_toolchain-name"></a>name |  The name of the hub repository holding the toolchain declarations.   |  none |
 | <a id="gcc_register_toolchain-target_arch"></a>target_arch |  The target architecture of the toolchain.   |  none |
-| <a id="gcc_register_toolchain-kwargs"></a>kwargs |  The extra arguments passed to <code>gcc_toolchain</code>. See <code>gcc_toolchain</code> for more info.   |  none |
+| <a id="gcc_register_toolchain-kwargs"></a>kwargs |  The extra arguments passed to <code>gcc_declare_toolchain</code>. See <code>gcc_declare_toolchain</code> for more info.   |  none |
 
 

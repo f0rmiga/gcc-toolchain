@@ -64,7 +64,8 @@ Because it is an ordinary build flag, it can be bound to a `.bazelrc` config:
 build:gcc15 --@gcc_toolchain//toolchain:gcc_version=15.2.0
 ```
 
-To pin a version permanently instead, set it when declaring the toolchain:
+To change which version is used while the flag is unset, set it when declaring the toolchain. An
+explicit `--@gcc_toolchain//toolchain:gcc_version` still overrides it:
 
 ```bazel
 gcc_toolchains.toolchain(

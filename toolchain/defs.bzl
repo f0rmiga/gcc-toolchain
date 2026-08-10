@@ -741,6 +741,21 @@ def gcc_declare_toolchain(
         name: The name of the hub repository holding the toolchain declarations.
         target_arch: The target architecture of the toolchain.
         **kwargs: The extra arguments passed to `gcc_toolchain`. See `gcc_toolchain` for more info.
+            The attributes of the `toolchain` declarations themselves are also accepted here,
+            since they apply to the hub rather than to `gcc_toolchain`:
+
+            `target_compatible_with`: constraint_values passed to `target_compatible_with` of the
+            toolchain. `{target_arch}` is rendered to the `target_arch` argument value. Defaults to
+            `["@platforms//os:linux", "@platforms//cpu:{target_arch}"]`.
+
+            `extra_target_compatible_with`: Additional constraint_values appended to
+            `target_compatible_with` of the toolchain, on top of the values from the
+            `target_compatible_with` argument (including its defaults). Unlike
+            `target_compatible_with`, `{target_arch}` is not rendered.
+
+            `target_settings`: Additional config_settings passed to `target_settings` of the
+            toolchain, on top of the GCC version selection. `{target_arch}` is rendered to the
+            `target_arch` argument value.
     """
     binary_prefix = kwargs.pop("binary_prefix", None)
     if binary_prefix == None:
@@ -754,6 +769,9 @@ def gcc_declare_toolchain(
     extra_target_compatible_with = kwargs.pop("extra_target_compatible_with", [])
     target_compatible_with = kwargs.pop("target_compatible_with", None)
     target_settings = kwargs.pop("target_settings", [])
+
+    # Left in kwargs so that the per-version repositories keep receiving it.
+    repo_mapping = kwargs.get("repo_mapping", None)
 
     extra_cflags = kwargs.pop("extra_cflags", [])
     extra_cxxflags = kwargs.pop("extra_cxxflags", [])
@@ -784,6 +802,18 @@ def gcc_declare_toolchain(
             **kwargs
         )
 
+    hub_kwargs = {}
+
+    # An explicitly empty target_compatible_with drops the default constraints, so only an omitted
+    # one may fall back to the attribute default.
+    if target_compatible_with != None:
+        hub_kwargs["target_compatible_with"] = target_compatible_with
+
+    # The hub BUILD file resolves @bazel_skylib, @platforms and @rules_cc as well, so it needs the
+    # same repository mapping as the per-version repositories.
+    if repo_mapping != None:
+        hub_kwargs["repo_mapping"] = repo_mapping
+
     _gcc_toolchains_hub(
         name = name,
         default_gcc_version = default_gcc_version,
@@ -792,19 +822,22 @@ def gcc_declare_toolchain(
         target_arch = target_arch,
         target_settings = target_settings,
         toolchain_repos = toolchain_repos,
-        **({"target_compatible_with": target_compatible_with} if target_compatible_with else {})
+        **hub_kwargs
     )
 
 def gcc_register_toolchain(
         name,
         target_arch,
         **kwargs):
-    """Declares a `gcc_toolchain` and calls `register_toolchain` for it.
+    """Declares a `gcc_toolchain` for every available GCC version and registers all of them.
+
+    Which one resolves is selected by the `@gcc_toolchain//toolchain:gcc_version` flag.
 
     Args:
-        name: The name passed to `gcc_toolchain`.
+        name: The name of the hub repository holding the toolchain declarations.
         target_arch: The target architecture of the toolchain.
-        **kwargs: The extra arguments passed to `gcc_toolchain`. See `gcc_toolchain` for more info.
+        **kwargs: The extra arguments passed to `gcc_declare_toolchain`. See
+            `gcc_declare_toolchain` for more info.
     """
     enable_fortran = kwargs.pop("enable_fortran", True)
     gcc_declare_toolchain(name, target_arch, enable_fortran = enable_fortran, **kwargs)
