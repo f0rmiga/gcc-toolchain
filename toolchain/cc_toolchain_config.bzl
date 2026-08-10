@@ -29,9 +29,10 @@ load(
     "tool_path",
     "with_feature_set",
 )
-load("//toolchain/fortran:action_names.bzl", FORTRAN_ACTION_NAMES = "ACTION_NAMES")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/toolchains:cc_toolchain_config_info.bzl", "CcToolchainConfigInfo")
+load("@rules_cc//cc/toolchains:feature_injection.bzl", "FeatureInfo", "convert_feature")
+load("//toolchain/fortran:action_names.bzl", FORTRAN_ACTION_NAMES = "ACTION_NAMES")
 
 base_compile_actions = [
     ACTION_NAMES.c_compile,
@@ -103,6 +104,8 @@ def _impl(ctx):
     extra_fflags = ctx.attr.extra_fflags
     extra_ldflags = ctx.attr.extra_ldflags
     extra_asmflags = ctx.attr.extra_asmflags
+    extra_known_features = ctx.attr.extra_known_features
+    extra_enabled_features = ctx.attr.extra_enabled_features
 
     action_configs = []
 
@@ -579,6 +582,9 @@ def _impl(ctx):
         extra_fflags_feature,
     ) + sanitizers_features
 
+    extra_rules_based_features = depset(extra_enabled_features + extra_known_features)
+    features.extend([convert_feature(extra_feature[FeatureInfo], enabled = extra_feature in extra_enabled_features) for extra_feature in extra_rules_based_features.to_list()])
+
     return [
         cc_common.create_cc_toolchain_config_info(
             abi_libc_version = "local",
@@ -610,6 +616,8 @@ cc_toolchain_config = rule(
         "enable_fortran": attr.bool(mandatory = True),
         "extra_cflags": attr.string_list(mandatory = True),
         "extra_cxxflags": attr.string_list(mandatory = True),
+        "extra_enabled_features": attr.label_list(mandatory = True),
+        "extra_known_features": attr.label_list(mandatory = True),
         "extra_fflags": attr.string_list(mandatory = True),
         "extra_ldflags": attr.string_list(mandatory = True),
         "extra_asmflags": attr.string_list(mandatory = True),
