@@ -46,9 +46,6 @@ jobs:
           - fastbuild
           - dbg
           - opt
-        bzlmod_config:
-          - bzlmod
-          - workspace
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +59,7 @@ jobs:
       - name: Test
         run: |
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
-          bazel test --compilation_mode ${{ matrix.compilation_mode }} --config ${{ matrix.bzlmod_config }} //...
+          bazel test --compilation_mode ${{ matrix.compilation_mode }} //...
   sanitizers:
     strategy:
       matrix:
@@ -90,11 +87,6 @@ jobs:
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
           bazel test --compilation_mode ${{ matrix.compilation_mode }} --config ${{ matrix.sanitizer }} //tests/sanitizers:${{ matrix.sanitizer }}_test
   coverage:
-    strategy:
-      matrix:
-        bzlmod_config:
-          - bzlmod
-          - workspace
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -108,13 +100,8 @@ jobs:
       - name: Test Coverage
         run: |
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
-          bazel coverage --config ${{ matrix.bzlmod_config }} //examples/hello_world_cpp:hello_world_cpp_test //tests/coverage/...
+          bazel coverage //examples/hello_world_cpp:hello_world_cpp_test //tests/coverage/...
   bazel9:
-    strategy:
-      matrix:
-        bzlmod_config:
-          - bzlmod
-          - workspace
     runs-on: ubuntu-22.04
     env:
       USE_BAZEL_VERSION: 9.1.0
@@ -130,16 +117,13 @@ jobs:
       - name: Test
         run: |
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
-          bazel test --config ${{ matrix.bzlmod_config }} -- //... -//docs/...
+          bazel test -- //... -//docs/...
   rbe:
     strategy:
       matrix:
         os:
           - ubuntu-22.04
           - macos-14
-        bzlmod_config:
-          - bzlmod
-          - workspace
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -153,4 +137,4 @@ jobs:
       - name: Test with RBE
         run: |
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
-          bazel test --config rbe --config ${{ matrix.bzlmod_config }} //...
+          bazel test --config rbe //...
