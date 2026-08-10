@@ -1,0 +1,39 @@
+# Copyright (c) Thulio Ferraz Assis 2026
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("//rules_cc:defs.bzl", "cc_test")
+load("//toolchain:defs.bzl", "AVAILABLE_GCC_VERSIONS", "DEFAULT_GCC_VERSION")
+
+# Asserts that the compiler picked by toolchain resolution is the one the gcc_version flag asked
+# for. The build fails to compile when the selected toolchain reports a different version.
+cc_test(
+    name = "gcc_version_test",
+    srcs = ["main.c"],
+    copts = select(dicts.add(
+        {
+            "//toolchain:gcc_version_{}".format(gcc_version.replace(".", "_")): [
+                "-DEXPECTED_GCC_MAJOR={}".format(gcc_version.split(".")[0]),
+                "-DEXPECTED_GCC_MINOR={}".format(gcc_version.split(".")[1]),
+            ]
+            for gcc_version in AVAILABLE_GCC_VERSIONS
+        },
+        {
+            "//conditions:default": [
+                "-DEXPECTED_GCC_MAJOR={}".format(DEFAULT_GCC_VERSION.split(".")[0]),
+                "-DEXPECTED_GCC_MINOR={}".format(DEFAULT_GCC_VERSION.split(".")[1]),
+            ],
+        },
+    )),
+)

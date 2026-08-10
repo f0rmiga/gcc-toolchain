@@ -55,6 +55,15 @@ Edit `AVAILABLE_GCC_VERSIONS` in [toolchain/defs.bzl](../toolchain/defs.bzl). Wh
 new GCC version, add a new entry; bump `DEFAULT_GCC_VERSION` if that version becomes the default.
 Leave versions that the newer releases do not publish pointing at their existing release tag.
 
+Every entry becomes a selectable toolchain and a `//toolchain:gcc_version_*` config setting, so
+adding or removing a version also means:
+
+- adding it to the `gcc_versions` matrix in
+  [.github/workflows/default.yaml](../.github/workflows/default.yaml);
+- checking whether the tarball ships `bin/ld.lld`. GCC versions built without it cannot use the
+  `linker-lld` feature, and `//tests/lld` marks those versions incompatible so the test is skipped
+  rather than failing.
+
 ## 4. Regenerate the docs
 
 `AVAILABLE_GCC_VERSIONS` is serialized into the `gcc_versions` attribute default, so
@@ -70,6 +79,11 @@ New tarballs can change more than their contents, so exercise every architecture
 
 ```shell
 bazel test //...
+
+# Every selectable GCC version, which is what the CI matrix runs.
+for gcc_version in 12.5.0 13.4.0 14.3.0 15.2.0 16.1.0 16.2.0; do
+  bazel test --//toolchain:gcc_version=${gcc_version} //...
+done
 
 # Cross-compilation, which the default test run does not cover.
 for platform in aarch64_linux armv7_linux x86_64_linux; do

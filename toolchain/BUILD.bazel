@@ -16,6 +16,27 @@
 # limitations under the License.
 
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load(":defs.bzl", "AVAILABLE_GCC_VERSIONS")
+
+# Selects which GCC version the registered toolchains resolve to. The empty default defers to the
+# gcc_version each toolchain was declared with.
+string_flag(
+    name = "gcc_version",
+    build_setting_default = "",
+    visibility = ["//visibility:public"],
+)
+
+# Matches when gcc_version is set to that exact version. None of these match while the flag is left
+# at its empty default, so a select over them needs a //conditions:default branch.
+[
+    config_setting(
+        name = "gcc_version_{}".format(gcc_version.replace(".", "_")),
+        flag_values = {":gcc_version": gcc_version},
+        visibility = ["//visibility:public"],
+    )
+    for gcc_version in AVAILABLE_GCC_VERSIONS
+]
 
 exports_files(
     ["config.bzl"],
