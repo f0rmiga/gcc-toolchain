@@ -20,6 +20,8 @@ def _gcc_register_toolchain_module_extension(mctx):
                 extra_cxxflags = declare.extra_cxxflags,
                 extra_ldflags = declare.extra_ldflags,
                 extra_fflags = declare.extra_fflags,
+                extra_enabled_features = declare.extra_enabled_features,
+                extra_known_features = declare.extra_known_features,
                 extra_target_compatible_with = declare.extra_target_compatible_with,
                 supports_param_files = declare.supports_param_files,
             )

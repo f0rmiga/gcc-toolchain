@@ -263,6 +263,10 @@ def _gcc_toolchain_impl(rctx):
         extra_ldflags = _format_flags(extra_ldflags),
         extra_asmflags = _format_flags(extra_asmflags),
 
+        # Features
+        extra_enabled_features = [str(feature_label) for feature_label in rctx.attr.extra_enabled_features],
+        extra_known_features = [str(feature_label) for feature_label in rctx.attr.extra_known_features],
+
         # cc_toolchain attributes
         supports_param_files = 1 if rctx.attr.supports_param_files else 0,
 
@@ -430,6 +434,24 @@ _FEATURE_ATTRS = {
     ),
     "extra_asmflags": attr.string_list(
         doc = "Extra flags for the assembly preprocessor.",
+        default = [],
+    ),
+    "extra_enabled_features": attr.label_list(
+        doc = ("Extra `cc_feature` features to add to this toolchain in an initially " +
+               "enabled state. This attribute has limited integration with `cc_feature`, " +
+               "and does not run additional correctness checks or handle things like `data` " +
+               "files. This is only offered as a migration bridge for projects transitioning " +
+               "to rule-based toolchain configurations, or sharing of simple argument sets " +
+               "with older toolchains."),
+        default = [],
+    ),
+    "extra_known_features": attr.label_list(
+        doc = ("Extra `cc_feature` features to add to this toolchain in an initially " +
+               "disabled state. This attribute has limited integration with `cc_feature`, " +
+               "and does not run additional correctness checks or handle things like `data` " +
+               "files. This is only offered as a migration bridge for projects transitioning " +
+               "to rule-based toolchain configurations, or sharing of simple argument sets " +
+               "with older toolchains."),
         default = [],
     ),
     "supports_param_files": attr.bool(
@@ -640,6 +662,8 @@ ATTRS_SHARED_WITH_MODULE_EXTENSION = {
         "extra_ldflags",
         "extra_fflags",
         "extra_asmflags",
+        "extra_enabled_features",
+        "extra_known_features",
         "extra_target_compatible_with",
         "supports_param_files",
     ]
@@ -778,6 +802,8 @@ def gcc_declare_toolchain(
     extra_fflags = kwargs.pop("extra_fflags", [])
     extra_ldflags = kwargs.pop("extra_ldflags", [])
     extra_asmflags = kwargs.pop("extra_asmflags", [])
+    extra_enabled_features = kwargs.pop("extra_enabled_features", [])
+    extra_known_features = kwargs.pop("extra_known_features", [])
     includes = kwargs.pop("includes", [])
     fincludes = kwargs.pop("fincludes", [])
 
@@ -794,6 +820,8 @@ def gcc_declare_toolchain(
             extra_fflags = extra_fflags,
             extra_ldflags = extra_ldflags,
             extra_asmflags = extra_asmflags,
+            extra_enabled_features = extra_enabled_features,
+            extra_known_features = extra_known_features,
             includes = includes,
             fincludes = fincludes,
             gcc_version = gcc_version,
@@ -953,6 +981,8 @@ cc_toolchain_config(
     extra_fflags = {extra_fflags},
     extra_ldflags = {extra_ldflags},
     extra_asmflags = {extra_asmflags},
+    extra_enabled_features = {extra_enabled_features},
+    extra_known_features = {extra_known_features},
     tool_paths = tool_paths,
 )
 
