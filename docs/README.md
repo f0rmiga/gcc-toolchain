@@ -4,6 +4,9 @@ For the rules definitions, see [defs.md](./defs.md).
 
 For examples on how to use this repository, see the [examples](../examples).
 
+For how to bump the pinned toolchain tarballs, see
+[updating-gcc-builds.md](./updating-gcc-builds.md).
+
 
 ## Getting Started
 
