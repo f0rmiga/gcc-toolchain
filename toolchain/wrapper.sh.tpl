@@ -44,4 +44,15 @@ for i in "${!args[@]}"; do
     fi
 done
 
+# Under `bazel coverage`, Bazel's collect_cc_coverage.sh leaks gcov's per-file
+# summary into the test's stdout (test.log): it declares gcov_log but never
+# redirects the gcov invocation into it, still unfixed upstream as of Bazel
+# master. Bazel only consumes the .gcov.json.gz data files gcov writes to disk,
+# never its stdout, so drop the summary when the wrapped tool is gcov running
+# under a Bazel coverage test action (COVERAGE_DIR is only set there). stderr
+# is left alone so real gcov errors still surface.
+if [[ "__binary__" == *gcov && -n "${COVERAGE_DIR:-}" ]]; then
+    exec > /dev/null
+fi
+
 exec "${EXECROOT}/__binary__" "${args[@]}"
