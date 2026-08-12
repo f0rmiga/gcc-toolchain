@@ -33,6 +33,17 @@ gcc_toolchains = use_extension("//toolchain:module_extensions.bzl", "gcc_toolcha
     ]
 ]
 
+# An aarch64-HOSTED toolchain, for //tests/host_arch. Deliberately not registered: its
+# binaries are ARM, so it cannot execute on an x86_64 CI machine -- the test only inspects
+# the fetched archive.
+gcc_toolchains.toolchain(
+    name = "gcc_toolchain_aarch64_host",
+    gcc_version = "14.3.0",
+    host_arch = "aarch64",
+    target_arch = "aarch64",
+)
+use_repo(gcc_toolchains, "gcc_toolchain_aarch64_host")
+
 # Dev Dependencies (for examples/)
 # ===============================
 bazel_dep(name = "rules_foreign_cc", version = "0.15.1", dev_dependency = True)

@@ -31,6 +31,14 @@ _TRIPLE_BINARY_PREFIXES = {
     "x86_64": "x86_64-linux-",
 }
 
+# Bazel spells the host CPU the way Go does ("amd64"), while target_arch and the
+# @platforms//cpu constraints use the GNU name ("x86_64"). Only these two architectures can
+# HOST a toolchain; armv7 is a target only.
+_BAZEL_HOST_ARCHS = {
+    "aarch64": "aarch64",
+    "amd64": "x86_64",
+}
+
 def _detect_binary_prefix(rctx, target_arch):
     """Resolves the prefix that `bin/` binaries carry in the extracted toolchain.
 
@@ -50,10 +58,63 @@ def _detect_binary_prefix(rctx, target_arch):
         return triple_prefix
     return ""
 
+def _resolve_host_arch(rctx):
+    """Resolves the architecture the toolchain binaries run on.
+
+    Args:
+        rctx: The repository context.
+
+    Returns:
+        The value of the `host_arch` attribute, or the architecture Bazel itself is running
+        on when that attribute is left at its empty default.
+    """
+    return rctx.attr.host_arch or _BAZEL_HOST_ARCHS.get(rctx.os.arch, ARCHS.x86_64)
+
+def _resolve_build(gcc_versions, gcc_version, target_arch, host_arch):
+    """Picks the archive to fetch for one (version, target, host) combination.
+
+    Args:
+        gcc_versions: The decoded `gcc_versions` attribute.
+        gcc_version: The GCC version to fetch.
+        target_arch: The architecture the toolchain produces code for.
+        host_arch: The architecture the toolchain binaries run on.
+
+    Returns:
+        The `{url, sha256}` dict of the archive to fetch.
+    """
+    build = gcc_versions[gcc_version][target_arch]
+
+    # A build entry is either a `{host_arch: {url, sha256}}` mapping, or the flat
+    # `{url, sha256}` of an x86_64-hosted toolchain. The flat form keeps a hand-written
+    # gcc_versions from before host_arch existed working, and means it as x86_64-hosted.
+    if "url" not in build:
+        if host_arch not in build:
+            fail("gcc {} for target {} has no {}-hosted build. Available: {}.".format(
+                gcc_version,
+                target_arch,
+                host_arch,
+                ", ".join(sorted(build)),
+            ))
+        return build[host_arch]
+    if host_arch != ARCHS.x86_64:
+        fail(("gcc_versions for {} target {} lists a single (x86_64-hosted) build, but this " +
+              "toolchain is {}-hosted. Give it a {{host_arch: {{url, sha256}}}} mapping.").format(
+            gcc_version,
+            target_arch,
+            host_arch,
+        ))
+    return build
+
 def _gcc_toolchain_impl(rctx):
-    versions = json.decode(rctx.attr.gcc_versions)
-    url = versions[rctx.attr.gcc_version][rctx.attr.target_arch]["url"]
-    sha256 = versions[rctx.attr.gcc_version][rctx.attr.target_arch]["sha256"]
+    host_arch = _resolve_host_arch(rctx)
+    build = _resolve_build(
+        json.decode(rctx.attr.gcc_versions),
+        rctx.attr.gcc_version,
+        rctx.attr.target_arch,
+        host_arch,
+    )
+    url = build["url"]
+    sha256 = build["sha256"]
     rctx.download_and_extract(
         url = url,
         sha256 = sha256,
@@ -93,6 +154,12 @@ def _gcc_toolchain_impl(rctx):
     elif target_arch == ARCHS.x86_64:
         include_prefix = "x86_64-linux/"
 
+    # A NATIVE build (host == target) puts libstdc++ and the target headers at the root of
+    # the archive, while a CROSS build nests them under the target triple. This is a
+    # property of the build, not of the architecture: the aarch64-hosted aarch64 toolchain
+    # is native and therefore flat, whereas the aarch64-hosted x86_64 one is nested.
+    is_native = host_arch == target_arch
+
     c_builtin_includes = [
         include.format(
             gcc_version = rctx.attr.gcc_version,
@@ -101,38 +168,28 @@ def _gcc_toolchain_impl(rctx):
         for include in [
             "%workspace%/lib/gcc/{include_prefix}{gcc_version}/include",
             "%workspace%/lib/gcc/{include_prefix}{gcc_version}/include-fixed",
-        ] + ([
+        ] + ([] if is_native else [
             "%workspace%/{include_prefix}include",
-        ] if target_arch != ARCHS.x86_64 else []) + [
+        ]) + [
             "%workspace%/sysroot/usr/include",
         ]
     ]
 
-    cxx_builtin_includes = []
-    if target_arch == ARCHS.x86_64:
-        cxx_builtin_includes.extend([
-            include.format(
-                gcc_version = rctx.attr.gcc_version,
-                include_prefix = include_prefix,
-            )
-            for include in [
-                "%workspace%/include/c++/{gcc_version}",
-                "%workspace%/include/c++/{gcc_version}/{include_prefix}",
-                "%workspace%/include/c++/{gcc_version}/backward",
-            ]
+    cxx_builtin_includes = [
+        include.format(
+            gcc_version = rctx.attr.gcc_version,
+            include_prefix = include_prefix,
+        )
+        for include in ([
+            "%workspace%/include/c++/{gcc_version}",
+            "%workspace%/include/c++/{gcc_version}/{include_prefix}",
+            "%workspace%/include/c++/{gcc_version}/backward",
+        ] if is_native else [
+            "%workspace%/{include_prefix}include/c++/{gcc_version}",
+            "%workspace%/{include_prefix}include/c++/{gcc_version}/{include_prefix}",
+            "%workspace%/{include_prefix}include/c++/{gcc_version}/backward",
         ])
-    else:
-        cxx_builtin_includes.extend([
-            include.format(
-                gcc_version = rctx.attr.gcc_version,
-                include_prefix = include_prefix,
-            )
-            for include in [
-                "%workspace%/{include_prefix}include/c++/{gcc_version}",
-                "%workspace%/{include_prefix}include/c++/{gcc_version}/{include_prefix}",
-                "%workspace%/{include_prefix}include/c++/{gcc_version}/backward",
-            ]
-        ])
+    ]
 
     f_builtin_includes = [
         include.format(
@@ -315,86 +372,170 @@ def _fortran_vars(enable_fortran, gcc_toolchain_workspace_name, include_prefix, 
 AVAILABLE_GCC_VERSIONS = {
     "12.5.0": {
         "aarch64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-aarch64.tar.xz",
-            "sha256": "7b0e25133a98d44b648a925ba11f64a3adc470e87668af80ce2c3af389ebe9be",
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-aarch64.tar.xz",
+                "sha256": "7b0e25133a98d44b648a925ba11f64a3adc470e87668af80ce2c3af389ebe9be",
+            },
         },
         "armv7": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-armv7.tar.xz",
-            "sha256": "a0ef76c8cc517b3d76dd2f09b1a371975b2ff1082e2f9372ed79af01b9292934",
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-armv7.tar.xz",
+                "sha256": "a0ef76c8cc517b3d76dd2f09b1a371975b2ff1082e2f9372ed79af01b9292934",
+            },
         },
         "x86_64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-x86_64.tar.xz",
-            "sha256": "51076e175839b434bb2dc0006c0096916df585e8c44666d35b0e3ce821d535db",
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-12.5.0-x86_64.tar.xz",
+                "sha256": "51076e175839b434bb2dc0006c0096916df585e8c44666d35b0e3ce821d535db",
+            },
         },
     },
     "13.4.0": {
         "aarch64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-aarch64.tar.xz",
-            "sha256": "770cf6bf62bdf78763de526d3a9f5cae4c19f1a3aca0ef8f18b05f1a46d1ffaf",
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-aarch64.tar.xz",
+                "sha256": "770cf6bf62bdf78763de526d3a9f5cae4c19f1a3aca0ef8f18b05f1a46d1ffaf",
+            },
         },
         "armv7": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-armv7.tar.xz",
-            "sha256": "1b2739b5003c5a3f0ab7c4cc7fb95cc99c0e933982512de7255c2bd9ced757ad",
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-armv7.tar.xz",
+                "sha256": "1b2739b5003c5a3f0ab7c4cc7fb95cc99c0e933982512de7255c2bd9ced757ad",
+            },
         },
         "x86_64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-x86_64.tar.xz",
-            "sha256": "d96071c1b98499afd7b7b56ebd69ad414020edf66e982004acffe7df8aaf7e02",
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/18082025/gcc-toolchain-13.4.0-x86_64.tar.xz",
+                "sha256": "d96071c1b98499afd7b7b56ebd69ad414020edf66e982004acffe7df8aaf7e02",
+            },
         },
     },
     "14.3.0": {
         "aarch64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-14.3.0-aarch64.tar.xz",
-            "sha256": "b5a73bc840938c8dbb49e2f15b8b8d63e5c33beae0be2aa9a7c52b593522cdcd",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-14.3.0-aarch64-host-aarch64.tar.xz",
+                "sha256": "def0f33e644f8586f6ca39754951eebe2189b92823bdaf6d4c4ba42fdad6c598",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-14.3.0-aarch64.tar.xz",
+                "sha256": "b5a73bc840938c8dbb49e2f15b8b8d63e5c33beae0be2aa9a7c52b593522cdcd",
+            },
         },
         "armv7": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-14.3.0-armv7.tar.xz",
-            "sha256": "376684c062a23e84b619a717fa4c7bba336211c8b48169f76eb5aa6ed4da6bb8",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-14.3.0-armv7-host-aarch64.tar.xz",
+                "sha256": "ff3e11e2b222fb42146f1254c6a089234e8cd8e384128de56afc781af13d72d9",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-14.3.0-armv7.tar.xz",
+                "sha256": "376684c062a23e84b619a717fa4c7bba336211c8b48169f76eb5aa6ed4da6bb8",
+            },
         },
         "x86_64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-14.3.0-x86_64.tar.xz",
-            "sha256": "d155a38e4acff9588df466f0edc98c1a2c54d09bc0162805ba38908cfd7a1d28",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-14.3.0-x86_64-host-aarch64.tar.xz",
+                "sha256": "716ed801e7f2cb35cf25614ffe8e8293934587198e919bcb8c55016c862628f1",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-14.3.0-x86_64.tar.xz",
+                "sha256": "d155a38e4acff9588df466f0edc98c1a2c54d09bc0162805ba38908cfd7a1d28",
+            },
         },
     },
     "15.2.0": {
         "aarch64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-15.2.0-aarch64.tar.xz",
-            "sha256": "f38696590786e7c99d3bb5b8ce9ed66be6224d505fa45dcae0b2a6ec07eb0570",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-15.2.0-aarch64-host-aarch64.tar.xz",
+                "sha256": "963b612339998a2dc68aea42ac0928933c0aa4ae18be22f365ec83c86e685b52",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-15.2.0-aarch64.tar.xz",
+                "sha256": "f38696590786e7c99d3bb5b8ce9ed66be6224d505fa45dcae0b2a6ec07eb0570",
+            },
         },
         "armv7": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-15.2.0-armv7.tar.xz",
-            "sha256": "8ecb5b35aa25efe78772701c70ed27eda727264303d03cffc372a6f24f18be90",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-15.2.0-armv7-host-aarch64.tar.xz",
+                "sha256": "24a3c48b46cd3d0b80f6a780cdc87e4327e06e7a6ba3b08de9045dda010e6721",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-15.2.0-armv7.tar.xz",
+                "sha256": "8ecb5b35aa25efe78772701c70ed27eda727264303d03cffc372a6f24f18be90",
+            },
         },
         "x86_64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-15.2.0-x86_64.tar.xz",
-            "sha256": "f31edf791877935258dcc864afbfb7c9f9238be9f7d9da0ee57f5bc121074457",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-15.2.0-x86_64-host-aarch64.tar.xz",
+                "sha256": "5096ac470ff1023ac337b1fee847d941946401142121f1f094600b854e2569d6",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-15.2.0-x86_64.tar.xz",
+                "sha256": "f31edf791877935258dcc864afbfb7c9f9238be9f7d9da0ee57f5bc121074457",
+            },
         },
     },
     "16.1.0": {
         "aarch64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-16.1.0-aarch64.tar.xz",
-            "sha256": "4331e513156a699c1015fb94021497306f0a896520efbad8b3e16418eb683468",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-16.1.0-aarch64-host-aarch64.tar.xz",
+                "sha256": "4492c3160e07f5a931112a1646413b5a0ccaefff1d6ae5dc58d361cb7840d394",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-16.1.0-aarch64.tar.xz",
+                "sha256": "4331e513156a699c1015fb94021497306f0a896520efbad8b3e16418eb683468",
+            },
         },
         "armv7": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-16.1.0-armv7.tar.xz",
-            "sha256": "8d42c1fd130ccb170fe8d5d17148ae2d3f97134ac0009fdcac87550fec6a6289",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-16.1.0-armv7-host-aarch64.tar.xz",
+                "sha256": "0f51857564e065113dbec6b106241ec6437b9cba7bb5dedc54ada0fd6ab73e80",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-16.1.0-armv7.tar.xz",
+                "sha256": "8d42c1fd130ccb170fe8d5d17148ae2d3f97134ac0009fdcac87550fec6a6289",
+            },
         },
         "x86_64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-16.1.0-x86_64.tar.xz",
-            "sha256": "cfd8ca5bc365c1c838825ed6e44c7b2c309aada25791f76ef73b1aec819e362e",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-16.1.0-x86_64-host-aarch64.tar.xz",
+                "sha256": "7b10a4d5e89d043044e7d7850e0693740bb4643ef231499d1c887759ed7b8615",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/08072026/gcc-toolchain-16.1.0-x86_64.tar.xz",
+                "sha256": "cfd8ca5bc365c1c838825ed6e44c7b2c309aada25791f76ef73b1aec819e362e",
+            },
         },
     },
     "16.2.0": {
         "aarch64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/10082026/gcc-toolchain-16.2.0-aarch64.tar.xz",
-            "sha256": "6407b35116f21c59e98ab5ad68ddd8ff5f3e0469723a5d465ec08ed615b11a55",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/10082026/gcc-toolchain-16.2.0-aarch64-host-aarch64.tar.xz",
+                "sha256": "82a482d269cf75334cb969ef93593655f7e726e855043214e38b3672b10f97de",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/10082026/gcc-toolchain-16.2.0-aarch64.tar.xz",
+                "sha256": "6407b35116f21c59e98ab5ad68ddd8ff5f3e0469723a5d465ec08ed615b11a55",
+            },
         },
         "armv7": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/10082026/gcc-toolchain-16.2.0-armv7.tar.xz",
-            "sha256": "515da8a22fa560002d3d149ad701acb725502c70f7bf8d4905f90b0830d38238",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/10082026/gcc-toolchain-16.2.0-armv7-host-aarch64.tar.xz",
+                "sha256": "cb97908d9d375a9e7502898a7277832aa63ca696ffc1088411f0eac921d5d54d",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/10082026/gcc-toolchain-16.2.0-armv7.tar.xz",
+                "sha256": "515da8a22fa560002d3d149ad701acb725502c70f7bf8d4905f90b0830d38238",
+            },
         },
         "x86_64": {
-            "url": "https://github.com/f0rmiga/gcc-builds/releases/download/10082026/gcc-toolchain-16.2.0-x86_64.tar.xz",
-            "sha256": "54af34c821e59b03ded8f82d3a1104426ec4baaf3b226233e1fd76ad5dcb78cf",
+            "aarch64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/10082026/gcc-toolchain-16.2.0-x86_64-host-aarch64.tar.xz",
+                "sha256": "600c8d1a6e70eb0b259a01eef3fd4429a43d3cfebe4c6e01659bc6fcf5556415",
+            },
+            "x86_64": {
+                "url": "https://github.com/f0rmiga/gcc-builds/releases/download/10082026/gcc-toolchain-16.2.0-x86_64.tar.xz",
+                "sha256": "54af34c821e59b03ded8f82d3a1104426ec4baaf3b226233e1fd76ad5dcb78cf",
+            },
         },
     },
 }
@@ -451,7 +592,17 @@ _FEATURE_ATTRS = {
     "gcc_versions": attr.string(
         default = json.encode(AVAILABLE_GCC_VERSIONS),
         doc = "A JSON dictionary of GCC versions to their download URLs and SHA256 hashes." +
-              " The structure is {<gcc_version>: {<target_arch>: {url: <url>, sha256: <sha256>}}}.",
+              " The structure is" +
+              " {<gcc_version>: {<target_arch>: {<host_arch>: {url: <url>, sha256: <sha256>}}}}." +
+              " A {url, sha256} directly under <target_arch> is also accepted and means an" +
+              " x86_64-hosted build.",
+    ),
+    "host_arch": attr.string(
+        doc = "The architecture the toolchain binaries RUN on. E.g. aarch64." +
+              " Defaults to the architecture Bazel is running on, so a native build needs" +
+              " no configuration; set it only to fetch a toolchain for a different host.",
+        default = "",
+        values = ["", "aarch64", "x86_64"],
     ),
     "includes": attr.string_list(
         doc = "Extra includes for compiling C and C++." +
@@ -473,6 +624,14 @@ _FEATURE_ATTRS = {
 # Attributes of the `toolchain` declarations, which live in the hub rather than in the repository
 # holding the compiler itself.
 _TOOLCHAIN_DECLARATION_ATTRS = {
+    "exec_compatible_with": attr.string_list(
+        default = [
+            "@platforms//os:linux",
+            "@platforms//cpu:{host_arch}",
+        ],
+        doc = "constraint_values passed to exec_compatible_with of the toolchain. {host_arch} is rendered to the host_arch attribute value.",
+        mandatory = False,
+    ),
     "extra_target_compatible_with": attr.label_list(
         doc = "Additional constraint_values appended to target_compatible_with of the toolchain," +
               " on top of the values from the target_compatible_with attribute (including its defaults)." +
@@ -514,6 +673,14 @@ def _sanitize_version(gcc_version):
 def _gcc_toolchains_hub_impl(rctx):
     target_arch = rctx.attr.target_arch
     gcc_version_flag = str(rctx.attr._gcc_version_flag)
+
+    # The toolchain binaries are built FOR host_arch, so that is what can execute them.
+    # Resolved the same way the toolchain repositories resolve it, since both see the same
+    # rctx.os.arch.
+    exec_compatible_with = [
+        v.format(host_arch = _resolve_host_arch(rctx))
+        for v in rctx.attr.exec_compatible_with
+    ]
 
     target_compatible_with = [
         v.format(target_arch = target_arch)
@@ -564,6 +731,7 @@ def _gcc_toolchains_hub_impl(rctx):
         setting = ":_gcc_version_default" if is_default else ":_gcc_version_" + _sanitize_version(gcc_version)
         content.append(_HUB_TOOLCHAIN_TEMPLATE.format(
             suffix = suffix,
+            exec_compatible_with = exec_compatible_with,
             target_compatible_with = target_compatible_with,
             target_settings = [setting] + extra_target_settings,
             toolchain_repo = toolchain_repos[gcc_version],
@@ -571,6 +739,7 @@ def _gcc_toolchains_hub_impl(rctx):
         if rctx.attr.enable_fortran:
             content.append(_HUB_FORTRAN_TOOLCHAIN_TEMPLATE.format(
                 suffix = suffix,
+                exec_compatible_with = exec_compatible_with,
                 target_compatible_with = target_compatible_with,
                 target_settings = [setting] + extra_target_settings,
                 toolchain_repo = toolchain_repos[gcc_version],
@@ -609,6 +778,9 @@ _gcc_toolchains_hub = repository_rule(
                 doc = "Whether to declare the Fortran toolchains.",
                 default = True,
             ),
+            # The same attribute the toolchain repositories take: the hub renders it into
+            # exec_compatible_with, they use it to pick the archive.
+            "host_arch": _FEATURE_ATTRS["host_arch"],
             "target_arch": attr.string(
                 doc = "The target architecture the toolchains produce. E.g. x86_64.",
                 mandatory = True,
@@ -634,6 +806,7 @@ ATTRS_SHARED_WITH_MODULE_EXTENSION = {
     for attr_name in [
         "gcc_version",
         "gcc_versions",
+        "host_arch",
         "enable_fortran",
         "extra_cflags",
         "extra_cxxflags",
@@ -744,6 +917,10 @@ def gcc_declare_toolchain(
             The attributes of the `toolchain` declarations themselves are also accepted here,
             since they apply to the hub rather than to `gcc_toolchain`:
 
+            `exec_compatible_with`: constraint_values passed to `exec_compatible_with` of the
+            toolchain. `{host_arch}` is rendered to the `host_arch` argument value. Defaults to
+            `["@platforms//os:linux", "@platforms//cpu:{host_arch}"]`.
+
             `target_compatible_with`: constraint_values passed to `target_compatible_with` of the
             toolchain. `{target_arch}` is rendered to the `target_arch` argument value. Defaults to
             `["@platforms//os:linux", "@platforms//cpu:{target_arch}"]`.
@@ -766,9 +943,15 @@ def gcc_declare_toolchain(
     default_gcc_version = kwargs.pop("gcc_version", DEFAULT_GCC_VERSION)
     gcc_versions = kwargs.pop("gcc_versions", json.encode(AVAILABLE_GCC_VERSIONS))
     enable_fortran = kwargs.pop("enable_fortran", True)
+    exec_compatible_with = kwargs.pop("exec_compatible_with", None)
     extra_target_compatible_with = kwargs.pop("extra_target_compatible_with", [])
     target_compatible_with = kwargs.pop("target_compatible_with", None)
     target_settings = kwargs.pop("target_settings", [])
+
+    # Read by both the hub, which renders it into exec_compatible_with, and every toolchain
+    # repository, which uses it to pick the archive. Left at "" it resolves to the host
+    # Bazel is running on, which each repository rule can see for itself.
+    host_arch = kwargs.pop("host_arch", "")
 
     # Left in kwargs so that the per-version repositories keep receiving it.
     repo_mapping = kwargs.get("repo_mapping", None)
@@ -798,11 +981,17 @@ def gcc_declare_toolchain(
             fincludes = fincludes,
             gcc_version = gcc_version,
             gcc_versions = gcc_versions,
+            host_arch = host_arch,
             target_arch = target_arch,
             **kwargs
         )
 
     hub_kwargs = {}
+
+    # An explicitly empty exec_compatible_with / target_compatible_with drops the default
+    # constraints, so only an omitted one may fall back to the attribute default.
+    if exec_compatible_with != None:
+        hub_kwargs["exec_compatible_with"] = exec_compatible_with
 
     # An explicitly empty target_compatible_with drops the default constraints, so only an omitted
     # one may fall back to the attribute default.
@@ -819,6 +1008,7 @@ def gcc_declare_toolchain(
         default_gcc_version = default_gcc_version,
         enable_fortran = enable_fortran,
         extra_target_compatible_with = extra_target_compatible_with,
+        host_arch = host_arch,
         target_arch = target_arch,
         target_settings = target_settings,
         toolchain_repos = toolchain_repos,
@@ -895,10 +1085,7 @@ package(default_visibility = ["//visibility:public"])'''
 _HUB_TOOLCHAIN_TEMPLATE = '''\
 toolchain(
     name = "cc_toolchain{suffix}",
-    exec_compatible_with = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-    ],
+    exec_compatible_with = {exec_compatible_with},
     target_compatible_with = {target_compatible_with},
     target_settings = {target_settings},
     toolchain = "@{toolchain_repo}//:_cc_toolchain",
@@ -908,10 +1095,7 @@ toolchain(
 _HUB_FORTRAN_TOOLCHAIN_TEMPLATE = '''\
 toolchain(
     name = "fortran_toolchain{suffix}",
-    exec_compatible_with = [
-        "@platforms//os:linux",
-        "@platforms//cpu:x86_64",
-    ],
+    exec_compatible_with = {exec_compatible_with},
     target_compatible_with = {target_compatible_with},
     target_settings = {target_settings},
     toolchain = "@{toolchain_repo}//:_fortran_toolchain",

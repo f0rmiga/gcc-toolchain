@@ -87,6 +87,39 @@ copts = select({
 Note that these settings only match when the flag is set explicitly, so a `select()` over them
 needs a `//conditions:default` branch to cover the unset case.
 
+## Choosing the host architecture
+
+`target_arch` names the architecture a toolchain produces code FOR. `host_arch` names the one its
+binaries RUN on, and defaults to whatever architecture Bazel itself is running on, so building
+natively on either x86_64 or aarch64 needs no configuration at all:
+
+```bazel
+# On an x86_64 machine this is an x86_64-hosted cross toolchain; on an aarch64 machine it is a
+# native one. Either way it targets aarch64.
+gcc_toolchains.toolchain(
+    name = "gcc_toolchain_aarch64",
+    target_arch = "aarch64",
+)
+```
+
+It drives `exec_compatible_with` on the generated `toolchain()`, so toolchain resolution picks the
+toolchain whose binaries the execution platform can actually run.
+
+Set it explicitly only to fetch a toolchain for a host you are not on — for example to declare an
+aarch64-hosted toolchain from x86_64:
+
+```bazel
+gcc_toolchains.toolchain(
+    name = "gcc_toolchain_aarch64_host",
+    host_arch = "aarch64",
+    target_arch = "aarch64",
+)
+```
+
+gcc-builds publishes aarch64-hosted archives from the `08072026` release on, which covers GCC
+14.3.0 and newer. Asking for a version with no build for that host fails at fetch time, naming the
+hosts it does have. `armv7` is a target only.
+
 ## Language Support
 
 ### Pure C

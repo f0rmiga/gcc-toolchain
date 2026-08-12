@@ -1,0 +1,42 @@
+# Copyright (c) Thulio Ferraz Assis 2026
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
+# The aarch64-hosted toolchain, declared (not registered) as @gcc_toolchain_aarch64_host.
+# Its binaries are ARM, so they cannot be RUN on an x86_64 CI machine; this inspects the
+# fetched archive instead, which works on any host.
+#
+# `include` carries the builtin header tree, so requiring it as data also proves the layout
+# the toolchain declares is the layout the archive actually has -- a nonexistent -isystem
+# path is otherwise ignored silently, surfacing much later as a missing <string>.
+#
+# gcc-builds only publishes -host-aarch64 archives from the 08072026 release on, so the
+# versions pinned to older releases have no aarch64-hosted build to inspect and the test is
+# skipped for them, as in //tests/lld. Being incompatible keeps the target unanalyzed, so
+# the archive that does not exist is never fetched.
+sh_test(
+    name = "host_arch_test",
+    srcs = ["host_arch_test.sh"],
+    data = [
+        "@gcc_toolchain_aarch64_host//:gcc",
+        "@gcc_toolchain_aarch64_host//:include",
+    ],
+    env = {"GCC_FILES": "$(locations @gcc_toolchain_aarch64_host//:gcc)"},
+    target_compatible_with = select({
+        "//toolchain:gcc_version_12_5_0": ["@platforms//:incompatible"],
+        "//toolchain:gcc_version_13_4_0": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+)

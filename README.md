@@ -6,7 +6,8 @@ performance and portability. You can find the comprehensive documentation under 
 
 ## Features
 
-- **Multi-architecture**: Support for x86_64, aarch64, and armv7 Linux targets.
+- **Multi-architecture**: Support for x86_64, aarch64, and armv7 Linux targets,
+  hosted on x86_64 or aarch64.
 - **Hermetic**: Fully self-contained with no system dependencies.
 - **Optimized**: Reduced toolchain sizes and improved build performance.
 - **Fortran Support**: Complete Fortran compilation, including OpenMP support.
@@ -42,7 +43,7 @@ The toolchain has been optimized to reduce size and improve build performance th
 
 * **First-party Code**: Your repository contains C/C++/Fortran code.
 * **Sanitizer Testing**: Need to run sanitizers (asan, lsan, tsan, ubsan) on your code.
-* **Cross-compilation**: Build for Linux armv7 or aarch64 from x86_64.
+* **Cross-compilation**: Build for Linux armv7, aarch64 or x86_64 from x86_64 or aarch64.
 * **Portability**: Create binaries compatible with any Linux distribution.
 * **Reproducibility**: Ensure consistent builds across development and CI environments.
 * **Remote Execution**: Use with Bazel RBE for distributed builds.
