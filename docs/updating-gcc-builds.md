@@ -3,17 +3,24 @@
 The prebuilt toolchain tarballs are produced by
 [f0rmiga/gcc-builds](https://github.com/f0rmiga/gcc-builds) and pinned in this repository by
 `AVAILABLE_GCC_VERSIONS` in [toolchain/defs.bzl](../toolchain/defs.bzl). Each GCC version maps to
-one URL and SHA256 per target architecture:
+one URL and SHA256 per target architecture and host architecture:
 
 ```starlark
 AVAILABLE_GCC_VERSIONS = {
     "16.2.0": {
-        "aarch64": {"url": "...", "sha256": "..."},
-        "armv7": {"url": "...", "sha256": "..."},
-        "x86_64": {"url": "...", "sha256": "..."},
+        "aarch64": {
+            "aarch64": {"url": "...", "sha256": "..."},
+            "x86_64": {"url": "...", "sha256": "..."},
+        },
+        "armv7": {...},
+        "x86_64": {...},
     },
 }
 ```
+
+The outer architecture is the **target**, the inner one is the **host** the binaries run on. A
+version needs no entry for a host it has no build for; asking for one fails with a message listing
+the hosts it does have.
 
 A gcc-builds release is tagged `DDMMYYYY` and does not necessarily rebuild every GCC version. Pin
 each version to the **newest release that publishes it**, which means the entries in
@@ -26,10 +33,10 @@ gh release list --repo f0rmiga/gcc-builds --limit 30
 gh release view <tag> --repo f0rmiga/gcc-builds --json assets --jq '.assets[].name'
 ```
 
-Assets are named `gcc-toolchain-<gcc_version>-<target_arch>.tar.xz`. Assets carrying an extra
-`-host-aarch64` suffix are toolchains that *run* on aarch64 hosts; this repository keys
-`AVAILABLE_GCC_VERSIONS` by target architecture only and consumes the x86_64-host builds, so the
-`-host-aarch64` variants are ignored. Filter them out when collecting assets.
+Assets are named `gcc-toolchain-<gcc_version>-<target_arch>.tar.xz` for an x86_64-hosted build, and
+`gcc-toolchain-<gcc_version>-<target_arch>-host-aarch64.tar.xz` for an aarch64-hosted one. Both go
+into `AVAILABLE_GCC_VERSIONS`, under the matching host key. Releases before `08072026` publish no
+`-host-aarch64` assets at all, so the versions pinned to them have an `x86_64` host entry only.
 
 ## 2. Collect the SHA256 hashes
 
@@ -38,7 +45,7 @@ downloaded:
 
 ```shell
 gh api repos/f0rmiga/gcc-builds/releases/tags/<tag> \
-  --jq '.assets[] | select(.name | test("host") | not) | "\(.name) \(.digest)"'
+  --jq '.assets[] | "\(.name) \(.digest)"'
 ```
 
 Strip the `sha256:` prefix from each value. To confirm a digest independently:
@@ -62,7 +69,9 @@ adding or removing a version also means:
   [.github/workflows/default.yaml](../.github/workflows/default.yaml);
 - checking whether the tarball ships `bin/ld.lld`. GCC versions built without it cannot use the
   `linker-lld` feature, and `//tests/lld` marks those versions incompatible so the test is skipped
-  rather than failing.
+  rather than failing;
+- checking whether it has an aarch64-hosted build. `//tests/host_arch` marks the versions that do
+  not incompatible, the same way.
 
 ## 4. Regenerate the docs
 
@@ -131,6 +140,13 @@ tree:
 tar -tJf /tmp/toolchain.tar.xz | grep -E '^\./bin/'
 tar -tJf /tmp/toolchain.tar.xz | grep -E '^\./(lib|include)/'
 ```
+
+Note that where the C++ headers live depends on whether the build is **native**, not on the
+architecture. A build whose host and target match lays libstdc++ out flat under
+`include/c++/<version>`, while a cross build nests it under the target triple. So the
+x86_64-hosted x86_64 and aarch64-hosted aarch64 tarballs are both flat, and the x86_64-hosted
+aarch64 and aarch64-hosted x86_64 ones are both nested. Getting this wrong is quiet: a nonexistent
+`-isystem` directory is ignored, and only surfaces later as a missing `<string>` naming no path.
 
 Detection only covers the binary prefix. If the include or library directories move, both
 `_gcc_toolchain_impl` and `_TOOLCHAIN_BUILD_FILE_CONTENT` need updating.

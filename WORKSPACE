@@ -41,7 +41,7 @@ load("@bazel_lib//lib:repositories.bzl", "bazel_lib_dependencies")
 
 bazel_lib_dependencies()
 
-load("//toolchain:defs.bzl", "ARCHS", "gcc_register_toolchain")
+load("//toolchain:defs.bzl", "ARCHS", "gcc_declare_toolchain", "gcc_register_toolchain")
 
 gcc_register_toolchain(
     name = "gcc_toolchain_aarch64",
@@ -56,6 +56,16 @@ gcc_register_toolchain(
 gcc_register_toolchain(
     name = "gcc_toolchain_x86_64",
     target_arch = ARCHS.x86_64,
+)
+
+# An aarch64-HOSTED toolchain, for //tests/host_arch. DECLARED, not registered: its
+# binaries are ARM, so it cannot execute on an x86_64 CI machine -- the test only inspects
+# the fetched archive.
+gcc_declare_toolchain(
+    name = "gcc_toolchain_aarch64_host",
+    gcc_version = "14.3.0",
+    host_arch = ARCHS.aarch64,
+    target_arch = ARCHS.aarch64,
 )
 
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
