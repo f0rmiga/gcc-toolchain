@@ -413,6 +413,36 @@ def _impl(ctx):
         ],
     )
 
+    # Opt-in: routes headers from external repositories through -isystem so
+    # their diagnostics do not fail a -Werror build of first-party code.
+    # Mirrors rules_cc's unix_cc_toolchain_config:
+    # https://github.com/bazelbuild/rules_cc/blob/0.2.22/cc/private/toolchain/unix_cc_toolchain_config.bzl
+    external_include_paths_feature = feature(
+        name = "external_include_paths",
+        flag_sets = [
+            flag_set(
+                actions = [
+                    ACTION_NAMES.preprocess_assemble,
+                    ACTION_NAMES.linkstamp_compile,
+                    ACTION_NAMES.c_compile,
+                    ACTION_NAMES.cpp_compile,
+                    ACTION_NAMES.cpp_header_parsing,
+                    ACTION_NAMES.cpp_module_compile,
+                    ACTION_NAMES.clif_match,
+                    ACTION_NAMES.objc_compile,
+                    ACTION_NAMES.objcpp_compile,
+                ],
+                flag_groups = [
+                    flag_group(
+                        flags = ["-isystem", "%{external_include_paths}"],
+                        iterate_over = "external_include_paths",
+                        expand_if_available = "external_include_paths",
+                    ),
+                ],
+            ),
+        ],
+    )
+
     library_search_directories_feature = feature(
         name = "library_search_directories",
         flag_sets = [
@@ -555,6 +585,7 @@ def _impl(ctx):
         [
             default_compile_flags_feature,
             include_paths_feature,
+            external_include_paths_feature,
             library_search_directories_feature,
             default_link_flags_feature,
             linker_lld_feature,
