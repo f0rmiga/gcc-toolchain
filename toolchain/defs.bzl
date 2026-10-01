@@ -479,6 +479,12 @@ _TOOLCHAIN_DECLARATION_ATTRS = {
               " Unlike target_compatible_with, {target_arch} is not rendered.",
         mandatory = False,
     ),
+    "extra_target_settings": attr.label_list(
+        doc = "Additional config_settings appended to target_settings of the toolchain, on top of" +
+              " the GCC version selection and the target_settings attribute." +
+              " Unlike target_settings, {target_arch} is not rendered.",
+        mandatory = False,
+    ),
     "target_compatible_with": attr.string_list(
         default = [
             "@platforms//os:linux",
@@ -525,6 +531,7 @@ def _gcc_toolchains_hub_impl(rctx):
         v.format(target_arch = target_arch)
         for v in rctx.attr.target_settings
     ]
+    extra_target_settings.extend([str(c) for c in rctx.attr.extra_target_settings])
 
     toolchain_repos = rctx.attr.toolchain_repos
     default_gcc_version = rctx.attr.default_gcc_version
@@ -641,6 +648,7 @@ ATTRS_SHARED_WITH_MODULE_EXTENSION = {
         "extra_fflags",
         "extra_asmflags",
         "extra_target_compatible_with",
+        "extra_target_settings",
         "supports_param_files",
     ]
 }
@@ -756,6 +764,10 @@ def gcc_declare_toolchain(
             `target_settings`: Additional config_settings passed to `target_settings` of the
             toolchain, on top of the GCC version selection. `{target_arch}` is rendered to the
             `target_arch` argument value.
+
+            `extra_target_settings`: Additional config_settings appended to `target_settings` of
+            the toolchain, on top of the GCC version selection and the `target_settings` argument.
+            Unlike `target_settings`, `{target_arch}` is not rendered.
     """
     binary_prefix = kwargs.pop("binary_prefix", None)
     if binary_prefix == None:
@@ -769,6 +781,7 @@ def gcc_declare_toolchain(
     extra_target_compatible_with = kwargs.pop("extra_target_compatible_with", [])
     target_compatible_with = kwargs.pop("target_compatible_with", None)
     target_settings = kwargs.pop("target_settings", [])
+    extra_target_settings = kwargs.pop("extra_target_settings", [])
 
     # Left in kwargs so that the per-version repositories keep receiving it.
     repo_mapping = kwargs.get("repo_mapping", None)
@@ -819,6 +832,7 @@ def gcc_declare_toolchain(
         default_gcc_version = default_gcc_version,
         enable_fortran = enable_fortran,
         extra_target_compatible_with = extra_target_compatible_with,
+        extra_target_settings = extra_target_settings,
         target_arch = target_arch,
         target_settings = target_settings,
         toolchain_repos = toolchain_repos,
