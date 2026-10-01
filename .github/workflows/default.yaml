@@ -30,6 +30,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+      - name: Configure BuildBuddy API key
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        run: |
+          # Secrets are not available to pull requests from forks.
+          if [ -n "${BUILDBUDDY_API_KEY}" ]; then
+            echo "common --remote_header=x-buildbuddy-api-key=${BUILDBUDDY_API_KEY}" > .bazelrc.user
+          fi
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true
@@ -51,6 +59,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+      - name: Configure BuildBuddy API key
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        run: |
+          # Secrets are not available to pull requests from forks.
+          if [ -n "${BUILDBUDDY_API_KEY}" ]; then
+            echo "common --remote_header=x-buildbuddy-api-key=${BUILDBUDDY_API_KEY}" > .bazelrc.user
+          fi
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true
@@ -75,6 +91,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+      - name: Configure BuildBuddy API key
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        run: |
+          # Secrets are not available to pull requests from forks.
+          if [ -n "${BUILDBUDDY_API_KEY}" ]; then
+            echo "common --remote_header=x-buildbuddy-api-key=${BUILDBUDDY_API_KEY}" > .bazelrc.user
+          fi
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true
@@ -101,6 +125,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+      - name: Configure BuildBuddy API key
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        run: |
+          # Secrets are not available to pull requests from forks.
+          if [ -n "${BUILDBUDDY_API_KEY}" ]; then
+            echo "common --remote_header=x-buildbuddy-api-key=${BUILDBUDDY_API_KEY}" > .bazelrc.user
+          fi
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true
@@ -116,6 +148,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+      - name: Configure BuildBuddy API key
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        run: |
+          # Secrets are not available to pull requests from forks.
+          if [ -n "${BUILDBUDDY_API_KEY}" ]; then
+            echo "common --remote_header=x-buildbuddy-api-key=${BUILDBUDDY_API_KEY}" > .bazelrc.user
+          fi
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true
@@ -133,6 +173,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+      - name: Configure BuildBuddy API key
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        run: |
+          # Secrets are not available to pull requests from forks.
+          if [ -n "${BUILDBUDDY_API_KEY}" ]; then
+            echo "common --remote_header=x-buildbuddy-api-key=${BUILDBUDDY_API_KEY}" > .bazelrc.user
+          fi
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true
@@ -143,6 +191,8 @@ jobs:
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
           bazel test -- //... -//docs/...
   rbe:
+    # RBE requires the BuildBuddy API key, which is not available to pull requests from forks.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     strategy:
       matrix:
         os:
@@ -153,6 +203,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+      - name: Configure BuildBuddy API key
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        run: |
+          # Secrets are not available to pull requests from forks.
+          if [ -n "${BUILDBUDDY_API_KEY}" ]; then
+            echo "common --remote_header=x-buildbuddy-api-key=${BUILDBUDDY_API_KEY}" > .bazelrc.user
+          fi
       - uses: bazel-contrib/setup-bazel@0.15.0
         with:
           bazelisk-cache: true
