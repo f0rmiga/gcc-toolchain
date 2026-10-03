@@ -679,7 +679,7 @@ ATTRS_SHARED_WITH_MODULE_EXTENSION = {
 
 def _render_tool_paths(rctx, path_prefix, binary_prefix):
     relative_tool_paths = {
-        "ar": "{path_prefix}/bin/{binary_prefix}ar".format(
+        "ar": "{path_prefix}/bin/{binary_prefix}gcc-ar".format(
             path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
@@ -711,7 +711,7 @@ def _render_tool_paths(rctx, path_prefix, binary_prefix):
             path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
-        "nm": "{path_prefix}/bin/{binary_prefix}nm".format(
+        "nm": "{path_prefix}/bin/{binary_prefix}gcc-nm".format(
             path_prefix = path_prefix,
             binary_prefix = binary_prefix,
         ),
