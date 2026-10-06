@@ -1,0 +1,44 @@
+# Copyright (c) Thulio Ferraz Assis 2026
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+load("//rules_fortran:defs.bzl", "fortran_binary", "fortran_library")
+
+fortran_library(
+    name = "base",
+    srcs = ["base.f90"],
+)
+
+fortran_library(
+    name = "mid",
+    srcs = ["mid.f90"],
+    deps = [":base"],
+)
+
+# `mid` calls into `base`, so a link that scans `base` before `mid` leaves the
+# symbols from `base` undefined.
+fortran_binary(
+    name = "fortran_static_deps",
+    srcs = ["main.f90"],
+    deps = [":mid"],
+)
+
+sh_test(
+    name = "fortran_static_deps_test",
+    srcs = ["fortran_static_deps_test.sh"],
+    data = [":fortran_static_deps"],
+    env = {
+        "BINARY": "$(rootpath :fortran_static_deps)",
+    },
+)

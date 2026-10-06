@@ -142,10 +142,12 @@ def _fortran_binary_impl(ctx):
         "-L{}".format(dep_file.dirname)
         for dep_file in deps_files
     ])
+    args.add("-Wl,--start-group")
     args.add_all([
         "-l:{}".format(dep_file.basename)
         for dep_file in deps_files
     ])
+    args.add("-Wl,--end-group")
     ctx.actions.run(
         arguments = [args],
         executable = linker,
