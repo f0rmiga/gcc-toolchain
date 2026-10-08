@@ -165,6 +165,29 @@ jobs:
         run: |
           ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
           bazel coverage //examples/hello_world_cpp:hello_world_cpp_test //tests/coverage/...
+  external_include_paths:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Configure BuildBuddy API key
+        env:
+          BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+        run: |
+          # Secrets are not available to pull requests from forks.
+          if [ -n "${BUILDBUDDY_API_KEY}" ]; then
+            echo "common --remote_header=x-buildbuddy-api-key=${BUILDBUDDY_API_KEY}" > .bazelrc.user
+          fi
+      - uses: bazel-contrib/setup-bazel@0.15.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+      - name: Test external_include_paths
+        run: |
+          ln -s .github/workflows/.bazelrc.ci .bazelrc.ci
+          bazel test --features=external_include_paths //tests/external_include_paths/... //tests/external_include_paths:isystem_test
   bazel9:
     runs-on: ubuntu-22.04
     env:

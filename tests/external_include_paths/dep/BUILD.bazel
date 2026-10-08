@@ -1,0 +1,25 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+# A third-party repository. warn.h compares signed with unsigned, so a target
+# that compiles with -Werror=sign-compare fails on it unless it comes in through
+# -isystem.
+#
+# include_prefix puts the header in a generated _virtual_includes dir. The
+# feature moves that dir out of the include paths. The repository root stays an
+# -iquote dir for each consumer, so a header found there would hide the bug.
+
+cc_library(
+    name = "plain",
+    hdrs = ["warn.h"],
+    include_prefix = "plain",
+    visibility = ["//visibility:public"],
+)
+
+# The library alone enables the feature, as a BUILD overlay can do.
+cc_library(
+    name = "opted_in",
+    hdrs = ["warn.h"],
+    features = ["external_include_paths"],
+    include_prefix = "opted_in",
+    visibility = ["//visibility:public"],
+)

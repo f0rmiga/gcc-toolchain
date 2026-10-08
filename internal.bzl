@@ -18,6 +18,7 @@
 """Internal dependencies the users don't need."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:local.bzl", "local_repository")
 load("//examples/lapack:patches.bzl", "LAPACK_PATCHES")
 
 def _openssl():
@@ -46,6 +47,13 @@ def _avl():
         sha256 = "6d62e563578b79795a84958cfe4e221a4c9847fbeb4a821d45bc049934fc6a90",
         strip_prefix = "Avl",
         url = "https://web.mit.edu/drela/Public/web/avl/avl3.40b.tgz",
+    )
+
+def _external_include_paths_dep():
+    # The third-party repository of tests/external_include_paths.
+    local_repository(
+        name = "external_include_paths_dep",
+        path = "tests/external_include_paths/dep",
     )
 
 # buildifier: disable=function-docstring
@@ -94,6 +102,8 @@ def internal_dependencies():
 
     _avl()
 
+    _external_include_paths_dep()
+
     http_archive(
         name = "rules_pkg",
         sha256 = "b7215c636f22c1849f1c3142c72f4b954bb12bb8dcf3cbe229ae6e69cc6479db",
@@ -115,6 +125,7 @@ def _non_bazel_dependencies_ext_impl(mctx):
     _openssl()
     _lapack()
     _avl()
+    _external_include_paths_dep()
 
 non_bazel_dependencies = module_extension(
     implementation = _non_bazel_dependencies_ext_impl,

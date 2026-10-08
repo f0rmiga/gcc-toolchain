@@ -207,6 +207,37 @@ Then build with:
 bazel build --config lld //<your_binary>
 ```
 
+## Headers from external repositories as system headers
+
+By default, headers from external repositories reach the compiler through `-I` and `-iquote`, so
+their warnings count as warnings in your code: with `-Werror`, a warning in a third-party header
+fails your build. The `external_include_paths` feature passes the include directories of external
+repositories with `-isystem` instead, and GCC does not report warnings from system headers.
+
+Enable it for an entire build. Add the following to your `.bazelrc`:
+
+```shell
+build:external_include_paths --features external_include_paths
+build:external_include_paths --host_features external_include_paths
+```
+
+Then build with:
+
+```shell
+bazel build --config external_include_paths //<your_binary>
+```
+
+- Bazel decides which include directories are external when it analyzes the dependency, so
+  `features = ["external_include_paths"]` on one of your own targets has no effect. Use the flag.
+- `--host_features` does the same for tools that are built in the exec configuration.
+- A target without the feature still gets these directories, through `-I`. This includes a target
+  that sets `features = ["-external_include_paths"]`, and the consumers of a third-party library
+  that enables the feature for itself, for example in a BUILD overlay.
+- With the feature on, the root of each external repository becomes an `-isystem` directory that
+  is searched before the C and C++ standard library headers. A header at the root of an external
+  repository with the name of a standard header, such as `string.h`, then hides the standard one
+  for `#include <...>`. The toolchain of rules_cc behaves the same way.
+
 ## Running sanitizers
 
 If you want to run automated tests with the sanitizers enabled, see how we do testing under
