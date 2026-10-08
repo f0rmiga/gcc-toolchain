@@ -69,6 +69,7 @@ non_bazel_dependencies = use_extension("//:internal.bzl", "non_bazel_dependencie
 use_repo(
     non_bazel_dependencies,
     "avl",
+    "external_include_paths_dep",
     "lapack",
     "openssl",
 )

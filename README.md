@@ -13,6 +13,8 @@ performance and portability. You can find the comprehensive documentation under 
 - **Sanitizers**: Built-in support for AddressSanitizer, LeakSanitizer, ThreadSanitizer,
   and UndefinedBehaviorSanitizer.
 - **Linker Choice**: Use the default GNU BFD linker or opt into LLVM's `lld` via the `linker-lld` feature.
+- **External Headers**: Opt into the `external_include_paths` feature to compile headers from external
+  repositories as system headers, so their warnings do not fail a `-Werror` build.
 - **Remote Execution**: Ready for use with Bazel Remote Build Execution (RBE).
 
 ## Why Use a Hermetic Toolchain?

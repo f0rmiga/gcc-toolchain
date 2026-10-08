@@ -66,6 +66,14 @@ preprocessor_compile_actions = [
     ACTION_NAMES.clif_match,
 ]
 
+# The actions that get include dirs. With external_include_paths on, the include
+# dirs of external repositories reach an action only through that feature, so it
+# and include_paths must cover the same actions.
+include_paths_actions = preprocessor_compile_actions + [
+    ACTION_NAMES.objc_compile,
+    ACTION_NAMES.objcpp_compile,
+]
+
 codegen_compile_actions = [
     ACTION_NAMES.c_compile,
     ACTION_NAMES.cpp_compile,
@@ -387,17 +395,7 @@ def _impl(ctx):
         enabled = True,
         flag_sets = [
             flag_set(
-                actions = [
-                    ACTION_NAMES.preprocess_assemble,
-                    ACTION_NAMES.linkstamp_compile,
-                    ACTION_NAMES.c_compile,
-                    ACTION_NAMES.cpp_compile,
-                    ACTION_NAMES.cpp_header_parsing,
-                    ACTION_NAMES.cpp_module_compile,
-                    ACTION_NAMES.clif_match,
-                    ACTION_NAMES.objc_compile,
-                    ACTION_NAMES.objcpp_compile,
-                ],
+                actions = include_paths_actions,
                 flag_groups = [
                     flag_group(
                         flags = ["-iquote", "%{quote_include_paths}"],
@@ -410,6 +408,40 @@ def _impl(ctx):
                     flag_group(
                         flags = ["-isystem", "%{system_include_paths}"],
                         iterate_over = "system_include_paths",
+                    ),
+                ],
+            ),
+            # A dependency that has external_include_paths on puts its include
+            # dirs in this variable instead. A target without the feature still
+            # needs them.
+            flag_set(
+                actions = include_paths_actions,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-I%{external_include_paths}"],
+                        iterate_over = "external_include_paths",
+                        expand_if_available = "external_include_paths",
+                    ),
+                ],
+                with_features = [with_feature_set(not_features = ["external_include_paths"])],
+            ),
+        ],
+    )
+
+    # Opt-in: routes headers from external repositories through -isystem so
+    # their diagnostics do not fail a -Werror build of first-party code. As in
+    # rules_cc's unix_cc_toolchain_config, on the actions of include_paths only:
+    # https://github.com/bazelbuild/rules_cc/blob/0.2.17/cc/private/toolchain/unix_cc_toolchain_config.bzl#L1109-L1136
+    external_include_paths_feature = feature(
+        name = "external_include_paths",
+        flag_sets = [
+            flag_set(
+                actions = include_paths_actions,
+                flag_groups = [
+                    flag_group(
+                        flags = ["-isystem", "%{external_include_paths}"],
+                        iterate_over = "external_include_paths",
+                        expand_if_available = "external_include_paths",
                     ),
                 ],
             ),
@@ -558,6 +590,7 @@ def _impl(ctx):
         [
             default_compile_flags_feature,
             include_paths_feature,
+            external_include_paths_feature,
             library_search_directories_feature,
             default_link_flags_feature,
             linker_lld_feature,
@@ -583,6 +616,17 @@ def _impl(ctx):
     ) + sanitizers_features
 
     extra_rules_based_features = depset(extra_enabled_features + extra_known_features)
+
+    # Before this toolchain defined external_include_paths, users could inject a
+    # feature with that name. Two features with the same name make the toolchain
+    # invalid, so an injected one replaces the built-in one.
+    for injected in [f[FeatureInfo] for f in extra_rules_based_features.to_list()]:
+        if injected.name == external_include_paths_feature.name and not injected.external:
+            # buildifier: disable=print
+            print(("WARNING: {}: {} replaces the built-in external_include_paths feature. " +
+                   "Remove it from extra_enabled_features or extra_known_features " +
+                   "to use the built-in one.").format(ctx.label, injected.label))
+            features = [f for f in features if f.name != external_include_paths_feature.name]
     features.extend([convert_feature(extra_feature[FeatureInfo], enabled = extra_feature in extra_enabled_features) for extra_feature in extra_rules_based_features.to_list()])
 
     return [

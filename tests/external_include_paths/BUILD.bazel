@@ -1,0 +1,91 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@rules_cc//cc:defs.bzl", "cc_toolchain")
+load("@rules_cc//cc/toolchains:feature.bzl", "cc_feature")
+load("//rules_cc:defs.bzl", "cc_test")
+load("//toolchain:cc_toolchain_config.bzl", "cc_toolchain_config")
+
+# CI runs this package with --features=external_include_paths, and without it
+# as part of //...
+
+# The feature routes the header of @external_include_paths_dep through
+# -isystem, so its warning does not fail -Werror. Without the feature it does;
+# that is the reason the feature exists, so only the CI step builds this test.
+cc_test(
+    name = "isystem_test",
+    srcs = ["plain.cc"],
+    copts = ["-Werror=sign-compare"],
+    tags = ["manual"],
+    deps = ["@external_include_paths_dep//:plain"],
+)
+
+# Only the dependency enables the feature. This target does not, and it must
+# still find the header.
+cc_test(
+    name = "opted_in_dependency_test",
+    srcs = ["opted_in.cc"],
+    deps = ["@external_include_paths_dep//:opted_in"],
+)
+
+# With --features=external_include_paths the feature is on for the build and off
+# for this target. It must still find the header.
+cc_test(
+    name = "opted_out_test",
+    srcs = ["plain.cc"],
+    features = ["-external_include_paths"],
+    deps = ["@external_include_paths_dep//:plain"],
+)
+
+# Before this toolchain had the feature, the way to get it was to inject a
+# cc_feature with the same name through extra_known_features. Such a toolchain
+# must still be valid: the injected feature replaces the built-in one.
+cc_feature(
+    name = "injected_external_include_paths",
+    args = ["@rules_cc//cc/toolchains/args/external_include_paths"],
+    feature_name = "external_include_paths",
+)
+
+cc_toolchain_config(
+    name = "config_with_injected_feature",
+    cxx_builtin_include_directories = [],
+    enable_fortran = False,
+    extra_asmflags = [],
+    extra_cflags = [],
+    extra_cxxflags = [],
+    extra_enabled_features = [],
+    extra_fflags = [],
+    extra_known_features = [":injected_external_include_paths"],
+    extra_ldflags = [],
+    tool_paths = {
+        tool: "/bin/false"
+        for tool in [
+            "ar",
+            "cpp",
+            "gcc",
+            "gcov",
+            "gfortran",
+            "ld",
+            "nm",
+            "objcopy",
+            "objdump",
+            "strip",
+        ]
+    },
+)
+
+filegroup(name = "empty")
+
+cc_toolchain(
+    name = "toolchain_with_injected_feature",
+    all_files = ":empty",
+    compiler_files = ":empty",
+    dwp_files = ":empty",
+    linker_files = ":empty",
+    objcopy_files = ":empty",
+    strip_files = ":empty",
+    toolchain_config = ":config_with_injected_feature",
+)
+
+build_test(
+    name = "injected_feature_test",
+    targets = [":toolchain_with_injected_feature"],
+)

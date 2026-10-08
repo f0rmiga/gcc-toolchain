@@ -141,7 +141,7 @@
   "moduleExtensions": {
     "//:internal.bzl%non_bazel_dependencies": {
       "general": {
-        "bzlTransitiveDigest": "hC8Z/Ya3Olqy2ZLqCqFL43ptjzJD9yDwvzpD8L9+t3c=",
+        "bzlTransitiveDigest": "i7gs0KIHlyq5iG/jvPn3ZbfrG+uRe2FmSY0n4ZfjGTI=",
         "usagesDigest": "odiVxhlPuarF7dVg0hRKXGkDofrqYQ2yXF9AOyDNyRg=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -178,6 +178,13 @@
               "sha256": "6d62e563578b79795a84958cfe4e221a4c9847fbeb4a821d45bc049934fc6a90",
               "strip_prefix": "Avl",
               "url": "https://web.mit.edu/drela/Public/web/avl/avl3.40b.tgz"
+            }
+          },
+          "external_include_paths_dep": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:local.bzl",
+            "ruleClassName": "local_repository",
+            "attributes": {
+              "path": "tests/external_include_paths/dep"
             }
           }
         },
