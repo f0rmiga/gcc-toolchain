@@ -1,0 +1,14 @@
+load("//rules_cc:defs.bzl", "cc_binary", "cc_library")
+
+cc_library(
+    name = "hello_lib",
+    srcs = ["lib.cpp"],
+    linkopts = ["-flto", "-fno-fat-lto-objects"]
+)
+
+cc_binary(
+    name = "hello_world_cpp",
+    srcs = ["main.cpp"],
+    deps = ["hello_lib"],
+    linkopts = ["-flto", "-fno-fat-lto-objects"]
+)
