@@ -279,6 +279,13 @@ def _gcc_toolchain_impl(rctx):
         )
     ))
 
+    # The output is a function of the attributes and the sha256-pinned archive,
+    # so Bazel 8.3+ can keep one extraction in the repository contents cache
+    # for every output base that shares it. Earlier versions lack the API.
+    if hasattr(rctx, "repo_metadata"):
+        return rctx.repo_metadata(reproducible = True)
+    return None
+
 def _fortran_vars(enable_fortran, gcc_toolchain_workspace_name, include_prefix, binary_prefix):
     load_ = ""
     toolchain = ""
