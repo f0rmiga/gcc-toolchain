@@ -98,3 +98,11 @@ sh_test(
     },
     tags = ["manual"],
 )
+
+# -fsanitize needs libsanitizer.spec to be available in the sandbox.
+sh_test(
+    name = "libsanitizer_spec_test",
+    srcs = ["libsanitizer_spec_test.sh"],
+    args = ["$(rootpaths @gcc_toolchain_x86_64//:lib)"],
+    data = ["@gcc_toolchain_x86_64//:lib"],
+)
