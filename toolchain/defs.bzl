@@ -1081,6 +1081,7 @@ filegroup(
             "**/*.la",
             "**/*.o",
             "**/*.lo",
+            "**/lib*/libsanitizer.spec",
         ],
         exclude = ["lib*/**/*python*/**"],
         allow_empty = True,
