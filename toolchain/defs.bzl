@@ -904,6 +904,7 @@ _HUB_ALIASED_TARGETS = [
     "compiler_files",
     "coverage_files",
     "dwp_files",
+    "dynamic_runtime_lib",
     "gcc",
     "gcov",
     "include",
@@ -926,6 +927,7 @@ _HUB_ALIASED_TARGETS = [
     "ranlib",
     "readelf",
     "strip",
+    "static_runtime_lib",
     "strip_files",
 ]
 
@@ -982,6 +984,8 @@ cc_toolchain(
     strip_files = ":strip_files",
     coverage_files = ":coverage_files",
     supports_param_files = {supports_param_files},
+    dynamic_runtime_lib = ":dynamic_runtime_lib",
+    static_runtime_lib = ":static_runtime_lib",
     toolchain_config = ":cc_toolchain_config",
     toolchain_identifier = "gcc-toolchain",
 )
@@ -1206,6 +1210,27 @@ cc_library(
     name = "libstdcxx_static",
     srcs = glob(["**/libstdc++.a"]),
     visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "dynamic_runtime_lib",
+    srcs = glob(
+        include = [
+            "**/lib*/libstdc++.so.6",
+            "**/lib*/libgcc_s.so.1",
+        ],
+        allow_empty = True,
+    ),
+)
+
+filegroup(
+    name = "static_runtime_lib",
+    srcs = glob(
+        include = [
+            "**/lib*/libstdc++.a",
+        ],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
