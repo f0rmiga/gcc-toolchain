@@ -587,7 +587,7 @@ def _impl(ctx):
 
     return [
         cc_common.create_cc_toolchain_config_info(
-            abi_libc_version = "local",
+            abi_libc_version = ctx.attr.target_libc,
             abi_version = "local",
             action_configs = action_configs,
             artifact_name_patterns = [],
@@ -599,8 +599,8 @@ def _impl(ctx):
             host_system_name = "local",
             make_variables = [],
             target_cpu = "local",
-            target_libc = "local",
-            target_system_name = "local",
+            target_libc = ctx.attr.target_libc,
+            target_system_name = ctx.attr.target_system_name,
             tool_paths = [
                 tool_path(name = name, path = path)
                 for name, path in tool_paths.items()
@@ -614,6 +614,8 @@ cc_toolchain_config = rule(
     attrs = {
         "cxx_builtin_include_directories": attr.string_list(mandatory = True),
         "enable_fortran": attr.bool(mandatory = True),
+        "target_libc": attr.string(default = "local"),
+        "target_system_name": attr.string(default = "local"),
         "extra_cflags": attr.string_list(mandatory = True),
         "extra_cxxflags": attr.string_list(mandatory = True),
         "extra_enabled_features": attr.label_list(mandatory = True),
