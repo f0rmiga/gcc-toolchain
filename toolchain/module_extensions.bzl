@@ -25,6 +25,7 @@ def _gcc_register_toolchain_module_extension(mctx):
                 extra_target_compatible_with = declare.extra_target_compatible_with,
                 extra_target_settings = declare.extra_target_settings,
                 supports_param_files = declare.supports_param_files,
+                target_libc = declare.target_libc,
             )
 
     # Since we know that for each gcc toolchain repository we'll generate the same files, we mark the rule as reproducible.

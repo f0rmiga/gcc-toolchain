@@ -680,6 +680,7 @@ ATTRS_SHARED_WITH_MODULE_EXTENSION = {
         "extra_target_compatible_with",
         "extra_target_settings",
         "supports_param_files",
+        "target_libc",
     ]
 }
 

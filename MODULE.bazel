@@ -16,6 +16,7 @@ gcc_toolchains = use_extension("//toolchain:module_extensions.bzl", "gcc_toolcha
         gcc_toolchains.toolchain(
             name = "gcc_toolchain_{}".format(arch),
             target_arch = arch,
+            target_libc = "glibc",
         ),
         use_repo(gcc_toolchains, "gcc_toolchain_{}".format(arch)),
         register_toolchains(

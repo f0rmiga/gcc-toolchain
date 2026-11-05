@@ -21,7 +21,7 @@ case "$(uname -m)" in
   aarch64) expected="aarch64-linux-gnu" ;;
 esac
 
-if [[ "$(cat "${IDENTITY}")" != "${expected} local" ]]; then
+if [[ "$(cat "${IDENTITY}")" != "${expected} glibc" ]]; then
   echo "unexpected cc toolchain identity: $(cat "${IDENTITY}")" >&2
   exit 1
 fi
