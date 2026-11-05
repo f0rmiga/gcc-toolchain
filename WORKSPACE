@@ -46,16 +46,19 @@ load("//toolchain:defs.bzl", "ARCHS", "gcc_register_toolchain")
 gcc_register_toolchain(
     name = "gcc_toolchain_aarch64",
     target_arch = ARCHS.aarch64,
+    target_libc = "glibc",
 )
 
 gcc_register_toolchain(
     name = "gcc_toolchain_armv7",
     target_arch = ARCHS.armv7,
+    target_libc = "glibc",
 )
 
 gcc_register_toolchain(
     name = "gcc_toolchain_x86_64",
     target_arch = ARCHS.x86_64,
+    target_libc = "glibc",
 )
 
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")

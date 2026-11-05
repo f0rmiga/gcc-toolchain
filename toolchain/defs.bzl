@@ -269,6 +269,8 @@ def _gcc_toolchain_impl(rctx):
 
         # cc_toolchain attributes
         supports_param_files = 1 if rctx.attr.supports_param_files else 0,
+        target_libc = rctx.attr.target_libc,
+        target_system_name = "{}-linux-gnu".format(rctx.attr.target_arch),
 
         # Fortran, if enabled
         **_fortran_vars(
@@ -490,6 +492,10 @@ _FEATURE_ATTRS = {
         doc = "The target architecture this toolchain produces. E.g. x86_64.",
         mandatory = True,
     ),
+    "target_libc": attr.string(
+        doc = "The libc name and version reported in the cc toolchain identity. E.g. glibc_2.28.",
+        default = "local",
+    ),
 }
 
 # Attributes of the `toolchain` declarations, which live in the hub rather than in the repository
@@ -674,6 +680,7 @@ ATTRS_SHARED_WITH_MODULE_EXTENSION = {
         "extra_target_compatible_with",
         "extra_target_settings",
         "supports_param_files",
+        "target_libc",
     ]
 }
 
@@ -995,6 +1002,8 @@ cc_toolchain_config(
     extra_fflags = {extra_fflags},
     extra_ldflags = {extra_ldflags},
     extra_asmflags = {extra_asmflags},
+    target_libc = "{target_libc}",
+    target_system_name = "{target_system_name}",
     extra_enabled_features = {extra_enabled_features},
     extra_known_features = {extra_known_features},
     tool_paths = tool_paths,
