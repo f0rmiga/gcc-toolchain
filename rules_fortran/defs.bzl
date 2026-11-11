@@ -223,7 +223,7 @@ def _fortran_library_impl(ctx):
 
     output = ctx.actions.declare_file("lib{}.a".format(ctx.attr.name))
     args = ctx.actions.args()
-    args.add("-crs")
+    args.add("-crsD")
     args.add(output)
     args.add_all(compilation_outputs.objects)
     ctx.actions.run(
