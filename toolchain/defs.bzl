@@ -109,7 +109,7 @@ def _gcc_toolchain_impl(rctx):
     ]
 
     cxx_builtin_includes = []
-    if target_arch == ARCHS.x86_64:
+    if target_arch == ARCHS.x86_64 or not rctx.path("{}include/c++".format(include_prefix)).exists:
         cxx_builtin_includes.extend([
             include.format(
                 gcc_version = rctx.attr.gcc_version,
